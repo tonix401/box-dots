@@ -10,7 +10,7 @@
 !rofi
 !waybar
 !wlogout
-!startship.toml
+!starship.toml
 !.gitignore
 
 *.save
