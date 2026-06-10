@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+THEME="$HOME/.config/rofi/powermenu.rasi"
+
+lock="󰌾  Lock"
+suspend="󰒲  Suspend"
+hibernate="󰤄  Hibernate"
+reboot="󰜉  Reboot"
+firmware="󰍛  Firmware"
+shutdown="󰐥  Shutdown"
+
+chosen=$(printf '%s\n' "$lock" "$suspend" "$hibernate" "$reboot" "$firmware" "$shutdown" \
+    | rofi -dmenu -p "Power" -theme "$THEME") || exit 0
+
+case "$chosen" in
+    "$lock")      loginctl lock-session ;;
+    "$suspend")   systemctl suspend ;;
+    "$hibernate") systemctl hibernate ;;
+    "$reboot")    systemctl reboot ;;
+    "$firmware")  systemctl reboot --firmware-setup ;;
+    "$shutdown")  systemctl poweroff ;;
+esac

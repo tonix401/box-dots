@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+THEME="$HOME/.config/rofi/clipboard.rasi"
+
+command -v cliphist &>/dev/null || { notify-send "Clipboard" "cliphist is not installed"; exit 1; }
+
+cliphist list \
+    | rofi -dmenu -p "Clipboard" -theme "$THEME" \
+    | cliphist decode \
+    | wl-copy

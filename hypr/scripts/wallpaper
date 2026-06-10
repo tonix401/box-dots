@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Usage: wallpaper <image-path>
+# Applies a wallpaper and propagates matugen colors to all theming layers.
+set -euo pipefail
+
+if [ -z "${1:-}" ]; then
+    echo "Usage: wallpaper <image-path>"
+    exit 1
+fi
+
+IMAGE="$(realpath "$1")"
+test -f "$IMAGE" || { echo "Error: file not found - $IMAGE"; exit 1; }
+
+command -v matugen &>/dev/null || { echo "Error: matugen command not found"; exit 1; }
+command -v awww    &>/dev/null || { echo "Error: awww command not found"; exit 1; }
+
+
+# Set wallpaper via awww
+awww img $IMAGE --transition-type random || { echo "Error: failed to set wallpaper"; exit 1; }
+sleep 0.5
+echo "$IMAGE" > "$HOME/.cache/matugen/current-wallpaper"
+matugen image --prefer=saturation --mode dark "$IMAGE" --show-colors

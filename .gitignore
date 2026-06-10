@@ -1,5 +1,6 @@
 # Ignore all files by default
-*
+/*
+
 !btop
 !fastfetch
 !fish
@@ -11,3 +12,7 @@
 !wlogout
 !startship.toml
 !.gitignore
+
+*.save
+*.bak.*
+*.bak

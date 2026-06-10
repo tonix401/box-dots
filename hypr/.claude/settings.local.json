@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat ~/.cache/wal/colors-gtk.css)",
+      "Read(//home/tom/.cache/wal/**)",
+      "Read(//home/tom/.config/nemo/**)",
+      "Bash(gsettings get *)",
+      "Bash(cat ~/.config/wal/templates/colors-gtk.css)",
+      "Read(//home/tom/.config/wal/templates/**)"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+@import "~/.cache/matugen/colors-rofi.rasi"
+
+configuration {
+    modi:               "drun";
+    sidebar-mode:       false;
+    show-icons:         true;
+    drun-display-format: "{name}";
+}
+
+* {
+    font:               "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    width:              580px;
+    location:           center;
+    anchor:             center;
+    border:             1px;
+    border-color:       @selected-normal-background;
+    border-radius:      12px;
+    padding:            0;
+}
+
+mainbox {
+    padding:            10px;
+    spacing:            8px;
+    children:           [ inputbar, listview ];
+}
+
+inputbar {
+    children:           [ prompt, entry ];
+    spacing:            8px;
+    padding:            10px 14px;
+    border-radius:      8px;
+    background-color:   @urgent-background;
+    text-color:         @foreground;
+}
+
+prompt {
+    text-color:         @selected-normal-foreground;
+    vertical-align:     0.5;
+}
+
+entry {
+    text-color:         @foreground;
+    vertical-align:     0.5;
+    placeholder:        "Search apps...";
+    placeholder-color:  @alternate-normal-foreground;
+}
+
+listview {
+    columns:            1;
+    lines:              10;
+    fixed-height:       true;
+    scrollbar:          false;
+    spacing:            2px;
+}
+
+element {
+    padding:            9px 12px;
+    border-radius:      8px;
+    orientation:        horizontal;
+    children:           [ element-icon, element-text ];
+    spacing:            12px;
+}
+
+element-icon {
+    size:               1.4em;
+    vertical-align:     0.5;
+}
+
+element-text {
+    vertical-align:     0.5;
+    expand:             true;
+}
+
+element.normal.normal {
+    background-color:   @normal-background;
+    text-color:         @normal-foreground;
+}
+
+element.selected.normal {
+    background-color:   @selected-normal-background;
+    text-color:         @selected-normal-foreground;
+}
+
+element.active.normal {
+    background-color:   @active-background;
+    text-color:         @active-foreground;
+}
+
+element.selected.active {
+    background-color:   @selected-active-background;
+    text-color:         @selected-active-foreground;
+}
