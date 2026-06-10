@@ -1,0 +1,13 @@
+# Ignore all files by default
+*
+!btop
+!fastfetch
+!fish
+!hypr
+!kitty
+!matugen
+!rofi
+!waybar
+!wlogout
+!startship.toml
+!.gitignore
