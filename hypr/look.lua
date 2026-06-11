@@ -12,8 +12,8 @@ hl.config({
         border_size = 2,
 
         col = {
-            active_border   = Colors.color4,
-            inactive_border = Colors.color0,
+            active_border   = Colors.primary,
+            inactive_border = Colors.on_primary,
         },
 
         resize_on_border = true,

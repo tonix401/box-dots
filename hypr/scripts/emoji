@@ -5,4 +5,4 @@ THEME="$HOME/.config/rofi/emoji.rasi"
 
 command -v rofimoji &>/dev/null || { notify-send "Emoji" "rofimoji is not installed"; exit 1; }
 
-rofimoji --prompt "Emoji " --selector-args "--theme $THEME"
+rofimoji --action clipboard --prompt "Emoji " --selector-args "--theme $THEME"

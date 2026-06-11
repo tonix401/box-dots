@@ -1,15 +1,15 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = """
-[](color_orange)\
+[\ue0b6](fg:color_bg0)\
 $os\
 $username\
-[](bg:color_yellow fg:color_orange)\
+[](bg:color_bg1 fg:color_bg0)\
 $directory\
-[](fg:color_yellow bg:color_aqua)\
+[](fg:color_bg1 bg:color_bg2)\
 $git_branch\
 $git_status\
-[](fg:color_aqua bg:color_blue)\
+[](fg:color_bg2 bg:color_bg3)\
 $c\
 $cpp\
 $rust\
@@ -21,41 +21,40 @@ $java\
 $kotlin\
 $haskell\
 $python\
-[](fg:color_blue bg:color_bg3)\
+[](fg:color_bg3 bg:color_bg4)\
 $docker_context\
 $conda\
 $pixi\
-[](fg:color_bg3 bg:color_bg1)\
+[](fg:color_bg4 bg:color_bg5)\
 $time\
-[ ](fg:color_bg1)\
+[](fg:color_bg5)\
 $line_break$character"""
 
 palette = 'matugen'
 
 [palettes.matugen]
-color_fg0       = '{{ colors.on_surface.default.hex }}'
-color_bg1       = '{{ colors.surface_container_lowest.default.hex }}'
-color_bg3       = '{{ colors.surface_container_high.default.hex }}'
-color_orange    = '{{ colors.tertiary.default.hex }}'
-color_fg_orange = '{{ colors.on_tertiary.default.hex }}'
-color_yellow    = '{{ colors.secondary.default.hex }}'
-color_fg_yellow = '{{ colors.on_secondary.default.hex }}'
-color_aqua      = '{{ colors.tertiary_container.default.hex }}'
-color_fg_aqua   = '{{ colors.on_tertiary_container.default.hex }}'
-color_blue      = '{{ colors.primary_container.default.hex }}'
-color_fg_blue   = '{{ colors.on_primary_container.default.hex }}'
-color_green     = '{{ colors.secondary.default.hex }}'
-color_red       = '{{ colors.error.default.hex }}'
-color_purple    = '{{ colors.secondary_container.default.hex }}'
+color_success   = '{{ colors.primary.dark.hex }}'
+color_error     = '{{ colors.error.dark.hex }}'
+color_bg0       = '{{ colors.primary.dark.hex }}'
+color_fg0       = '{{ colors.on_primary.dark.hex }}'
+color_bg1       = '{{ colors.secondary.dark.hex }}'
+color_fg1       = '{{ colors.on_secondary.dark.hex }}'
+color_bg2       = '{{ colors.tertiary.dark.hex }}'
+color_fg2       = '{{ colors.on_tertiary.dark.hex }}'
+color_bg3       = '{{ colors.surface_container_highest.dark.hex }}'
+color_fg3       = '{{ colors.on_surface.dark.hex }}'
+color_bg4       = '{{ colors.surface_container.dark.hex }}'
+color_fg4       = '{{ colors.on_surface.dark.hex }}'
+color_bg5       = '{{ colors.surface_container_low.dark.hex }}'
+color_fg5       = '{{ colors.on_surface.dark.hex }}'
 
 [os]
 disabled = false
-style = "bg:color_orange fg:color_fg_orange"
+style = "bg:color_bg0 fg:color_fg0"
 
 [os.symbols]
 Windows = "󰍲"
 Ubuntu = "󰕈"
-SUSE = ""
 Raspbian = "󰐿"
 Mint = "󰣭"
 Macos = "󰀵"
@@ -63,84 +62,77 @@ Manjaro = ""
 Linux = "󰌽"
 Gentoo = "󰣨"
 Fedora = "󰣛"
-Alpine = ""
-Amazon = ""
-Android = ""
-AOSC = ""
 Arch = "󰣇"
 Artix = "󰣇"
-EndeavourOS = ""
-CentOS = ""
 Debian = "󰣚"
 Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
-Pop = ""
 
 [username]
 show_always = true
-style_user = "bg:color_orange fg:color_fg_orange"
-style_root = "bg:color_orange fg:color_fg_orange"
+style_user = "bg:color_bg0 fg:color_fg0"
+style_root = "bg:color_bg0 fg:color_fg0"
 format = '[ $user ]($style)'
 
 [directory]
-style = "fg:color_fg_yellow bg:color_yellow"
+style = "fg:color_fg1 bg:color_bg1"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
 
 [git_branch]
 symbol = ""
-style = "bg:color_aqua"
-format = '[[ $symbol $branch ](fg:color_fg_aqua bg:color_aqua)]($style)'
+style = "bg:color_bg2"
+format = '[[ $symbol $branch ](fg:color_fg2 bg:color_bg2)]($style)'
 
 [git_status]
-style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg_aqua bg:color_aqua)]($style)'
+style = "bg:color_bg2"
+format = '[[($all_status$ahead_behind )](fg:color_fg2 bg:color_bg2)]($style)'
 
 [nodejs]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_blue bg:color_blue)]($style)'
+style = "bg:color_bg3"
+format = '[[ $symbol( $version) ](fg:color_fg3 bg:color_bg3)]($style)'
 
 [bun]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_blue bg:color_blue)]($style)'
+style = "bg:color_bg3"
+format = '[[ $symbol( $version) ](fg:color_fg3 bg:color_bg3)]($style)'
 
 [c]
 symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_blue bg:color_blue)]($style)'
+style = "bg:color_bg3"
+format = '[[ $symbol( $version) ](fg:color_fg3 bg:color_bg3)]($style)'
 
 [cpp]
 symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_blue bg:color_blue)]($style)'
+style = "bg:color_bg3"
+format = '[[ $symbol( $version) ](fg:color_fg3 bg:color_bg3)]($style)'
 
 [rust]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_blue bg:color_blue)]($style)'
+style = "bg:color_bg3"
+format = '[[ $symbol( $version) ](fg:color_fg3 bg:color_bg3)]($style)'
 
 [python]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_blue bg:color_blue)]($style)'
+style = "bg:color_bg3"
+format = '[[ $symbol( $version) ](fg:color_fg3 bg:color_bg3)]($style)'
 
 [docker_context]
 symbol = ""
-style = "bg:color_bg3"
-format = '[[ $symbol( $context) ](fg:color_fg0 bg:color_bg3)]($style)'
+style = "bg:color_bg4"
+format = '[[ $symbol( $context) ](fg:color_fg4 bg:color_bg4)]($style)'
 
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:color_bg1"
-format = '[[  $time ](fg:color_fg0 bg:color_bg1)]($style)'
+style = "bg:color_bg5"
+format = '[[  $time ](fg:color_fg5 bg:color_bg5)]($style)'
 
 [line_break]
 disabled = false
 
 [character]
-success_symbol = "[  ]( fg:color_green)"
-error_symbol = "[  ]( fg:color_red)"
+success_symbol = "[ ]( fg:color_success)"
+error_symbol = "[ ]( fg:color_error)"

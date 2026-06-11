@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+ 
+DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$DIR"
+ 
+WIN=$(hyprctl activewindow -j | jq -r '.class // "unknown"' | tr ' /\\' '_')
+FILE="$DIR/$(date +%Y-%m-%d_%H-%M-%S)_${WIN}.png"
+
+grimblast copysave area "$FILE"

@@ -16,6 +16,17 @@ hl.monitor({
     scale    = "auto",
 })
 
+-----------------
+----  INPUT  ----
+-----------------
+
+hl.config({
+    input = {
+        kb_layout  = "us",
+        kb_variant = "intl",
+    },
+})
+
 ----------------
 ----  MISC  ----
 ----------------
