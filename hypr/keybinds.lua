@@ -37,9 +37,9 @@ for i = 1, 9 do
 end
 
 -- Scratchpad / special
-hl.bind("SUPER + S",          hl.dsp.workspace.toggle_special())
-hl.bind("SUPER + mouse:275",  hl.dsp.workspace.toggle_special())
-hl.bind("SHIFT + SUPER + M",  hl.dsp.window.move({ workspace = "special", follow = false }))
+hl.bind("SUPER + S",          hl.dsp.workspace.toggle_special("scratchpad"))
+hl.bind("SUPER + mouse:275",  hl.dsp.workspace.toggle_special("scratchpad"))
+hl.bind("SUPER + ALT + S",  hl.dsp.window.move({ workspace = "special:scratchpad", follow = false }))
 
 -- ── Media ─────────────────────────────────────────────────────────────────────
 
@@ -62,4 +62,4 @@ hl.bind("SUPER + V",         exec("~/.config/hypr/scripts/rofi/clipboard"))
 hl.bind("SUPER + PERIOD",    exec("~/.config/hypr/scripts/rofi/emoji"))
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
-hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot"))
+hl.bind("SUPER + G", exec("~/.config/hypr/scripts/screenshot"))

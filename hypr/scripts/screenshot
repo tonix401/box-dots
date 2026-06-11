@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
- 
 DIR="$HOME/Pictures/Screenshots"
 mkdir -p "$DIR"
  
