@@ -1,22 +1,34 @@
 #!/usr/bin/env bash
-# Usage: wallpaper <image-path>
+# Usage: wallpaper <image-path> [--source-color-index 0-4]
 # Applies a wallpaper and propagates matugen colors to all theming layers.
 
 set -euo pipefail
 
 if [ -z "${1:-}" ]; then
-    echo "Usage: wallpaper <image-path>"
+    echo "Usage: wallpaper <image-path> [--source-color-index 0-4]"
     exit 1
 fi
 
 IMAGE="$(realpath "$1")"
 test -f "$IMAGE" || { echo "Error: file not found - $IMAGE"; exit 1; }
 
+SOURCE_COLOR_INDEX=""
+shift
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --source-color-index) SOURCE_COLOR_INDEX="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+
 command -v matugen &>/dev/null || { echo "Error: matugen not found; install it first"; exit 1; }
 command -v awww    &>/dev/null || { echo "Error: awww not found; install it first"; exit 1; }
 
-# Set wallpaper via awww
-awww img $IMAGE --transition-type random || { echo "Error: failed to set wallpaper"; exit 1; }
-sleep 0.5
+awww img "$IMAGE" --transition-type random || { echo "Error: failed to set wallpaper"; exit 1; }
 echo "$IMAGE" > "$HOME/.cache/matugen/current-wallpaper"
-matugen image --prefer=saturation --mode dark "$IMAGE"
+
+if [[ -n "$SOURCE_COLOR_INDEX" ]]; then
+    matugen image --source-color-index "$SOURCE_COLOR_INDEX" --mode dark "$IMAGE"
+else
+    matugen image --prefer=saturation --mode dark "$IMAGE"
+fi

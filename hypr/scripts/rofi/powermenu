@@ -4,17 +4,19 @@ set -euo pipefail
 THEME="$HOME/.config/rofi/powermenu.rasi"
 
 lock="󰌾  Lock"
+logout="󰍃  Log out"
 suspend="󰒲  Suspend"
 hibernate="󰤄  Hibernate"
 reboot="󰜉  Reboot"
 firmware="󰍛  Firmware"
 shutdown="󰐥  Shutdown"
 
-chosen=$(printf '%s\n' "$lock" "$suspend" "$hibernate" "$reboot" "$firmware" "$shutdown" \
+chosen=$(printf '%s\n' "$lock" "$logout" "$suspend" "$hibernate" "$reboot" "$firmware" "$shutdown" \
     | rofi -dmenu -p "Power" -theme "$THEME") || exit 0
 
 case "$chosen" in
     "$lock")      loginctl lock-session ;;
+    "$logout")    loginctl terminate-session "" ;;
     "$suspend")   systemctl suspend ;;
     "$hibernate") systemctl hibernate ;;
     "$reboot")    systemctl reboot ;;

@@ -15,13 +15,15 @@ window {
     width:              580px;
     location:           center;
     anchor:             center;
+    background-color:   @surface;
     border:             1px;
-    border-color:       @selected-normal-background;
+    border-color:       @primary;
     border-radius:      12px;
     padding:            0;
 }
 
 mainbox {
+    background-color:   transparent;
     padding:            10px;
     spacing:            8px;
     children:           [ inputbar, listview ];
@@ -32,20 +34,20 @@ inputbar {
     spacing:            8px;
     padding:            10px 14px;
     border-radius:      8px;
-    background-color:   @urgent-background;
-    text-color:         @foreground;
+    background-color:   @surface-container-high;
+    text-color:         @on-surface;
 }
 
 prompt {
-    text-color:         @selected-normal-foreground;
+    text-color:         @primary;
     vertical-align:     0.5;
 }
 
 entry {
-    text-color:         @foreground;
+    text-color:         @on-surface;
     vertical-align:     0.5;
     placeholder:        "Search apps...";
-    placeholder-color:  @alternate-normal-foreground;
+    placeholder-color:  @on-surface-variant;
 }
 
 listview {
@@ -54,6 +56,7 @@ listview {
     fixed-height:       true;
     scrollbar:          false;
     spacing:            2px;
+    background-color:   transparent;
 }
 
 element {
@@ -75,21 +78,21 @@ element-text {
 }
 
 element.normal.normal {
-    background-color:   @normal-background;
-    text-color:         @normal-foreground;
+    background-color:   transparent;
+    text-color:         @on-surface;
 }
 
 element.selected.normal {
-    background-color:   @selected-normal-background;
-    text-color:         @selected-normal-foreground;
+    background-color:   @primary;
+    text-color:         @on-primary;
 }
 
 element.active.normal {
-    background-color:   @active-background;
-    text-color:         @active-foreground;
+    background-color:   @secondary-container;
+    text-color:         @on-secondary-container;
 }
 
 element.selected.active {
-    background-color:   @selected-active-background;
-    text-color:         @selected-active-foreground;
+    background-color:   @secondary;
+    text-color:         @on-secondary;
 }

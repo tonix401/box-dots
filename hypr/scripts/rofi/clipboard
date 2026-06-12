@@ -8,4 +8,4 @@ command -v cliphist &>/dev/null || { notify-send "Clipboard" "cliphist is not in
 cliphist list \
     | rofi -dmenu -p "Clipboard" -theme "$THEME" \
     | cliphist decode \
-    | wl-copy
+    | wtype -

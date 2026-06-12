@@ -1,0 +1,69 @@
+@import "~/.cache/matugen/colors-rofi.rasi"
+
+configuration {
+    sidebar-mode:       false;
+    show-icons:         true;
+}
+
+* {
+    font:               "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    width:              700px;
+    location:           center;
+    anchor:             center;
+    background-color:   @background;
+    border:             2px;
+    border-color:       @primary;
+    border-radius:      12px;
+    padding:            0;
+}
+
+mainbox {
+    background-color:   transparent;
+    padding:            10px;
+    spacing:            8px;
+    children:           [ listview ];
+}
+
+listview {
+    columns:            1;
+    fixed-height:       false;
+    scrollbar:          false;
+    spacing:            4px;
+    background-color:   transparent;
+}
+
+element-icon {
+    size:               72px;
+    border-radius:      4px;
+    background-color:   transparent;
+}
+
+element {
+    padding:            6px 14px;
+    border-radius:      8px;
+    orientation:        horizontal;
+    children:           [ element-icon, element-text ];
+    spacing:            12px;
+    background-color:   @foreground;
+}
+
+element-text {
+    text-color:         @on-foreground;
+    background-color:   transparent;
+    vertical-align:     0.5;
+    highlight:          none;
+    expand:             true;
+}
+
+element.selected {
+    border:             4px;
+    border-color:       @primary;
+    background-color:   transparent;
+}
+
+element-text.selected {
+    text-color:         @primary;
+}

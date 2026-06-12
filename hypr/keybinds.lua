@@ -60,6 +60,7 @@ hl.bind("SUPER + SPACE",     exec("~/.config/hypr/scripts/rofi/launcher"))
 hl.bind("SUPER + ESCAPE",    exec("~/.config/hypr/scripts/rofi/powermenu"))
 hl.bind("SUPER + V",         exec("~/.config/hypr/scripts/rofi/clipboard"))
 hl.bind("SUPER + PERIOD",    exec("~/.config/hypr/scripts/rofi/emoji"))
+hl.bind("SUPER + P",         exec("~/.config/hypr/scripts/rofi/wallpapermenu"))
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
-hl.bind("SUPER + G", exec("~/.config/hypr/scripts/screenshot"))
+hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot"))
