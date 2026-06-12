@@ -16,7 +16,7 @@ mkdir -p "$THUMB_CACHE"
 
 for path in "${paths[@]}"; do
     thumb="$THUMB_CACHE/$(md5sum <<< "$path" | cut -d' ' -f1).png"
-    [ -f "$thumb" ] || magick "$path" -thumbnail 72x72^ -gravity center -extent 72x72 "$thumb"
+    [ -f "$thumb" ] || magick "$path" -thumbnail 256x256^ -gravity center -extent 256x256 "$thumb"
 done
 
 # Step 1: pick wallpaper

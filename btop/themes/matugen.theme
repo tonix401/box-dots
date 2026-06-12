@@ -3,61 +3,61 @@
 # Empty main_bg = terminal background transparency (see btop.conf: theme_background = false)
 theme[main_bg]=""
 
-theme[main_fg]="#e5e1e9"
-theme[title]="#c2c1ff"
-theme[hi_fg]="#c2c1ff"
-theme[selected_bg]="#414178"
-theme[selected_fg]="#e2dfff"
-theme[inactive_fg]="#928f9a"
-theme[graph_text]="#c8c5d0"
-theme[proc_misc]="#c6c4dd"
-theme[cpu_box]="#47464f"
-theme[mem_box]="#47464f"
-theme[net_box]="#47464f"
-theme[proc_box]="#47464f"
-theme[div_line]="#47464f"
+theme[main_fg]="#efdfe1"
+theme[title]="#ffb1c4"
+theme[hi_fg]="#ffb1c4"
+theme[selected_bg]="#703345"
+theme[selected_fg]="#ffd9e0"
+theme[inactive_fg]="#9e8c8f"
+theme[graph_text]="#d6c2c5"
+theme[proc_misc]="#e3bdc4"
+theme[cpu_box]="#514346"
+theme[mem_box]="#514346"
+theme[net_box]="#514346"
+theme[proc_box]="#514346"
+theme[div_line]="#514346"
 
 # Temperature: cool → warm → critical
-theme[temp_start]="#c6c4dd"
-theme[temp_mid]="#eab9d2"
+theme[temp_start]="#e3bdc4"
+theme[temp_mid]="#edbd92"
 theme[temp_end]="#ffb4ab"
 
 # CPU usage: low → medium → high
-theme[cpu_start]="#c6c4dd"
-theme[cpu_mid]="#eab9d2"
+theme[cpu_start]="#e3bdc4"
+theme[cpu_mid]="#edbd92"
 theme[cpu_end]="#ffb4ab"
 
 # Mem/Disk free: low free (bad) → high free (good)
 theme[free_start]="#ffb4ab"
-theme[free_mid]="#eab9d2"
-theme[free_end]="#c6c4dd"
+theme[free_mid]="#edbd92"
+theme[free_end]="#e3bdc4"
 
 # Mem/Disk cached
-theme[cached_start]="#603c50"
-theme[cached_mid]="#464559"
-theme[cached_end]="#c6c4dd"
+theme[cached_start]="#60401e"
+theme[cached_mid]="#5b3f46"
+theme[cached_end]="#e3bdc4"
 
 # Mem/Disk available: low (bad) → high (good)
 theme[available_start]="#ffb4ab"
-theme[available_mid]="#eab9d2"
-theme[available_end]="#c6c4dd"
+theme[available_mid]="#edbd92"
+theme[available_end]="#e3bdc4"
 
 # Mem/Disk used: low (good) → high (bad)
-theme[used_start]="#c6c4dd"
-theme[used_mid]="#eab9d2"
+theme[used_start]="#e3bdc4"
+theme[used_mid]="#edbd92"
 theme[used_end]="#ffb4ab"
 
 # Network download
-theme[download_start]="#414178"
-theme[download_mid]="#c2c1ff"
-theme[download_end]="#c2c1ff"
+theme[download_start]="#703345"
+theme[download_mid]="#ffb1c4"
+theme[download_end]="#ffb1c4"
 
 # Network upload
-theme[upload_start]="#603c50"
-theme[upload_mid]="#eab9d2"
-theme[upload_end]="#eab9d2"
+theme[upload_start]="#60401e"
+theme[upload_mid]="#edbd92"
+theme[upload_end]="#edbd92"
 
 # Process list gradient: low usage → high usage
-theme[process_start]="#c6c4dd"
-theme[process_mid]="#eab9d2"
+theme[process_start]="#e3bdc4"
+theme[process_mid]="#edbd92"
 theme[process_end]="#ffb4ab"
