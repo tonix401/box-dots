@@ -1,8 +1,10 @@
-@import "~/.cache/matugen/colors-rofi.rasi"
+@import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
     sidebar-mode:       false;
     show-icons:         true;
+    scroll-method:      1;
+    cycle:              false;
 }
 
 * {
@@ -10,13 +12,14 @@ configuration {
 }
 
 window {
-    width:              700px;
+    width:              720px;
+    height:             756px;
     location:           center;
     anchor:             center;
-    background-color:   @background;
     border:             2px;
-    border-color:       @primary;
     border-radius:      12px;
+    border-color:       @primary;
+    background-color:   @background;
     padding:            0;
 }
 

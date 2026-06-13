@@ -1,23 +1,19 @@
 [config]
-set_wallpaper = false
 reload_apps = false
+caching = true
 
-[templates.colors-gtk-css]
-input_path = "~/.config/matugen/templates/colors-gtk.css"
-output_path = "~/.cache/matugen/colors-gtk.css"
+[config.wallpaper]
+set = true
+command = "awww img --transition-type random '{{ image }}' && echo '{{ image }}' > ~/.cache/box-dots/current-wallpaper"
 
 [templates.colors-hypr-lua]
 input_path = "~/.config/matugen/templates/colors-hypr.lua"
-output_path = "~/.cache/matugen/colors-hypr.lua"
+output_path = "~/.config/hypr/colors.lua"
 post_hook = "hyprctl reload"
 
 [templates.starship-toml]
 input_path = "~/.config/matugen/templates/starship.toml"
 output_path = "~/.config/starship.toml"
-
-[templates.colors-quickshell-qml]
-input_path = "~/.config/matugen/templates/colors-quickshell.qml"
-output_path = "~/.cache/matugen/colors-quickshell.qml"
 
 [templates.btop-theme]
 input_path = "~/.config/matugen/templates/btop.theme"
@@ -26,7 +22,13 @@ output_path = "~/.config/btop/themes/matugen.theme"
 [templates.colors-waybar-css]
 input_path = "~/.config/matugen/templates/colors-waybar.css"
 output_path = "~/.config/waybar/tokens/colors.css"
+post_hook = "killall waybar; waybar &>/dev/null &"
 
 [templates.colors-rofi-rasi]
 input_path = "~/.config/matugen/templates/colors-rofi.rasi"
-output_path = "~/.cache/matugen/colors-rofi.rasi"
+output_path = "~/.config/rofi/themes/matugen.rasi"
+
+[templates.colors-kitty-conf]
+input_path = "~/.config/matugen/templates/colors-kitty.conf"
+output_path = "~/.config/kitty/colors.conf"
+post_hook = "kill -SIGUSR2 $(pidof kitty) 2>/dev/null || true"

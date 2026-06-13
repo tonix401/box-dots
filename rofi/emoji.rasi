@@ -1,8 +1,9 @@
-@import "~/.cache/matugen/colors-rofi.rasi"
+@import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
     sidebar-mode:       false;
     show-icons:         false;
+    scroll-method: 1;
 }
 
 * {
@@ -13,8 +14,8 @@ window {
     width:              540px;
     location:           center;
     anchor:             center;
-    background-color:   @surface;
-    border:             1px;
+    background-color:   @background;
+    border:             2px;
     border-color:       @primary;
     border-radius:      12px;
     padding:            0;
@@ -52,18 +53,9 @@ listview {
     columns:            1;
     lines:              12;
     fixed-height:       true;
-    scrollbar:          true;
+    scrollbar:          false;
     spacing:            2px;
     background-color:   transparent;
-}
-
-scrollbar {
-    width:              4px;
-    border:             0;
-    handle-width:       6px;
-    handle-color:       @primary;
-    background-color:   transparent;
-    padding:            0;
 }
 
 element {
@@ -77,19 +69,4 @@ element {
 element-text {
     vertical-align:     0.5;
     expand:             true;
-}
-
-element.normal.normal {
-    background-color:   transparent;
-    text-color:         @on-surface;
-}
-
-element.selected.normal {
-    background-color:   @primary;
-    text-color:         @on-primary;
-}
-
-element.urgent.normal {
-    background-color:   @secondary-container;
-    text-color:         @on-secondary-container;
 }

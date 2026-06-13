@@ -17,7 +17,7 @@
 #pulseaudio-slider highlight {
   min-height: 10px;
   border-radius: 10px;
-  background-color: @secondary_fixed_dim;
+  background-color: @background;
 }
 
 #pulseaudio-slider slider {

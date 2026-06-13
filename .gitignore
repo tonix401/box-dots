@@ -12,6 +12,7 @@
 !wlogout
 !starship.toml
 !.gitignore
+!README.md
 
 *.save
 *.bak.*

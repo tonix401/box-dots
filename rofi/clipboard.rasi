@@ -1,8 +1,9 @@
-@import "~/.cache/matugen/colors-rofi.rasi"
+@import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
     sidebar-mode:       false;
     show-icons:         false;
+    scroll-method: 1;
 }
 
 * {
@@ -13,8 +14,8 @@ window {
     width:              620px;
     location:           center;
     anchor:             center;
-    background-color:   @surface;
-    border:             1px;
+    background-color:   @background;
+    border:             2px;
     border-color:       @primary;
     border-radius:      12px;
     padding:            0;
@@ -82,7 +83,7 @@ element-text {
 
 element.normal.normal {
     background-color:   transparent;
-    text-color:         @on-surface;
+    text-color:         @primary;
 }
 
 element.selected.normal {

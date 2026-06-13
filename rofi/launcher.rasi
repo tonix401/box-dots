@@ -1,10 +1,11 @@
-@import "~/.cache/matugen/colors-rofi.rasi"
+@import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
     modi:               "drun";
     sidebar-mode:       false;
     show-icons:         true;
     drun-display-format: "{name}";
+    scroll-method: 1;
 }
 
 * {
@@ -15,8 +16,8 @@ window {
     width:              580px;
     location:           center;
     anchor:             center;
-    background-color:   @surface;
-    border:             1px;
+    background-color:   @background;
+    border:             2px;
     border-color:       @primary;
     border-radius:      12px;
     padding:            0;
@@ -30,21 +31,17 @@ mainbox {
 }
 
 inputbar {
-    children:           [ prompt, entry ];
+    children:           [ entry ];
     spacing:            8px;
     padding:            10px 14px;
     border-radius:      8px;
-    background-color:   @surface-container-high;
-    text-color:         @on-surface;
-}
-
-prompt {
+    background-color:   transparent;
     text-color:         @primary;
-    vertical-align:     0.5;
 }
 
 entry {
-    text-color:         @on-surface;
+    text-color:         @primary;
+    background-color:   transparent;
     vertical-align:     0.5;
     placeholder:        "Search apps...";
     placeholder-color:  @on-surface-variant;
@@ -62,6 +59,7 @@ listview {
 element {
     padding:            9px 12px;
     border-radius:      8px;
+    background-color:   transparent;
     orientation:        horizontal;
     children:           [ element-icon, element-text ];
     spacing:            12px;
@@ -70,29 +68,26 @@ element {
 element-icon {
     size:               1.4em;
     vertical-align:     0.5;
+    background-color:   transparent;
+    border-radius:      6px;
+    padding:            4px;
 }
 
 element-text {
     vertical-align:     0.5;
     expand:             true;
-}
-
-element.normal.normal {
     background-color:   transparent;
-    text-color:         @on-surface;
+    text-color:         @primary;
 }
 
-element.selected.normal {
+element-icon.selected {
+    background-color:   @on-primary;
+}
+
+element.selected {
     background-color:   @primary;
+}
+
+element-text.selected {
     text-color:         @on-primary;
-}
-
-element.active.normal {
-    background-color:   @secondary-container;
-    text-color:         @on-secondary-container;
-}
-
-element.selected.active {
-    background-color:   @secondary;
-    text-color:         @on-secondary;
 }

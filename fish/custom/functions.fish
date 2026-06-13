@@ -78,21 +78,21 @@ function vscode_greeting
 end
 
 function kitty_greeting
-    set blue "\e[38;2;0;120;215m"
+    set primary "\e[38;2;0;120;215m"
     set bold "\e[1m"
     set reset "\e[0m"
 
-    printf "$blue$bold  _._     _,-'\"\"`-._       $reset\n"
-    printf "$blue$bold (,-.`._,'(       |\\`-/|    $reset\n"
-    printf "$blue$bold     `-.-' \ )-` (, o o)     $reset\n"
-    printf "$blue$bold            `-   \`_`\"'-    $reset\n"
+    printf "$primary$bold  _._     _,-'\"\"`-._       $reset\n"
+    printf "$primary$bold (,-.`._,'(       |\\`-/|    $reset\n"
+    printf "$primary$bold     `-.-' \ )-` (, o o)     $reset\n"
+    printf "$primary$bold            `-   \`_`\"'-    $reset\n"
 end
 
 function tmux_greeting
-    set blue "\e[38;2;0;120;215m"
+    set primary "\e[38;2;0;120;215m"
     set bold "\e[1m"
     set reset "\e[0m"          
-    printf "\n$blue$bold          ▄▄▄▄▄▄ ▄▄   ▄▄ ▄▄ ▄▄ ▄▄ ▄▄$reset\n"
-    printf "$blue$bold            ██   ██▀▄▀██ ██ ██ ▀█▄█▀$reset\n"
-    printf "$blue$bold            ██   ██   ██ ▀███▀ ██ ██$reset\n\n"
+    printf "\n$primary$bold          ▄▄▄▄▄▄ ▄▄   ▄▄ ▄▄ ▄▄ ▄▄ ▄▄$reset\n"
+    printf "$primary$bold            ██   ██▀▄▀██ ██ ██ ▀█▄█▀$reset\n"
+    printf "$primary$bold            ██   ██   ██ ▀███▀ ██ ██$reset\n\n"
 end

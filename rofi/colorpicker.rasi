@@ -1,8 +1,9 @@
-@import "~/.cache/matugen/colors-rofi.rasi"
+@import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
     sidebar-mode:       false;
     show-icons:         true;
+    scroll-method: 1;
 }
 
 * {
@@ -13,9 +14,9 @@ window {
     width:              260px;
     location:           center;
     anchor:             center;
-    background-color:   @surface;
-    border:             1px;
-    border-color:       @outline-variant;
+    background-color:   @background;
+    border:             2px;
+    border-color:       @primary;
     border-radius:      12px;
     padding:            0;
 }
@@ -45,31 +46,27 @@ element {
 
 element-icon {
     size:               44px;
-    border-radius:      0;
+    border-radius:      6px;
+    background-color:   transparent;
 }
 
 element-text {
     vertical-align:     0.5;
     expand:             true;
     highlight:          none;
-}
-
-element.normal.normal {
     background-color:   transparent;
-    text-color:         @on-surface;
+    text-color:         @primary;
 }
 
-element.normal.alternate {
+element {
     background-color:   transparent;
-    text-color:         @on-surface;
+    text-color:         @primary;
 }
 
-element.selected.normal {
-    background-color:   @secondary-container;
-    text-color:         @on-secondary-container;
+element.selected {
+    background-color:   @primary;
 }
 
-element.selected.alternate {
-    background-color:   @secondary-container;
-    text-color:         @on-secondary-container;
+element-text.selected {
+    text-color:         @on-primary;
 }

@@ -56,11 +56,12 @@ hl.bind("SUPER + W",         exec("chromium"))
 hl.bind("SUPER + ALT + W",   exec("chromium --incognito"))
 
 -- ── Rofi Menus ────────────────────────────────────────────────────────────────
-hl.bind("SUPER + SPACE",     exec("~/.config/hypr/scripts/rofi/launcher"))
-hl.bind("SUPER + ESCAPE",    exec("~/.config/hypr/scripts/rofi/powermenu"))
-hl.bind("SUPER + V",         exec("~/.config/hypr/scripts/rofi/clipboard"))
-hl.bind("SUPER + PERIOD",    exec("~/.config/hypr/scripts/rofi/emoji"))
-hl.bind("SUPER + P",         exec("~/.config/hypr/scripts/rofi/wallpapermenu"))
+hl.bind("SUPER + SPACE",     exec("~/.config/hypr/scripts/rofi/app-launcher-menu.sh"))
+hl.bind("SUPER + ESCAPE",    exec("~/.config/hypr/scripts/rofi/power-menu.sh"))
+hl.bind("SUPER + V",         exec("~/.config/hypr/scripts/rofi/clipboard-history-menu.sh"))
+hl.bind("SUPER + PERIOD",    exec("~/.config/hypr/scripts/rofi/emoji-picker-menu.sh"))
+hl.bind("SUPER + P",         exec("~/.config/hypr/scripts/rofi/wallpaper-menu.sh"))
+hl.bind("SUPER + L",         exec("hyprlock"))
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
 hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot"))

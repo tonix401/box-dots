@@ -1,8 +1,9 @@
-@import "~/.cache/matugen/colors-rofi.rasi"
+@import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
     sidebar-mode:       false;
     show-icons:         false;
+    scroll-method: 1;
 }
 
 * {
@@ -10,11 +11,11 @@ configuration {
 }
 
 window {
-    width:              380px;
+    width:              720px;
     location:           center;
     anchor:             center;
-    background-color:   @surface;
-    border:             1px;
+    background-color:   @background;
+    border:             2px;
     border-color:       @primary;
     border-radius:      12px;
     padding:            0;
@@ -22,9 +23,16 @@ window {
 
 mainbox {
     background-color:   transparent;
+    orientation:        horizontal;
     padding:            10px;
     spacing:            0;
     children:           [ listview ];
+}
+
+image {
+    size:               120px;
+    border-radius:      8px;
+    background-image:   url("~/.cache/matugen/current-wallpaper", width);
 }
 
 listview {
@@ -41,29 +49,20 @@ element {
     orientation:        horizontal;
     children:           [ element-text ];
     spacing:            0;
+    background-color:   transparent;
+}
+
+element.selected {
+    background-color:   @primary;
 }
 
 element-text {
     vertical-align:     0.5;
     expand:             true;
-}
-
-element.normal.normal {
     background-color:   transparent;
-    text-color:         @on-surface;
+    text-color:         @primary;
 }
 
-element.selected.normal {
-    background-color:   @primary;
+element-text.selected {
     text-color:         @on-primary;
-}
-
-element.urgent.normal {
-    background-color:   transparent;
-    text-color:         @error;
-}
-
-element.selected.urgent {
-    background-color:   @error;
-    text-color:         @on-error;
 }
