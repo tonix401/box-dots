@@ -1,0 +1,79 @@
+@import "~/.config/rofi/themes/matugen.rasi"
+
+configuration {
+    scroll-method:      1;
+    sidebar-mode:       false;
+    show-icons:         false;
+}
+
+* {
+    font:               "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    padding:            0;
+    border:             2px;
+    border-radius:      12px;
+    width:              780px;
+    location:           center;
+    anchor:             center;
+    border-color:       @primary;
+    background-color:   @background;
+}
+
+mainbox {
+    spacing:            8px;
+    padding:            10px;
+    background-color:   transparent;
+    children:           [ inputbar, listview ];
+}
+
+inputbar {
+    spacing:            8px;
+    border-radius:      8px;
+    text-color:         @primary;
+    children:           [ entry ];
+    padding:            10px 14px;
+    background-color:   transparent;
+}
+
+entry {
+    vertical-align:     0.5;
+    text-color:         @primary;
+    background-color:   transparent;
+    placeholder:        "Search keybinds...";
+    placeholder-color:  @on-surface-variant;
+}
+
+listview {
+    columns:            1;
+    lines:              14;
+    fixed-height:       true;
+    scrollbar:          true;
+    spacing:            2px;
+    background-color:   transparent;
+}
+
+scrollbar {
+    border:             0;
+    padding:            0;
+    width:              4px;
+    handle-width:       6px;
+    handle-color:       @primary;
+    background-color:   transparent;
+}
+
+element {
+    padding:            10px 16px;
+    border-radius:      8px;
+    orientation:        horizontal;
+    background-color:   transparent;
+    children:           [ element-text ];
+}
+
+element-text {
+    vertical-align:     0.5;
+    expand:             true;
+    background-color:   transparent;
+    text-color:         @primary;
+}

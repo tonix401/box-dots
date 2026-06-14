@@ -21,104 +21,104 @@
       "type": "title",
       "key": "     󰣇 ",
       "format": "{1}@{2}",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "custom",
       "format": "   ╭────────────────────────────────────────────╮",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "os",
       "key": "     󰣇 OS      ",
       "keyColor": "31",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "host",
       "key": "      Device  ",
       "format": "{2}",
       "keyColor": "33",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "kernel",
       "key": "      Kernel  ",
       "keyColor": "32",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "packages",
       "key": "     󰏖 Packages",
       "keyColor": "36",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "terminal",
       "key": "     󰞷 Terminal",
       "keyColor": "34",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "wm",
       "key": "     󱂬 WM      ",
       "keyColor": "35",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "custom",
       "format": "   ╰────────────────────────────────────────────╯",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "custom",
       "format": "   ╭────────────────────────────────────────────╮",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "cpu",
       "key": "     󰻠 CPU     ",
       "keyColor": "31",
       "format": "{1}",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "gpu",
       "key": "     󰢮 GPU     ",
       "keyColor": "33",
       "format": "{2}",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "memory",
       "key": "     󰍛 Memory  ",
       "keyColor": "32",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "display",
       "key": "     󰹑 Display ",
       "keyColor": "36",
       "format": "{width}x{height} @ {refresh-rate} Hz",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "command",
       "key": "      OS Age  ",
       "text": "birthd=$(stat -c %W /); echo $(( ( $(date +%s) - birthd ) / 86400 )) days",
       "keyColor": "34",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "uptime",
       "key": "     󰅐 Uptime  ",
       "keyColor": "35",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "custom",
       "format": "   ╰────────────────────────────────────────────╯",
-      "outputColor": "#a1cafd"
+      "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
       "type": "colors",

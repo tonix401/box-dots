@@ -5,21 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config import WALLPAPERS_DIR, WALLPAPERS_OUT_DIR, WALLPAPERS_THUMB_DIR
+
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
-
-
-def load_config() -> dict[str, str]:
-    config_path = Path(__file__).parent.parent / "config.sh"
-    result = subprocess.run(
-        ["bash", "-c", f'set -a && . "{config_path}" && env -0'],
-        capture_output=True, text=True,
-    )
-    env = {}
-    for entry in result.stdout.split("\0"):
-        k, _, v = entry.partition("=")
-        if k:
-            env[k] = v
-    return env
 
 
 def get_resolution() -> str | None:
@@ -42,10 +31,9 @@ def magick(*args: str) -> None:
 
 
 def main() -> None:
-    config = load_config()
-    wallpapers_dir = Path(config["WALLPAPERS_DIR"])
-    out_dir = Path(config["WALLPAPERS_OUT_DIR"])
-    thumb_dir = Path(config["WALLPAPERS_THUMB_DIR"])
+    wallpapers_dir = WALLPAPERS_DIR
+    out_dir = WALLPAPERS_OUT_DIR
+    thumb_dir = WALLPAPERS_THUMB_DIR
 
     out_dir.mkdir(parents=True, exist_ok=True)
     thumb_dir.mkdir(parents=True, exist_ok=True)

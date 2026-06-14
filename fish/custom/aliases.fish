@@ -9,3 +9,5 @@ alias .. 'cd ..'
 alias ... 'cd ../..'
 alias .... 'cd ../../..'
 alias update 'sudo pacman -Syu && hyprpm update && hyprpm reload'
+alias 'back' 'cd -'
+alias ff fastfetch

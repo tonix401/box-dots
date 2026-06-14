@@ -41,3 +41,11 @@ output_path = "~/.config/hypr/colors-hyprlock.conf"
 input_path = "~/.config/matugen/templates/colors.fish"
 output_path = "~/.config/fish/colors.fish"
 post_hook = "fish -c 'set -U theme_changed (random)'"
+
+[templates.arch-svg]
+input_path = "~/.config/matugen/templates/arch.svg"
+output_path = "~/.config/fastfetch/arch.svg"
+
+[templates.colors-fastfetch]
+input_path = "~/.config/matugen/templates/colors-fastfetch.jsonc"
+output_path = "~/.config/fastfetch/config.jsonc"
