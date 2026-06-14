@@ -48,4 +48,4 @@ Rofi menu and rofimoji, (SUPER + .)
 
 ### App launcher
 
-![app launcher](reasources/app-launcher.png)
+![app launcher](resources/app-launcher.png)
