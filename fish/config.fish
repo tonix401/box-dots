@@ -31,9 +31,3 @@ fish_add_path ~/.local/bin
 
 # The standard GOPATH is $HOME/go, but I prefer to keep it in .go because it trashes my home directory less
 export GOPATH="$HOME/.go"
-
-# Aliases for ranger in kitty
-alias icat 'kitten icat'
-alias s 'kitten ssh'
-
-# set -gx RANGER_LOAD_DEFAULT_RC false

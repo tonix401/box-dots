@@ -1,0 +1,1 @@
+set primary "\e[38;2;{{ colors.primary.dark.red }};{{ colors.primary.dark.green }};{{ colors.primary.dark.blue }}m"

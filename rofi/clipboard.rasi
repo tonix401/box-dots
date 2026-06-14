@@ -29,21 +29,17 @@ mainbox {
 }
 
 inputbar {
-    children:           [ prompt, entry ];
+    children:           [ entry ];
     spacing:            8px;
     padding:            10px 14px;
     border-radius:      8px;
-    background-color:   @surface-container-high;
-    text-color:         @on-surface;
-}
-
-prompt {
+    background-color:   transparent;
     text-color:         @primary;
-    vertical-align:     0.5;
 }
 
 entry {
-    text-color:         @on-surface;
+    text-color:         @primary;
+    background-color:   transparent;
     vertical-align:     0.5;
     placeholder:        "Search clipboard...";
     placeholder-color:  @on-surface-variant;
@@ -68,30 +64,25 @@ scrollbar {
 }
 
 element {
-    padding:            9px 14px;
+    padding:            12px 16px;
     border-radius:      8px;
     orientation:        horizontal;
     children:           [ element-text ];
     spacing:            0;
+    background-color:   transparent;
+}
+
+element.selected {
+    background-color:   @primary;
 }
 
 element-text {
     vertical-align:     0.5;
     expand:             true;
-    highlight:          none;
-}
-
-element.normal.normal {
     background-color:   transparent;
     text-color:         @primary;
 }
 
-element.selected.normal {
-    background-color:   @primary;
+element-text.selected {
     text-color:         @on-primary;
-}
-
-element.urgent.normal {
-    background-color:   @secondary-container;
-    text-color:         @on-secondary-container;
 }

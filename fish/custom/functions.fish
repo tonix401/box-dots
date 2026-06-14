@@ -1,8 +1,6 @@
-function fish_greeting
-end
+source ~/.config/fish/colors.fish
 
-function ranger
-    command ranger $argv
+function fish_greeting
 end
 
 function cow
@@ -78,7 +76,6 @@ function vscode_greeting
 end
 
 function kitty_greeting
-    set primary "\e[38;2;0;120;215m"
     set bold "\e[1m"
     set reset "\e[0m"
 
@@ -89,10 +86,16 @@ function kitty_greeting
 end
 
 function tmux_greeting
-    set primary "\e[38;2;0;120;215m"
     set bold "\e[1m"
     set reset "\e[0m"          
     printf "\n$primary$bold          ▄▄▄▄▄▄ ▄▄   ▄▄ ▄▄ ▄▄ ▄▄ ▄▄$reset\n"
     printf "$primary$bold            ██   ██▀▄▀██ ██ ██ ▀█▄█▀$reset\n"
     printf "$primary$bold            ██   ██   ██ ▀███▀ ██ ██$reset\n\n"
+end
+
+function on_theme_change --on-variable theme_changed
+    # This function will be called after the colors.fish file is regenerated
+    # You can add any commands here that should run after the theme changes
+    # For example, you could clear the terminal to see the new colors immediately:
+    source ~/.config/fish/colors.fish
 end

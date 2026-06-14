@@ -64,4 +64,4 @@ hl.bind("SUPER + P",         exec("~/.config/hypr/scripts/rofi/wallpaper-menu.sh
 hl.bind("SUPER + L",         exec("hyprlock"))
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
-hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot"))
+hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot.sh"))

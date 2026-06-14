@@ -2,17 +2,6 @@
 reload_apps = false
 caching = true
 
-# Standard ANSI terminal colors, harmonized with the wallpaper source color.
-# In templates: colors.red_container.dark.hex (darker, for color1)
-#               colors.red.dark.hex           (brighter, for color9)
-[config.custom_colors]
-red     = { color = "#cc0403", blend = true }
-green   = { color = "#19cb00", blend = true }
-yellow  = { color = "#cecb00", blend = true }
-blue    = { color = "#0d73cc", blend = true }
-magenta = { color = "#cb1ed1", blend = true }
-cyan    = { color = "#0dcdcd", blend = true }
-
 [config.wallpaper]
 set = true
 command = "awww img --transition-type random '{{ image }}' && ~/.config/hypr/scripts/helpers/update-current-wallpaper.py '{{ image }}'"
@@ -47,3 +36,8 @@ post_hook = "kill -SIGUSR2 $(pidof kitty) 2>/dev/null || true"
 [templates.colors-hyprlock-conf]
 input_path = "~/.config/matugen/templates/colors-hyprlock.conf"
 output_path = "~/.config/hypr/colors-hyprlock.conf"
+
+[templates.colors-fish]
+input_path = "~/.config/matugen/templates/colors.fish"
+output_path = "~/.config/fish/colors.fish"
+post_hook = "fish -c 'set -U theme_changed (random)'"
