@@ -1,4 +1,8 @@
-# Packages that need to be installed for these configs to work (maybe not complete)
+# Box Dots
+
+My hyprland configs with automatic wallpaper theming and rofi menus
+
+### Packages that need to be installed for these configs to work (maybe not complete)
 power-profiles-daemon \
 rofi \
 rofimoji \
