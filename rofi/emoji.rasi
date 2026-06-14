@@ -1,9 +1,9 @@
 @import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
+    scroll-method:      1;
     sidebar-mode:       false;
     show-icons:         false;
-    scroll-method: 1;
 }
 
 * {
@@ -11,36 +11,36 @@ configuration {
 }
 
 window {
+    padding:            0;
+    border:             2px;
+    border-radius:      12px;
     width:              540px;
     location:           center;
     anchor:             center;
-    background-color:   @background;
-    border:             2px;
     border-color:       @primary;
-    border-radius:      12px;
-    padding:            0;
+    background-color:   @background;
 }
 
 mainbox {
-    background-color:   transparent;
-    padding:            10px;
     spacing:            8px;
+    padding:            10px;
+    background-color:   transparent;
     children:           [ inputbar, listview ];
 }
 
 inputbar {
-    children:           [ entry ];
     spacing:            8px;
-    padding:            10px 14px;
     border-radius:      8px;
-    background-color:   transparent;
     text-color:         @primary;
+    children:           [ entry ];
+    padding:            10px 14px;
+    background-color:   transparent;
 }
 
 entry {
+    vertical-align:     0.5;
     text-color:         @primary;
     background-color:   transparent;
-    vertical-align:     0.5;
     placeholder:        "Search emoji...";
     placeholder-color:  @on-surface-variant;
 }
@@ -48,19 +48,19 @@ entry {
 listview {
     columns:            1;
     lines:              12;
+    spacing:            2px;
     fixed-height:       true;
     scrollbar:          false;
-    spacing:            2px;
     background-color:   transparent;
 }
 
 element {
-    padding:            12px 16px;
-    border-radius:      8px;
-    orientation:        horizontal;
-    children:           [ element-text ];
     spacing:            0;
+    border-radius:      8px;
+    padding:            12px 16px;
+    orientation:        horizontal;
     background-color:   transparent;
+    children:           [ element-text ];
 }
 
 element.selected {
@@ -70,8 +70,8 @@ element.selected {
 element-text {
     vertical-align:     0.5;
     expand:             true;
-    background-color:   transparent;
     text-color:         @primary;
+    background-color:   transparent;
 }
 
 element-text.selected {

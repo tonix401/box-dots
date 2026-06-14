@@ -13,6 +13,8 @@
 !starship.toml
 !.gitignore
 !README.md
+!gtk-3.0
+!gtk-4.0
 
 *.save
 *.bak.*

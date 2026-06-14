@@ -1,11 +1,11 @@
 @import "~/.config/rofi/themes/matugen.rasi"
 
 configuration {
-    modi:               "drun";
-    sidebar-mode:       false;
+    scroll-method:      1;
     show-icons:         true;
-    drun-display-format: "{name}";
-    scroll-method: 1;
+    sidebar-mode:       false;
+    modi:               "drun";
+    drun-display-format:"{name}";
 }
 
 * {
@@ -13,36 +13,36 @@ configuration {
 }
 
 window {
+    padding:            0;
+    border:             2px;
+    border-radius:      12px;
     width:              580px;
     location:           center;
     anchor:             center;
-    background-color:   @background;
-    border:             2px;
     border-color:       @primary;
-    border-radius:      12px;
-    padding:            0;
+    background-color:   @background;
 }
 
 mainbox {
-    background-color:   transparent;
-    padding:            10px;
     spacing:            8px;
+    padding:            10px;
+    background-color:   transparent;
     children:           [ inputbar, listview ];
 }
 
 inputbar {
-    children:           [ entry ];
     spacing:            8px;
-    padding:            10px 14px;
     border-radius:      8px;
-    background-color:   transparent;
     text-color:         @primary;
+    children:           [ entry ];
+    padding:            10px 14px;
+    background-color:   transparent;
 }
 
 entry {
+    vertical-align:     0.5;
     text-color:         @primary;
     background-color:   transparent;
-    vertical-align:     0.5;
     placeholder:        "Search apps...";
     placeholder-color:  @on-surface-variant;
 }
@@ -57,27 +57,27 @@ listview {
 }
 
 element {
-    padding:            9px 12px;
     border-radius:      8px;
-    background-color:   transparent;
-    orientation:        horizontal;
-    children:           [ element-icon, element-text ];
     spacing:            12px;
+    padding:            9px 12px;
+    orientation:        horizontal;
+    background-color:   transparent;
+    children:           [ element-icon, element-text ];
 }
 
 element-icon {
-    size:               1.4em;
     vertical-align:     0.5;
-    background-color:   transparent;
     border-radius:      6px;
     padding:            4px;
+    size:               1.4em;
+    background-color:   transparent;
 }
 
 element-text {
     vertical-align:     0.5;
     expand:             true;
-    background-color:   transparent;
     text-color:         @primary;
+    background-color:   transparent;
 }
 
 element-icon.selected {
