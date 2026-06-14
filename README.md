@@ -12,6 +12,8 @@ matugen
 
 ### Wallpapers and theme generation flow with matugen and rofi
 
+![wallpaper picker](resources/wallpaper-picker.png)
+
 Wallpapers from ~/Pictures/Wallpapers are processed into previews and the right resolution and then shown in a rofi menu with a shortcut (SUPER + P)
 
 - hypr/keybinds.lua 
@@ -19,6 +21,8 @@ Wallpapers from ~/Pictures/Wallpapers are processed into previews and the right 
 - ~/.cache/box-dots: cached previews and formatted wallpapers for faster load
 
 ### Clipboard with history
+
+![clipboard history](resources/clipboard-history.png)
 
 Copy and paste with history, accessible through rofi menu (SUPER + V)
 
@@ -28,6 +32,8 @@ Copy and paste with history, accessible through rofi menu (SUPER + V)
 - rofi/clipboard.rasi: layout for the 
 
 ### Emoji Selection
+
+![emoji picker](resources/emoji-picker.png)
 
 Rofi menu and rofimoji, (SUPER + .)
 

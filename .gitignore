@@ -1,6 +1,7 @@
 # Ignore all files by default
 /*
 
+# configs
 !btop
 !fastfetch
 !fish
@@ -11,10 +12,13 @@
 !waybar
 !wlogout
 !starship.toml
-!.gitignore
-!README.md
 !gtk-3.0
 !gtk-4.0
+
+# repo stuff
+!README.md
+!resources
+!.gitignore
 
 *.save
 *.bak.*
