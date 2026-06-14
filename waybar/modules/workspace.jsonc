@@ -9,24 +9,23 @@
     "window-rewrite": {
       // --- Work ---
       "kitty": "󰆍",
-      "onlyoffice": "󰏆",
       "firefox": "",
+      "chromium": "",
       "code": "󰨞",
-      "azahar": "",
       "obsidian": "󰹕",
       "mousepad": "󱓧",
       // --- Apps ---
       "discord": "",
       "spotify": "",
-      "org.kde.kdeconnect.app": "󰦉",
-      "org.qbittorrent.qBittorrent": "󰘿",
       // --- Graphics & Visual ---
-      "xdg-desktop-portal-gtk": "",
       "nemo": "",
       "yazi": "󰇥",
       "imv": "󰄄",
+      "inkscape": "",
+      "gimp": "",
+      "pinta": "",
+      "kdenlive": "󰎁",
       "swappy": "󰄄",
-      "org.gnome.FileRoller": "",
       "vlc": "󰕼",
       "mpv": "󰕼",
       // --- System ---

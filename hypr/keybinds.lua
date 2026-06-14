@@ -65,3 +65,4 @@ hl.bind("SUPER + L",         exec("hyprlock"))
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
 hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot.sh"))
+hl.bind("SHIFT + SUPER + C", exec("hyprpicker | wl-copy"))
