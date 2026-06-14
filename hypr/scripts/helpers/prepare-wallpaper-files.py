@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import hashlib
 import json
 import subprocess
 import sys
@@ -12,7 +11,7 @@ EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
 def load_config() -> dict[str, str]:
     config_path = Path(__file__).parent.parent / "config.sh"
     result = subprocess.run(
-        ["bash", "-c", f'. "{config_path}" && env -0'],
+        ["bash", "-c", f'set -a && . "{config_path}" && env -0'],
         capture_output=True, text=True,
     )
     env = {}
@@ -38,11 +37,6 @@ def get_resolution() -> str | None:
     return None
 
 
-def thumb_hash(path: Path) -> str:
-    # Match bash: md5sum <<< "$path" adds a trailing newline
-    return hashlib.md5((str(path) + "\n").encode()).hexdigest()
-
-
 def magick(*args: str) -> None:
     subprocess.run(["magick", *args], check=True)
 
@@ -63,7 +57,6 @@ def main() -> None:
     sources = sorted(p for p in wallpapers_dir.iterdir() if p.is_file() and p.suffix.lower() in EXTENSIONS)
 
     valid_stems = {p.stem for p in sources}
-    valid_thumb_hashes = {thumb_hash(p) for p in sources}
 
     for dest in out_dir.glob("*.png"):
         if dest.stem not in valid_stems:
@@ -71,11 +64,11 @@ def main() -> None:
             dest.unlink()
 
     for thumb in thumb_dir.glob("*.png"):
-        if thumb.stem not in valid_thumb_hashes:
+        if thumb.stem not in valid_stems:
             thumb.unlink()
 
     for src in sources:
-        thumb = thumb_dir / f"{thumb_hash(src)}.png"
+        thumb = thumb_dir / f"{src.stem}.png"
 
         if resolution:
             dest = out_dir / f"{src.stem}.png"

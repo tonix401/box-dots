@@ -15,9 +15,9 @@ window {
     location:           center;
     anchor:             center;
     background-color:   @background;
-    border:             2px;
     border-color:       @primary;
     border-radius:      12px;
+    border:             2px;
     padding:            0;
 }
 
@@ -25,20 +25,20 @@ mainbox {
     background-color:   transparent;
     orientation:        horizontal;
     padding:            10px;
-    spacing:            0;
-    children:           [ listview ];
+    spacing:            10px;
+    children:           [ image, listview ];
 }
 
 image {
-    size:               120px;
+    background-color:   transparent;
     border-radius:      8px;
-    background-image:   url("~/.cache/matugen/current-wallpaper", width);
+    background-image:   url("~/.cache/box-dots/current/wallpaper-square.png", width);
 }
 
 listview {
     columns:            1;
-    fixed-height:       false;
     scrollbar:          false;
+    fixed-height:       false;
     spacing:            2px;
     background-color:   transparent;
 }

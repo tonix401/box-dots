@@ -2,9 +2,20 @@
 reload_apps = false
 caching = true
 
+# Standard ANSI terminal colors, harmonized with the wallpaper source color.
+# In templates: colors.red_container.dark.hex (darker, for color1)
+#               colors.red.dark.hex           (brighter, for color9)
+[config.custom_colors]
+red     = { color = "#cc0403", blend = true }
+green   = { color = "#19cb00", blend = true }
+yellow  = { color = "#cecb00", blend = true }
+blue    = { color = "#0d73cc", blend = true }
+magenta = { color = "#cb1ed1", blend = true }
+cyan    = { color = "#0dcdcd", blend = true }
+
 [config.wallpaper]
 set = true
-command = "awww img --transition-type random '{{ image }}' && echo '{{ image }}' > ~/.cache/box-dots/current-wallpaper"
+command = "awww img --transition-type random '{{ image }}' && ~/.config/hypr/scripts/helpers/update-current-wallpaper.py '{{ image }}'"
 
 [templates.colors-hypr-lua]
 input_path = "~/.config/matugen/templates/colors-hypr.lua"
@@ -32,3 +43,7 @@ output_path = "~/.config/rofi/themes/matugen.rasi"
 input_path = "~/.config/matugen/templates/colors-kitty.conf"
 output_path = "~/.config/kitty/colors.conf"
 post_hook = "kill -SIGUSR2 $(pidof kitty) 2>/dev/null || true"
+
+[templates.colors-hyprlock-conf]
+input_path = "~/.config/matugen/templates/colors-hyprlock.conf"
+output_path = "~/.config/hypr/colors-hyprlock.conf"

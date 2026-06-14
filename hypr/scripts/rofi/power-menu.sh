@@ -9,14 +9,14 @@ logout="󰍃  Log out"
 reboot="󰜉  Reboot"
 shutdown="󰐥  Shutdown"
 firmware="󰍛  Reboot into UEFI"
-killall="󰍃  Kill all open windows"
+killall="󱚡  Kill open Apps"
 
 chosen=$(printf '%s\n' "$lock" "$logout" "$reboot" "$firmware" "$shutdown" "$killall" \
     | rofi -dmenu -p "Power" -theme "$ROFI_THEME_POWER") || exit 0
 
 case "$chosen" in
-    "$lock")      loginctl lock-session ;;
-    "$logout")    loginctl terminate-session "" ;;
+    "$lock")      hyprlock ;;
+    "$logout")    hyprshutdown -vt 2;;
     "$reboot")    systemctl reboot ;;
     "$firmware")  systemctl reboot --firmware-setup ;;
     "$shutdown")  systemctl poweroff ;;

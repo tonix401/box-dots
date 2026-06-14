@@ -17,7 +17,7 @@ gen_entries() {
     for src in "${paths[@]}"; do
         base=$(basename "$src")
         name="${base%.*}"
-        thumb="$WALLPAPERS_THUMB_DIR/$(md5sum <<< "$src" | cut -d' ' -f1).png"
+        thumb="$WALLPAPERS_THUMB_DIR/${name}.png"
         printf '%s\0icon\x1f%s\n' "$name" "$thumb"
     done
 }
