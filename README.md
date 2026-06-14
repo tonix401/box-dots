@@ -38,3 +38,14 @@ Copy and paste with history, accessible through rofi menu (SUPER + V)
 Rofi menu and rofimoji, (SUPER + .)
 
 - hypr/scripts/emoji-picker.sh + rofi/emoji.rasi
+
+
+### Power menu
+
+![power menu](resources/power-menu.png)
+
+- hypr/scripts and rofi
+
+### App launcher
+
+![app launcher](reasources/app-launcher.png)
