@@ -76,13 +76,19 @@ function vscode_greeting
 end
 
 function kitty_greeting
-    set bold "\e[1m"
-    set reset "\e[0m"
+    set -l choice (random 1 3)
 
-    printf "$primary$bold  _._     _,-'\"\"`-._       $reset\n"
-    printf "$primary$bold (,-.`._,'(       |\\`-/|    $reset\n"
-    printf "$primary$bold     `-.-' \ )-` (, o o)     $reset\n"
-    printf "$primary$bold            `-   \`_`\"'-    $reset\n"
+    switch $choice
+        case 1
+            kitten icat --place 16x8@4x0 --align left ~/.config/fish/images/cat.svg
+            printf "\n\n\n\n\n\n"
+        case 2
+            kitten icat --place 13x9@4x0 --align left ~/.config/fish/images/fat-cat.svg
+            printf "\n\n\n\n\n"
+        case 3
+            kitten icat --place 19x10@4x0 --align left ~/.config/fish/images/penguin.svg
+            printf "\n\n\n"
+    end
 end
 
 function tmux_greeting
@@ -98,4 +104,8 @@ function on_theme_change --on-variable theme_changed
     # You can add any commands here that should run after the theme changes
     # For example, you could clear the terminal to see the new colors immediately:
     source ~/.config/fish/colors.fish
+end
+
+function hello
+    printf "Hello, $USER!\n"
 end

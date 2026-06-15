@@ -46,6 +46,18 @@ post_hook = "fish -c 'set -U theme_changed (random)'"
 input_path = "~/.config/matugen/templates/arch.svg"
 output_path = "~/.config/fastfetch/arch.svg"
 
+[templates.cat-svg]
+input_path = "~/.config/matugen/templates/cat.svg"
+output_path = "~/.config/fish/images/cat.svg"
+
+[templates.fat-cat-svg]
+input_path = "~/.config/matugen/templates/fat-cat.svg"
+output_path = "~/.config/fish/images/fat-cat.svg"
+
+[templates.penguin-svg]
+input_path = "~/.config/matugen/templates/penguin.svg"
+output_path = "~/.config/fish/images/penguin.svg"
+
 [templates.colors-fastfetch]
 input_path = "~/.config/matugen/templates/colors-fastfetch.jsonc"
 output_path = "~/.config/fastfetch/config.jsonc"

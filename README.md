@@ -53,3 +53,9 @@ Rofi menu and rofimoji, (SUPER + .)
 ### App launcher
 
 ![app launcher](resources/app-launcher.png)
+
+### Cute pets in the terminal
+
+- random pet when opening kitty, or with the command "c"
+
+![terminal pet](resources/random-terminal-pet.png)
