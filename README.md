@@ -30,10 +30,12 @@ Wallpapers from ~/Pictures/Wallpapers are processed into previews and the right 
 
 Copy and paste with history, accessible through rofi menu (SUPER + V)
 
+Preview for images and colors
+
 - hypr/exec.lua: Initialize cliphist and wcopy
 - hypr/keybinds.lua: menu key bind
 - hypr/scripts/clipboard-history-menu.sh: run the clipboard history menu
-- rofi/clipboard.rasi: layout for the 
+- rofi/clipboard.rasi: layout
 
 ### Emoji Selection
 
