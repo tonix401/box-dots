@@ -2,41 +2,41 @@
 
 * {
     /* Material Design 3 semantic names */
-    surface:                        #111418;
-    on-surface:                     #e1e2e8;
-    on-surface-variant:             #c3c6cf;
-    surface-container-high:         #272a2f;
-    primary:                        #a1cafd;
-    on-primary:                     #003259;
-    secondary:                      #bbc7db;
-    on-secondary:                   #253140;
-    secondary-container:            #3b4858;
-    on-secondary-container:         #d7e3f8;
+    surface:                        #101418;
+    on-surface:                     #e0e2e8;
+    on-surface-variant:             #c2c7cf;
+    surface-container-high:         #272a2e;
+    primary:                        #9accfa;
+    on-primary:                     #003352;
+    secondary:                      #b8c8da;
+    on-secondary:                   #233240;
+    secondary-container:            #394857;
+    on-secondary-container:         #d4e4f6;
     error:                          #ffb4ab;
     on-error:                       #690005;
 
     /* Standard rofi color role mappings */
-    background:                     #111418;
-    foreground:                     #e1e2e8;
+    background:                     #101418;
+    foreground:                     #e0e2e8;
 
     normal-background:              transparent;
-    normal-foreground:              #e1e2e8;
+    normal-foreground:              #e0e2e8;
     alternate-normal-background:    transparent;
-    alternate-normal-foreground:    #c3c6cf;
-    selected-normal-background:     #a1cafd;
-    selected-normal-foreground:     #003259;
+    alternate-normal-foreground:    #c2c7cf;
+    selected-normal-background:     #9accfa;
+    selected-normal-foreground:     #003352;
 
-    urgent-background:              #272a2f;
-    urgent-foreground:              #e1e2e8;
-    alternate-urgent-background:    #272a2f;
-    alternate-urgent-foreground:    #e1e2e8;
+    urgent-background:              #272a2e;
+    urgent-foreground:              #e0e2e8;
+    alternate-urgent-background:    #272a2e;
+    alternate-urgent-foreground:    #e0e2e8;
     selected-urgent-background:     #ffb4ab;
     selected-urgent-foreground:     #690005;
 
-    active-background:              #3b4858;
-    active-foreground:              #d7e3f8;
-    alternate-active-background:    #3b4858;
-    alternate-active-foreground:    #d7e3f8;
-    selected-active-background:     #bbc7db;
-    selected-active-foreground:     #253140;
+    active-background:              #394857;
+    active-foreground:              #d4e4f6;
+    alternate-active-background:    #394857;
+    alternate-active-foreground:    #d4e4f6;
+    selected-active-background:     #b8c8da;
+    selected-active-foreground:     #233240;
 }

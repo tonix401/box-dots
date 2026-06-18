@@ -13,7 +13,7 @@ configuration {
 
 window {
     width:              720px;
-    height:             756px;
+    height:             715px;
     location:           center;
     anchor:             center;
     border:             2px;
@@ -28,7 +28,25 @@ mainbox {
     orientation:        horizontal;
     padding:            10px;
     spacing:            8px;
-    children:           [ listview ];
+    orientation:        vertical;
+    children:           [ inputbar, listview ];
+}
+
+inputbar {
+    spacing:            8px;
+    border-radius:      8px;
+    text-color:         @primary;
+    children:           [ entry ];
+    padding:            10px 14px;
+    background-color:   transparent;
+}
+
+entry {
+    vertical-align:     0.5;
+    text-color:         @primary;
+    background-color:   transparent;
+    placeholder:        "Search wallpaper...";
+    placeholder-color:  @on-surface-variant;
 }
 
 listview {

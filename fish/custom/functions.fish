@@ -76,7 +76,7 @@ function vscode_greeting
 end
 
 function kitty_greeting
-    set -l choice (random 1 3)
+    set -l choice (random 1 2) # I dont like the penguin enough, but you can add it by changing the 2 to a 3
 
     switch $choice
         case 1
@@ -100,9 +100,6 @@ function tmux_greeting
 end
 
 function on_theme_change --on-variable theme_changed
-    # This function will be called after the colors.fish file is regenerated
-    # You can add any commands here that should run after the theme changes
-    # For example, you could clear the terminal to see the new colors immediately:
     source ~/.config/fish/colors.fish
 end
 

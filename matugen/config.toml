@@ -4,7 +4,11 @@ caching = true
 
 [config.wallpaper]
 set = true
-command = "awww img --transition-type random '{{ image }}' && ~/.config/hypr/scripts/helpers/update-current-wallpaper.py '{{ image }}'"
+command = """
+        awww img --transition-type grow \
+                 --transition-duration 1.8 '{{ image }}' && \
+        ~/.config/hypr/scripts/helpers/update-current-wallpaper.py '{{ image }}'
+    """
 
 [templates.colors-hypr-lua]
 input_path = "~/.config/matugen/templates/colors-hypr.lua"

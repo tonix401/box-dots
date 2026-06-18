@@ -12,7 +12,8 @@ awww \
 grimblast \
 cliphist \
 wtype \
-matugen
+matugen \
+python-pyvips
 
 ### Wallpapers and theme generation flow with matugen and rofi
 
