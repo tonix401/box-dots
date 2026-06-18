@@ -6,7 +6,7 @@
 >
   <style>
     .stroke {
-      stroke: #9accfa;
+      stroke: #b8c4ff;
       stroke-width: 2;
       stroke-linecap: round;
       stroke-dasharray: none;
@@ -20,7 +20,7 @@
       stroke-linejoin: round;
     }
     .filled {
-      fill: #9accfa;
+      fill: #b8c4ff;
       fill-opacity: 1;
     }
     .ear {

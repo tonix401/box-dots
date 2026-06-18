@@ -9,11 +9,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import ROFI_THEME_POWER
 
 OPTIONS = [
-    ("󰌾  Lock",             ["hyprlock"]),
-    ("󰍃  Log out",          ["hyprshutdown", "-vt", "2"]),
+    ("󰐥  Shutdown",         ["systemctl", "poweroff"]),
     ("󰜉  Reboot",           ["systemctl", "reboot"]),
     ("󰍛  Reboot into UEFI", ["systemctl", "reboot", "--firmware-setup"]),
-    ("󰐥  Shutdown",         ["systemctl", "poweroff"]),
+    ("󰌾  Lock",             ["hyprlock"]),
+    ("󰍃  Log out",          ["hyprshutdown", "-vt", "2"]),
     ("󱚡  Kill open Apps",   None),
 ]
 

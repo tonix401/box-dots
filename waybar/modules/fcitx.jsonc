@@ -1,0 +1,8 @@
+{
+  "custom/fcitx": {
+    "exec": "~/.config/waybar/scripts/fcitx.sh",
+    "interval": 1,
+    "format": "{}",
+    "tooltip": false
+  }
+}

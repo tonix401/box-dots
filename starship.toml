@@ -35,20 +35,20 @@ $line_break$character"""
 palette = 'matugen'
 
 [palettes.matugen]
-color_success = '#9accfa'
+color_success = '#b8c4ff'
 color_error = '#ffb4ab'
-color_bg0 = '#9accfa'
-color_fg0 = '#003352'
-color_bg1 = '#b8c8da'
-color_fg1 = '#233240'
-color_bg2 = '#d2bfe7'
-color_fg2 = '#382a4a'
-color_bg3 = '#313539'
-color_fg3 = '#e0e2e8'
-color_bg4 = '#1c2024'
-color_fg4 = '#e0e2e8'
-color_bg5 = '#181c20'
-color_fg5 = '#e0e2e8'
+color_bg0 = '#b8c4ff'
+color_fg0 = '#1f2d61'
+color_bg1 = '#c2c5dd'
+color_fg1 = '#2c2f42'
+color_bg2 = '#e4bad9'
+color_fg2 = '#43273f'
+color_bg3 = '#34343a'
+color_fg3 = '#e3e1e9'
+color_bg4 = '#1f1f25'
+color_fg4 = '#e3e1e9'
+color_bg5 = '#1a1b21'
+color_fg5 = '#e3e1e9'
 
 [os]
 disabled = false

@@ -9,6 +9,7 @@
     "./modules/system.jsonc",
     "./modules/power-profiles-daemon.jsonc",
     "./modules/workspace.jsonc",
+    "./modules/fcitx.jsonc",
     "./modules/idle-ihibitor.jsonc",
     "./modules/audio.jsonc",
     "./modules/connections.jsonc",
@@ -24,6 +25,7 @@
   "modules-center": [
     "power-profiles-daemon",
     "hyprland/workspaces",
+    "custom/fcitx",
     "idle_inhibitor"
   ],
   "modules-right": [

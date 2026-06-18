@@ -8,7 +8,7 @@
 hl.env("XCURSOR_THEME",         "Bibata-Modern-Classic")
 hl.env("XCURSOR_SIZE",          "24")
 hl.env("HYPRCURSOR_SIZE",       "24")
-hl.env("QT_QPA_PLATFORMTHEME",  "gtk2")
+hl.env("QT_QPA_PLATFORMTHEME",  "gtk4")
 hl.env("QT_QPA_PLATFORMTHEME_QT6", "gtk4")
 hl.env("GTK_THEME",             "Adwaita:dark")
 

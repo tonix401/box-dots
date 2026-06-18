@@ -65,3 +65,8 @@ output_path = "~/.config/fish/images/penguin.svg"
 [templates.colors-fastfetch]
 input_path = "~/.config/matugen/templates/colors-fastfetch.jsonc"
 output_path = "~/.config/fastfetch/config.jsonc"
+
+[templates.fcitx5-theme]
+input_path = "~/.config/matugen/templates/fcitx5-theme.conf"
+output_path = "~/.local/share/fcitx5/themes/matugen/theme.conf"
+post_hook = "fcitx5 -r"
