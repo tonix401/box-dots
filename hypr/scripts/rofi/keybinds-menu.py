@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -48,7 +49,40 @@ if not binds:
     subprocess.run(["notify-send", "Keybinds", "No keybinds with descriptions found"])
     sys.exit(0)
 
-entries = [(b["description"], build_combo(b)) for b in binds]
+def collapse_numbered(entries):
+    groups = {}
+    singles = []
+    order = []
+
+    for desc, combo in entries:
+        dm = re.fullmatch(r'(.+)\s+(\d)', desc)
+        cm = re.fullmatch(r'(.+ \+) (\d)', combo)
+        if dm and cm and dm.group(2) == cm.group(2):
+            key = (dm.group(1), cm.group(1))
+            if key not in groups:
+                groups[key] = []
+                order.append(('group', key))
+            groups[key].append(int(dm.group(2)))
+        else:
+            order.append(('single', len(singles)))
+            singles.append((desc, combo))
+
+    result = []
+    for kind, key in order:
+        if kind == 'single':
+            result.append(singles[key])
+        else:
+            digits = sorted(groups[key])
+            desc_prefix, combo_prefix = key
+            if len(digits) > 1 and digits == list(range(digits[0], digits[-1] + 1)):
+                r = f"[{digits[0]}-{digits[-1]}]"
+                result.append((f"{desc_prefix} {r}", f"{combo_prefix} {r}"))
+            else:
+                for d in digits:
+                    result.append((f"{desc_prefix} {d}", f"{combo_prefix} {d}"))
+    return result
+
+entries = collapse_numbered([(b["description"], build_combo(b)) for b in binds])
 
 pad = max(len(desc) for desc, _ in entries) + 4
 lines = [f"{desc.ljust(pad)}{combo}" for desc, combo in entries]

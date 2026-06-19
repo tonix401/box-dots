@@ -6,7 +6,8 @@ local function exec(cmd) return hl.dsp.exec_cmd(cmd) end
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(),   { mouse = true, desc = "Drag window" })
 hl.bind("SUPER + mouse:274", hl.dsp.window.drag(),   { mouse = true, desc = "Drag window" })
 hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true, desc = "Resize window" })
-
+hl.bind("SUPER + SHIFT + COMMA", hl.dsp.window.resize(), { mouse = false, desc = "Resize window left" })
+hl.bind("SUPER + SHIFT + PERIOD", hl.dsp.window.resize(), { mouse = false, desc = "Resize window right" })
 -- Focus direction
 hl.bind("SUPER + Left",  hl.dsp.focus({ direction = "left"  }), { desc = "Focus window left" })
 hl.bind("SUPER + Right", hl.dsp.focus({ direction = "right" }), { desc = "Focus window right" })
@@ -19,9 +20,9 @@ hl.bind("SUPER + ALT + Q", exec("hyprctl kill"),   { desc = "Kill window (pick w
 
 -- Float / fullscreen / pin
 hl.bind("SUPER + ALT + T", hl.dsp.window.float({ action = "toggle" }),             { desc = "Toggle floating" })
-hl.bind("SUPER + F",       hl.dsp.window.fullscreen({ internal = 3, client = 3 }), { desc = "Toggle fullscreen" })
-hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen({ internal = 0, client = 3 }), { desc = "Toggle fullscreen (fake)" })
-hl.bind("SUPER + P",       hl.dsp.window.pin(),                                     { desc = "Pin window" })
+hl.bind("SUPER + F",       hl.dsp.window.fullscreen(), { internal = 3, client = 3, desc = "Toggle fullscreen" })
+hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen(), { internal = 0, client = 3, desc = "Toggle fullscreen (fake)" })
+hl.bind("SUPER + P",       hl.dsp.window.pin(),                                    { desc = "Pin window" })
 
 -- ── Workspace ─────────────────────────────────────────────────────────────────
 
@@ -42,9 +43,12 @@ hl.bind("SUPER + mouse:275", hl.dsp.workspace.toggle_special("scratchpad"),     
 hl.bind("SUPER + ALT + S",  hl.dsp.window.move({ workspace = "special:scratchpad", follow = false }), { desc = "Send window to scratchpad" })
 
 -- ── Media ─────────────────────────────────────────────────────────────────────
-
 local nextTrack = [[playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"`]]
 hl.bind("XF86AudioNext",  exec(nextTrack),              { locked = true, desc = "Next track" })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
 hl.bind("XF86AudioPrev",  exec("playerctl previous"),   { locked = true, desc = "Previous track" })
 hl.bind("XF86AudioPlay",  exec("playerctl play-pause"), { locked = true, desc = "Play / pause" })
 hl.bind("XF86AudioPause", exec("playerctl play-pause"), { locked = true, desc = "Play / pause" })
@@ -67,3 +71,15 @@ hl.bind("SUPER + L",      exec("hyprlock"),                                     
 -- ─── Utils ────────────────────────────────────────────────────────────────────
 hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot.py"), { desc = "Screenshot" })
 hl.bind("SHIFT + SUPER + C", exec("hyprpicker | wl-copy"),                  { desc = "Pick color to clipboard" })
+
+
+hl.bind("SUPER + TAB", function() hl.plugin.hyprexpo.expo("toggle") end, { desc = "Toggle workspace overview" })
+
+hl.define_submap("hyprexpo", function()
+    hl.bind("left",     function() hl.plugin.hyprexpo.kb_focus("left") end)
+    hl.bind("right",  function() hl.plugin.hyprexpo.kb_focus("right") end)
+    hl.bind("up",   function() hl.plugin.hyprexpo.kb_focus("up") end)
+    hl.bind("down",   function() hl.plugin.hyprexpo.kb_focus("down") end)
+    hl.bind("return", function() hl.plugin.hyprexpo.kb_confirm() end)
+    hl.bind("escape", function() hl.plugin.hyprexpo.expo("cancel") end)
+end)

@@ -12,8 +12,13 @@ awww \
 grimblast \
 cliphist \
 wtype \
+wl-clipboard \
 matugen \
 python-pyvips
+
+hyprpm add https://github.com/sandwichfarm/hyprexpo
+hyprpm enable hyprexpo
+hyprpm reload
 
 ### Wallpapers and theme generation flow with matugen and rofi
 

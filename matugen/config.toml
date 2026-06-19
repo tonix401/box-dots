@@ -13,7 +13,7 @@ command = """
 [templates.colors-hypr-lua]
 input_path = "~/.config/matugen/templates/colors-hypr.lua"
 output_path = "~/.config/hypr/colors.lua"
-post_hook = "hyprctl reload"
+post_hook = "{ sleep 2 && hyprctl reload; } &>/dev/null &"
 
 [templates.starship-toml]
 input_path = "~/.config/matugen/templates/starship.toml"
@@ -26,7 +26,7 @@ output_path = "~/.config/btop/themes/matugen.theme"
 [templates.colors-waybar-css]
 input_path = "~/.config/matugen/templates/colors-waybar.css"
 output_path = "~/.config/waybar/tokens/colors.css"
-post_hook = "killall waybar; waybar &>/dev/null &"
+post_hook = "pkill -SIGUSR2 waybar 2>/dev/null || true"
 
 [templates.colors-rofi-rasi]
 input_path = "~/.config/matugen/templates/colors-rofi.rasi"
@@ -35,7 +35,7 @@ output_path = "~/.config/rofi/themes/matugen.rasi"
 [templates.colors-kitty-conf]
 input_path = "~/.config/matugen/templates/colors-kitty.conf"
 output_path = "~/.config/kitty/colors.conf"
-post_hook = "kill -SIGUSR2 $(pidof kitty) 2>/dev/null || true"
+post_hook = "for s in /tmp/kitty-*; do kitty @ --to \"unix:$s\" set-colors --all ~/.config/kitty/colors.conf 2>/dev/null; done &"
 
 [templates.colors-hyprlock-conf]
 input_path = "~/.config/matugen/templates/colors-hyprlock.conf"
@@ -44,23 +44,27 @@ output_path = "~/.config/hypr/colors-hyprlock.conf"
 [templates.colors-fish]
 input_path = "~/.config/matugen/templates/colors.fish"
 output_path = "~/.config/fish/colors.fish"
-post_hook = "fish -c 'set -U theme_changed (random)'"
+post_hook = "fish -c 'set -U theme_changed (random)' &>/dev/null &"
 
 [templates.arch-svg]
 input_path = "~/.config/matugen/templates/arch.svg"
-output_path = "~/.config/fastfetch/arch.svg"
+output_path = "~/.cache/box-dots/svgs/arch.svg"
+post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/arch.svg ~/.config/fastfetch/arch.png &>/dev/null &"
 
 [templates.cat-svg]
 input_path = "~/.config/matugen/templates/cat.svg"
-output_path = "~/.config/fish/images/cat.svg"
+output_path = "~/.cache/box-dots/svgs/cat.svg"
+post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/cat.svg ~/.config/fish/images/cat.png &>/dev/null &"
 
 [templates.fat-cat-svg]
 input_path = "~/.config/matugen/templates/fat-cat.svg"
-output_path = "~/.config/fish/images/fat-cat.svg"
+output_path = "~/.cache/box-dots/svgs/fat-cat.svg"
+post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/fat-cat.svg ~/.config/fish/images/fat-cat.png &>/dev/null &"
 
 [templates.penguin-svg]
 input_path = "~/.config/matugen/templates/penguin.svg"
-output_path = "~/.config/fish/images/penguin.svg"
+output_path = "~/.cache/box-dots/svgs/penguin.svg"
+post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/penguin.svg ~/.config/fish/images/penguin.png &>/dev/null &"
 
 [templates.colors-fastfetch]
 input_path = "~/.config/matugen/templates/colors-fastfetch.jsonc"
@@ -69,4 +73,9 @@ output_path = "~/.config/fastfetch/config.jsonc"
 [templates.fcitx5-theme]
 input_path = "~/.config/matugen/templates/fcitx5-theme.conf"
 output_path = "~/.local/share/fcitx5/themes/matugen/theme.conf"
-post_hook = "fcitx5 -r"
+post_hook = "fcitx5 -r &>/dev/null &"
+
+[templates.colors-swaync-css]
+input_path = "~/.config/matugen/templates/colors-swaync.css"
+output_path = "~/.config/swaync/tokens/variables.css"
+post_hook = "swaync-client -rs &>/dev/null &"

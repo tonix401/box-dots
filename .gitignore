@@ -15,6 +15,10 @@
 !gtk-3.0
 !gtk-4.0
 !fcitx5
+!swaync
+
+# generated files
+__pycache__/
 
 # repo stuff
 !README.md
@@ -23,4 +27,4 @@
 
 *.save
 *.bak.*
-*.bakzhon wen
+*.bak

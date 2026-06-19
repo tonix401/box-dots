@@ -80,13 +80,14 @@ function kitty_greeting
 
     switch $choice
         case 1
-            kitten icat --place 16x8@4x0 --align left ~/.config/fish/images/cat.svg
+        
+            kitten icat --place 16x8@4x0 --align left ~/.config/fish/images/cat.png
             printf "\n\n\n\n\n\n"
         case 2
-            kitten icat --place 13x9@4x0 --align left ~/.config/fish/images/fat-cat.svg
+            kitten icat --place 13x9@4x0 --align left ~/.config/fish/images/fat-cat.png
             printf "\n\n\n\n\n"
         case 3
-            kitten icat --place 19x10@4x0 --align left ~/.config/fish/images/penguin.svg
+            kitten icat --place 19x10@4x0 --align left ~/.config/fish/images/penguin.png
             printf "\n\n\n"
     end
 end

@@ -1,0 +1,73 @@
+/* --- WIDGET: TITLE --- */
+.widget-title {
+  margin: 0 0 8px 0;
+  padding: 10px 12px;
+  background: transparent;
+}
+
+.widget-title > label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.widget-title > button {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-tile);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-btn);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+
+.widget-title > button:hover {
+  color: var(--text-primary);
+  background: var(--bg-tile-hover);
+  border-color: var(--border-glass);
+}
+
+/* --- WIDGET: DND --- */
+.widget-dnd {
+  margin: 0 0 8px 0;
+  padding: 8px 12px;
+  background: var(--bg-widget);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-widget);
+}
+
+.widget-dnd > label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.widget-dnd > switch {
+  min-width: 44px;
+  min-height: 24px;
+  background: var(--bg-tile-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  transition: background var(--t-mid), border-color var(--t-mid);
+}
+
+.widget-dnd > switch:checked {
+  background: var(--btn-on);
+  border-color: var(--btn-on);
+}
+
+.widget-dnd > switch slider {
+  min-width: 16px;
+  min-height: 16px;
+  margin: 4px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: background var(--t-fast);
+}
+
+.widget-dnd > switch:checked slider {
+  background: var(--on-accent);
+}
