@@ -1,0 +1,24 @@
+{
+  "hyprland/window": {
+    "format": "󰊠  {class} - {title}",
+    "rewrite": {
+      "󰊠  (kitty|Alacritty|konsole) - (.*)":                  "󰆍  $2",
+      "󰊠  (code|codium) - (.*)":                              "󰨞  $2",
+      "󰊠  (mousepad|obsidian|Obsidian) - (.*)":               "󱓧  $2",
+      "󰊠  (firefox|Firefox) - (.*)":                          "  $2",
+      "󰊠  (chromium|chrome|Chromium) - (.*)":                 "  $2",
+      "󰊠  (nemo|Nemo) - (.*)":                                "  $2",
+      "󰊠  (yazi) - (.*)":                                     "󰇥  $2",
+      "󰊠  (imv) - (.*)":                                      "󰄄  $2",
+      "󰊠  (inkscape|Inkscape|gimp|Gimp|pinta|Pinta) - (.*)":  "  $2",
+      "󰊠  (kdenlive|Kdenlive) - (.*)":                        "󰎁  $2",
+      "󰊠  (vlc|VLC|mpv) - (.*)":                              "󰕼  $2",
+      "󰊠  (blueman-manager) - (.*)":                          "  $2",
+      "󰊠  (pavucontrol|Pavucontrol) - (.*)":                  "󱕂  $2",
+      "󰊠  (nm-connection-editor) - (.*)":                     "󰐻  $2",
+      "󰊠  (nwg-look|qt5ct|qt6ct|qdbusviewer) - (.*)":         "󰒓  $2"
+    },
+    "max-length": 30,
+    "tooltip": false
+  }
+}

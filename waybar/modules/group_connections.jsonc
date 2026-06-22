@@ -2,8 +2,9 @@
   "group/connections": {
     "orientation": "horizontal",
     "modules": [
+      "bluetooth",
       "network",
-      "bluetooth"
+      "custom/tailscale",
     ]
   },
   "network": {
@@ -12,13 +13,7 @@
     "format-linked": "󱘖",
     "format-disconnected": "󰤣",
     "format-disabled": "󰤮",
-    "format-icons": [
-      "󰤯",
-      "󰤟",
-      "󰤢",
-      "󰤥",
-      "󰤨"
-    ],
+    "format-icons": [ "󰤯", "󰤟", "󰤢", "󰤥", "󰤨" ],
     "tooltip-format-disconnected": "No Connection",
     "tooltip-format-disabled": "Wi-Fi is OFF",
     "tooltip-format-wifi": "󱄙  {essid} ({signalStrength}%)\n󰐻  Freq: {frequency}GHz\n  {bandwidthDownBytes}   {bandwidthUpBytes}",
@@ -28,13 +23,20 @@
     "on-click-right": "~/.config/waybar/scripts/toggle_wifi.sh"
   },
   "bluetooth": {
-    "format": "󰂯",
-    "format-connected": "󰂱",
-    "format-disabled": "󰂲",
+    "format": "󰂯 enabled",
+    "format-connected": "󰂱 connected",
+    "format-disabled": "󰂲 disabled",
     "tooltip-format": "{controller_alias} {status}",
     "tooltip-format-connected": "󰐻  {num_connections} Connected:\n{device_enumerate}",
     "tooltip-format-enumerate-connected-battery": "󰂱  {device_alias} (󰠠  {device_battery_percentage}%)",
     "on-click": "blueman-manager",
     "on-click-right": "rfkill toggle bluetooth"
+  },
+  "custom/tailscale": {
+    "exec": "~/.config/waybar/scripts/tailscale_status.sh",
+    "interval": 10000000, // refreshes on click anyway so we can do a large interval
+    "format": " <span size='10pt'>{} </span>",
+    "on-click": "~/.config/waybar/scripts/toggle_tailscale.sh",
+    "tooltip": false
   }
 }

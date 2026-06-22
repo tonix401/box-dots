@@ -8,6 +8,7 @@
   color: @primary;
 }
 
+#window,
 #custom-arch {
   color: @primary;
   padding: 6px 15px 6px 10px;

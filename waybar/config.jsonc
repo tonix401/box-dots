@@ -10,12 +10,14 @@
     "./modules/module_arch.jsonc",
     "./modules/module_clock.jsonc",
     "./modules/module_fcitx.jsonc",
+    "./modules/module_window.jsonc",
     "./modules/module_workspace.jsonc"
   ],
   "modules-left": [
     "custom/arch",
     "group/system-group",
-    "group/connections"
+    "group/connections",
+    "hyprland/window"
   ],
   "modules-center": [
     "hyprland/workspaces"
