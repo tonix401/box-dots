@@ -8,7 +8,7 @@
   },
   "pulseaudio": {
     "format": "{icon} {volume}%",
-    "format-muted": "",
+    "format-muted": " {volume}%",
     "scroll-step": 5,
     "format-icons": {
       "headphone": "󰋋",
@@ -16,13 +16,14 @@
       "hands-free": "󰋋",
       "default": [ "", "", "" ]
     },
-    "on-click": "pavucontrol"
+    "on-click": "~/.config/waybar/scripts/toggle_mute_speakers.sh",
+    "on-click-right": "pavucontrol"
   },
   "pulseaudio#microphone": {
     "format": "{format_source}",
     "format-source":        " listen",
     "format-source-muted":  "  muted",
-    "on-click": "pavucontrol",
-    "on-click-right": "~/.config/waybar/scripts/toggle_mute_mics.sh"
+    "on-click": "~/.config/waybar/scripts/toggle_mute_mics.sh",
+    "on-click-right": "pavucontrol"
   }
 }

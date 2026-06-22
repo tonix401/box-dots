@@ -16,7 +16,7 @@
     "format-icons": [ "󰤯", "󰤟", "󰤢", "󰤥", "󰤨" ],
     "tooltip-format-disconnected": "No Connection",
     "tooltip-format-disabled": "Wi-Fi is OFF",
-    "tooltip-format-wifi": "󱄙  {essid} ({signalStrength}%)\n󰐻  Freq: {frequency}GHz\n  {bandwidthDownBytes}   {bandwidthUpBytes}",
+    "tooltip-format-wifi": "  {bandwidthDownBytes}   {bandwidthUpBytes}",
     "tooltip-format-ethernet": "󰈀  {ifname} (Connected)\n  {bandwidthDownBytes}   {bandwidthUpBytes}",
     "tooltip-format-linked": "󱘖 {ifname}: No IP Address",
     "on-click": "iwgtk",
