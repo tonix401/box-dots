@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess
+import shutil
 import sys
 from pathlib import Path
 
@@ -37,4 +38,6 @@ src = paths[idx]
 dest = WALLPAPERS_OUT_DIR / f"{src.stem}.png"
 image = dest if dest.exists() else src
 
-subprocess.run(["matugen", "image", str(image), "--prefer", "saturation"])
+subprocess.Popen([str(shutil.which("awww")), "img", "--transition-type", "grow", "--transition-duration", "1.8", str(image)])
+subprocess.Popen([str(shutil.which("python3")), str(HELPERS_DIR / "update-current-wallpaper.py"), str(image)])
+subprocess.Popen([str(shutil.which("matugen")), "image", str(image), "--prefer", "saturation"])

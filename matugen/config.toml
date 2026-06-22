@@ -3,12 +3,8 @@ reload_apps = false
 caching = true
 
 [config.wallpaper]
-set = true
-command = """
-        awww img --transition-type grow \
-                 --transition-duration 1.8 '{{ image }}' && \
-        ~/.config/hypr/scripts/helpers/update-current-wallpaper.py '{{ image }}'
-    """
+set = false 
+command = "" # not used
 
 [templates.colors-hypr-lua]
 input_path = "~/.config/matugen/templates/colors-hypr.lua"
