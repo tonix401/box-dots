@@ -1,0 +1,28 @@
+{
+  "group/audio": {
+    "orientation": "horizontal",
+    "modules": [
+      "pulseaudio",
+      "pulseaudio#microphone"
+    ]
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "",
+    "scroll-step": 5,
+    "format-icons": {
+      "headphone": "󰋋",
+      "headset": "󰋋",
+      "hands-free": "󰋋",
+      "default": [ "", "", "" ]
+    },
+    "on-click": "pavucontrol"
+  },
+  "pulseaudio#microphone": {
+    "format": "{format_source}",
+    "format-source":        " listen",
+    "format-source-muted":  "  muted",
+    "on-click": "pavucontrol",
+    "on-click-right": "~/.config/waybar/scripts/toggle_mute_mics.sh"
+  }
+}

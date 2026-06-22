@@ -1,0 +1,7 @@
+{
+  "custom/arch": {
+    "exec": "echo $USER@$HOSTNAME",
+    "format": " {}",    
+    "tooltip": false
+  }
+}

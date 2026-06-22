@@ -18,10 +18,10 @@ if not shutil.which("cliphist"):
 thumb_dir = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "cliphist-thumbs"
 thumb_dir.mkdir(parents=True, exist_ok=True)
 
-entries_result = subprocess.run(["cliphist", "list"], capture_output=True, text=True)
+entries_result = subprocess.run(["cliphist", "list"], capture_output=True)
 if entries_result.returncode != 0:
     sys.exit(1)
-entries_text = entries_result.stdout
+entries_text = entries_result.stdout.decode("utf-8", errors="replace")
 
 subprocess.run(
     [sys.executable, str(HELPERS_DIR / "generate-thumbs.py"), str(thumb_dir)],

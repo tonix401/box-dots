@@ -1,21 +1,20 @@
 @import "colors.css";
 
-#custom-tray-arrow.inhibited-none,
-#custom-tray-arrow.dnd-none,
+#custom-notification.inhibited-none,
+#custom-notification.dnd-none,
 #battery.charging,
 #power-profiles-daemon.power-saver {
   color: @state_ok;
 }
-
 
 #idle_inhibitor.activated,
 #cpu.warning,
 #disk.warning,
 #memory.warning,
 #battery.warning:not(.charging),
-#custom-tray-arrow.notification,
-#custom-tray-arrow.dnd-notification,
-#custom-tray-arrow.inhibited-notification {
+#custom-notification.notification,
+#custom-notification.dnd-notification,
+#custom-notification.inhibited-notification {
   color: @state_warning;
 }
 
@@ -26,7 +25,7 @@
 #temperature.critical,
 #battery.critical:not(.charging),
 #power-profiles-daemon.performance,
-#custom-tray-arrow.dnd-inhibited-none,
-#custom-tray-arrow.dnd-inhibited-notification {
+#custom-notification.dnd-inhibited-none,
+#custom-notification.dnd-inhibited-notification {
   color: @state_critical;
 }

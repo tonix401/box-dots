@@ -19,7 +19,7 @@ OPTIONS = [
 
 menu_input = "\n".join(label for label, _ in OPTIONS).encode()
 result = subprocess.run(
-    ["rofi", "-dmenu", "-p", "Power", "-theme", str(ROFI_THEME_POWER)],
+    ["rofi", "-dmenu", "-p", "Power", "-matching", "fuzzy", "-theme", str(ROFI_THEME_POWER)],
     input=menu_input,
     capture_output=True,
 )

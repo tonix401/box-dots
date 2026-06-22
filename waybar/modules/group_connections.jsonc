@@ -1,6 +1,13 @@
 {
+  "group/connections": {
+    "orientation": "horizontal",
+    "modules": [
+      "network",
+      "bluetooth"
+    ]
+  },
   "network": {
-    "format-wifi": "{icon}",
+    "format-wifi": "{icon}  {ipaddr}",
     "format-ethernet": "",
     "format-linked": "󱘖",
     "format-disconnected": "󰤣",
@@ -14,13 +21,11 @@
     ],
     "tooltip-format-disconnected": "No Connection",
     "tooltip-format-disabled": "Wi-Fi is OFF",
-    "tooltip-format-wifi": "󱄙  {essid} ({signalStrength}%)\n\n󰐻  Freq: {frequency}GHz\n  {bandwidthDownBytes}   {bandwidthUpBytes}",
+    "tooltip-format-wifi": "󱄙  {essid} ({signalStrength}%)\n󰐻  Freq: {frequency}GHz\n  {bandwidthDownBytes}   {bandwidthUpBytes}",
     "tooltip-format-ethernet": "󰈀  {ifname} (Connected)\n  {bandwidthDownBytes}   {bandwidthUpBytes}",
     "tooltip-format-linked": "󱘖 {ifname}: No IP Address",
-    "on-click": "nm-applet --indicator",
-    "on-click-right": "pkill nm-applet",
-    "on-scroll-up": "nmcli radio wifi on",
-    "on-scroll-down": "nmcli radio wifi off"
+    "on-click": "iwgtk",
+    "on-click-right": "~/.config/waybar/scripts/toggle_wifi.sh"
   },
   "bluetooth": {
     "format": "󰂯",

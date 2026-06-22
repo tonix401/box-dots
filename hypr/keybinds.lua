@@ -8,6 +8,7 @@ hl.bind("SUPER + mouse:274", hl.dsp.window.drag(),   { mouse = true, desc = "Dra
 hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true, desc = "Resize window" })
 hl.bind("SUPER + SHIFT + COMMA", hl.dsp.window.resize(), { mouse = false, desc = "Resize window left" })
 hl.bind("SUPER + SHIFT + PERIOD", hl.dsp.window.resize(), { mouse = false, desc = "Resize window right" })
+
 -- Focus direction
 hl.bind("SUPER + Left",  hl.dsp.focus({ direction = "left"  }), { desc = "Focus window left" })
 hl.bind("SUPER + Right", hl.dsp.focus({ direction = "right" }), { desc = "Focus window right" })
@@ -19,11 +20,11 @@ hl.bind("SUPER + Q",       hl.dsp.window.close(),  { desc = "Close window" })
 hl.bind("SUPER + ALT + Q", exec("hyprctl kill"),   { desc = "Kill window (pick with cursor)" })
 
 -- Float / fullscreen / pin
-hl.bind("SUPER + ALT + T", hl.dsp.window.float({ action = "toggle" }),             { desc = "Toggle floating" })
-hl.bind("SUPER + F",       hl.dsp.window.fullscreen(), { internal = 3, client = 3, desc = "Toggle fullscreen" })
-hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen(), { internal = 0, client = 3, desc = "Toggle fullscreen (fake)" })
-hl.bind("SUPER + P",       hl.dsp.window.pin(),                                    { desc = "Pin window" })
-
+hl.bind("SUPER + ALT + T", hl.dsp.window.float({ action = "toggle" }),              { desc = "Toggle floating" })
+hl.bind("SUPER + F",       hl.dsp.window.fullscreen({ internal = 3, client = 3 }),  { desc = "Toggle fullscreen" })
+hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen({ internal = 0, client = 3 }),  { desc = "Toggle fullscreen (fake)" })
+hl.bind("SUPER + P",       hl.dsp.window.pin(),                                     { desc = "Pin window" })
+hl.bind("SUPER + T",       hl.dsp.window.tag({ tag = "full_opacity" }),             { desc = "Toggle transparency" })
 -- ── Workspace ─────────────────────────────────────────────────────────────────
 
 -- Navigate left / right
@@ -66,20 +67,22 @@ hl.bind("SUPER + ESCAPE", exec("~/.config/hypr/scripts/rofi/power-menu.py"),    
 hl.bind("SUPER + V",      exec("~/.config/hypr/scripts/rofi/clipboard-history-menu.py"), { desc = "Clipboard history" })
 hl.bind("SUPER + PERIOD", exec("~/.config/hypr/scripts/rofi/emoji-picker-menu.py"),      { desc = "Emoji picker" })
 hl.bind("SUPER + P",      exec("~/.config/hypr/scripts/rofi/wallpaper-menu.py"),         { desc = "Wallpaper picker" })
-hl.bind("SUPER + L",      exec("hyprlock"),                                                { desc = "Lock screen" })
+hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
+
+-- ── Input Method ──────────────────────────────────────────────────────────────
+hl.bind("CTRL + SPACE", exec("~/.config/waybar/scripts/fcitx-cycle.sh"), { desc = "Cycle input method" })
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
 hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot.py"), { desc = "Screenshot" })
 hl.bind("SHIFT + SUPER + C", exec("hyprpicker | wl-copy"),                  { desc = "Pick color to clipboard" })
 
-
 hl.bind("SUPER + TAB", function() hl.plugin.hyprexpo.expo("toggle") end, { desc = "Toggle workspace overview" })
 
-hl.define_submap("hyprexpo", function()
-    hl.bind("left",     function() hl.plugin.hyprexpo.kb_focus("left") end)
-    hl.bind("right",  function() hl.plugin.hyprexpo.kb_focus("right") end)
-    hl.bind("up",   function() hl.plugin.hyprexpo.kb_focus("up") end)
-    hl.bind("down",   function() hl.plugin.hyprexpo.kb_focus("down") end)
-    hl.bind("return", function() hl.plugin.hyprexpo.kb_confirm() end)
-    hl.bind("escape", function() hl.plugin.hyprexpo.expo("cancel") end)
+hl.define_submap("hyprexpo",function()
+    hl.bind("left",         function() hl.plugin.hyprexpo.kb_focus("left") end)
+    hl.bind("right",        function() hl.plugin.hyprexpo.kb_focus("right") end)
+    hl.bind("up",           function() hl.plugin.hyprexpo.kb_focus("up") end)
+    hl.bind("down",         function() hl.plugin.hyprexpo.kb_focus("down") end)
+    hl.bind("return",       function() hl.plugin.hyprexpo.kb_confirm() end)
+    hl.bind("escape",       function() hl.plugin.hyprexpo.expo("cancel") end)
 end)

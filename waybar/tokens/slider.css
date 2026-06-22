@@ -1,12 +1,5 @@
 @import "colors.css";
 
-#pulseaudio-slider {
-  margin: 4px 5px;
-  padding: 0 2px;
-  background-color: transparent;
-  border-radius: 20px;
-}
-
 #pulseaudio-slider trough {
   min-height: 6px;
   min-width: 80px;

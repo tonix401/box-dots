@@ -3,36 +3,27 @@
   "height": 42,
   "spacing": 6,
   "include": [
-    "./modules/groups.jsonc",
-    "./modules/distro.jsonc",
-    "./modules/storage.jsonc",
-    "./modules/system.jsonc",
-    "./modules/power-profiles-daemon.jsonc",
-    "./modules/workspace.jsonc",
-    "./modules/fcitx.jsonc",
-    "./modules/idle-ihibitor.jsonc",
-    "./modules/audio.jsonc",
-    "./modules/connections.jsonc",
-    "./modules/battery.jsonc",
-    "./modules/clock.jsonc",
-    "./modules/tray-notif.jsonc"
+    "./modules/group_audio.jsonc",
+    "./modules/group_connections.jsonc",
+    "./modules/group_system.jsonc",
+    "./modules/group_tray.jsonc",
+    "./modules/module_arch.jsonc",
+    "./modules/module_clock.jsonc",
+    "./modules/module_fcitx.jsonc",
+    "./modules/module_workspace.jsonc"
   ],
   "modules-left": [
-    "group/distro-group",
-    "group/storage",
-    "group/system"
+    "custom/arch",
+    "group/system-group",
+    "group/connections"
   ],
   "modules-center": [
-    "power-profiles-daemon",
-    "hyprland/workspaces",
-    "custom/fcitx",
-    "idle_inhibitor"
+    "hyprland/workspaces"
   ],
   "modules-right": [
+    "group/tray-group",
+    "custom/fcitx",
     "group/audio",
-    "group/connections",
-    "battery",
-    "clock",
-    "group/tray-group"
+    "clock"
   ]
 }

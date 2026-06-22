@@ -24,7 +24,7 @@ entries = b"".join(
 )
 
 result = subprocess.run(
-    ["rofi", "-dmenu", "-p", "Wallpaper", "-show-icons",
+    ["rofi", "-dmenu", "-p", "Wallpaper", "-show-icons", "-matching", "fuzzy",
      "-theme", str(ROFI_THEME_WALLPAPER), "-format", "i"],
     input=entries,
     capture_output=True,

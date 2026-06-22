@@ -88,7 +88,7 @@ pad = max(len(desc) for desc, _ in entries) + 4
 lines = [f"{desc.ljust(pad)}{combo}" for desc, combo in entries]
 
 result = subprocess.run(
-    ["rofi", "-dmenu", "-p", "Keybinds", "-theme", str(ROFI_THEME_KEYBINDS), "-i"],
+    ["rofi", "-dmenu", "-p", "Keybinds", "-matching", "fuzzy", "-theme", str(ROFI_THEME_KEYBINDS), "-i"],
     input="\n".join(lines).encode(),
     capture_output=True,
 )
