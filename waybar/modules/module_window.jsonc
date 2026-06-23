@@ -13,7 +13,7 @@
       "󰊠  (org.musicbrainz.Picard) - (.*)":                   "  $2",
       "󰊠  (vlc|VLC|mpv) - (.*)":                              "󰕼  $2",
       "󰊠  (blueman-manager) - (.*)":                          "  $2",
-      "󰊠  (pavucontrol|Pavucontrol) - (.*)":                  "󱕂  $2",
+      "󰊠  (org.pulseaudio.pavucontrol) - (.*)":               "󱕂  $2",
       "󰊠  (nm-connection-editor) - (.*)":                     "󰐻  $2",
       "󰊠  (nwg-look|qt5ct|qt6ct|qdbusviewer) - (.*)":         "󰒓  $2"
     },

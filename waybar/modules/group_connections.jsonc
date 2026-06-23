@@ -4,7 +4,7 @@
     "modules": [
       "bluetooth",
       "network",
-      "custom/tailscale",
+      "custom/tailscale"
     ]
   },
   "network": {
@@ -28,7 +28,7 @@
     "format-disabled": "󰂲 disabled",
     "tooltip-format": "{controller_alias} {status}",
     "tooltip-format-connected": "󰐻  {num_connections} Connected:\n{device_enumerate}",
-    "tooltip-format-enumerate-connected-battery": "󰂱  {device_alias} (󰠠  {device_battery_percentage}%)",
+    "tooltip-format-enumerate-connected-battery": "󰂱  {device_alias} ({device_battery_percentage}%)",
     "on-click-right": "blueman-manager",
     "on-click": "rfkill toggle bluetooth"
   },
@@ -37,6 +37,7 @@
     "interval": 10000000, // refreshes on click anyway so we can do a large interval
     "format": " <span size='10pt'>{} </span>",
     "on-click": "~/.config/waybar/scripts/toggle_tailscale.sh",
-    "tooltip": false
+    "tooltip": true,
+    "tooltip-format": "tailnet status"
   }
 }
