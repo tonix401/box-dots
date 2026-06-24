@@ -7,70 +7,117 @@
   border: none;
   border-radius: 0;
   font-family: "JetBrainsMono Nerd Font";
-  font-size: 14px;
+  font-size: 19px;
 }
 
 window#waybar {
   background-color: transparent;
-  background-size: contain;
-  background-image: url("squiggle.svg");
 }
 
-/*======= ALL GROUPS =======*/
-#arch-group,
-#mpris,
-#window-group,
-#fcitx-group,
-#clock-group,
-#workspaces-group,
-#system-group,
-#tray-group,
-#audio,
-#connections {
-  margin: 4px 5px;
-  padding: 6px 0;
-  background-color: @background;
-  border-radius: 20px;
-  color: @primary;
+/* ── powerline arrows ── */
+#custom-leftend,
+#custom-spacerleft1,
+#custom-spacerleft2,
+#custom-spacerleft3,
+#custom-spacerleft4,
+#custom-inversespacerleft,
+#custom-inversespacerright,
+#custom-spacerright1,
+#custom-spacerright2,
+#custom-spacerright3,
+#custom-spacerright4,
+#custom-spacerright5,
+#custom-rightend {
+  padding: 0;
+  font-size: 26px;
 }
 
-/*======= INNER ELEMENTS =======*/
-#custom-arch,
-#mpris,
-#window,
-#custom-fcitx,
-#clock,
-#cpu,
-#memory,
-#bluetooth,
-#network,
+#pulseaudio.microphone,
 #custom-tailscale,
-#pulseaudio,
-#pulseaudio-microphone,
-#custom-notification,
-#tray {
-  padding: 0 12px;
+#network,
+#memory {
+  margin-left: 16px;
 }
 
-#custom-notification {
+/* left side — primary → secondary → tertiary → surface_container_highest */
+#custom-leftend {
   color: @primary;
+  background-color: transparent;
+  margin-left: 8px;
 }
 
+#arch-group {
+  background-color: @primary;
+  color: @on_primary;
+  padding: 3px 10px;
+}
 
-/*======= WORKSPACES =======*/
+#custom-spacerleft1 {
+  color: @primary;
+  background-color: @secondary;
+}
+
+#system-group {
+  background-color: @secondary;
+  color: @on_secondary;
+  padding: 3px 10px;
+}
+
+#custom-spacerleft2 {
+  color: @secondary;
+  background-color: @tertiary;
+}
+
+#mpris {
+  background-color: @tertiary;
+  color: @on_tertiary;
+  padding: 3px 10px;
+}
+
+#custom-spacerleft3 {
+  color: @tertiary;
+  background-color: @surface_container_highest;
+}
+
+#window-group {
+  background-color: @surface_container_highest;
+  color: @on_surface;
+  padding: 3px 10px;
+}
+
+#custom-spacerleft4 {
+  color: @surface_container_highest;
+  background-color: transparent;
+}
+
+/* center — soft caps around workspaces */
+#custom-inversespacerleft {
+  color: @surface_container_low;
+  background-color: transparent;
+}
+
+#workspaces-group {
+  background-color: @surface_container_low;
+  color: @on_surface;
+  padding: 0 4px;
+}
+
 #workspaces {
   background: transparent;
   padding: 0 6px;
 }
 
 #workspaces button {
-  min-width: 32px;
+  min-width: 28px;
   padding: 0 4px;
-  margin: 0 2px;
+  margin: 3px 2px;
   background: transparent;
-  border-radius: 16px;
-  color: @tertiary;
+  border-radius: 999px;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#workspaces label {
+  font-size: 13px;
 }
 
 #workspaces button.active {
@@ -109,26 +156,69 @@ window#waybar {
   margin-left: 2px;
 }
 
-/*======= STATE COLORS =======*/
-#custom-notification.inhibited-none,
-#custom-notification.dnd-none,
-#battery.charging,
-#power-profiles-daemon.power-saver {
-  color: @state_ok;
+#custom-inversespacerright {
+  color: @surface_container_low;
+  background-color: transparent;
 }
 
-#cpu.warning,
-#memory.warning,
-#custom-notification.notification,
-#custom-notification.dnd-notification,
-#custom-notification.inhibited-notification {
-  color: @state_warning;
+/* right side — surface_container → … → secondary → primary */
+#custom-spacerright1 {
+  color: @surface_container;
+  background-color: transparent;
 }
 
-#network.disabled,
-#cpu.critical,
-#memory.critical,
-#custom-notification.dnd-inhibited-none,
-#custom-notification.dnd-inhibited-notification {
-  color: @state_critical;
+#tray-group {
+  background-color: @surface_container;
+  color: @on_surface;
+  padding: 3px 10px;
+}
+
+#custom-spacerright2 {
+  color: @surface_container_highest;
+  background-color: @surface_container;
+}
+
+#fcitx-group {
+  background-color: @surface_container_highest;
+  color: @on_surface;
+  padding: 3px 10px;
+}
+
+#custom-spacerright3 {
+  color: @tertiary;
+  background-color: @surface_container_highest;
+}
+
+#connections {
+  background-color: @tertiary;
+  color: @on_tertiary;
+  padding: 3px 10px;
+}
+
+#custom-spacerright4 {
+  color: @secondary;
+  background-color: @tertiary;
+}
+
+#audio {
+  background-color: @secondary;
+  color: @on_secondary;
+  padding: 3px 10px;
+}
+
+#custom-spacerright5 {
+  color: @primary;
+  background-color: @secondary;
+}
+
+#clock-group {
+  background-color: @primary;
+  color: @on_primary;
+  padding: 3px 10px;
+}
+
+#custom-rightend {
+  color: @primary;
+  background-color: transparent;
+  margin-right: 8px;
 }

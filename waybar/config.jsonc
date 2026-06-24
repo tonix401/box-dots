@@ -1,7 +1,7 @@
 {
   "layer": "top",
-  "height": 42,
-  "spacing": 6,
+  "height": 26,
+  "margin-top": 5,
   "include": [
     "./modules/audio.jsonc",
     "./modules/connections.jsonc",
@@ -12,22 +12,36 @@
     "./modules/fcitx.jsonc",
     "./modules/mpris.jsonc",
     "./modules/window.jsonc",
-    "./modules/workspace.jsonc"
+    "./modules/workspace.jsonc",
+    "./modules/spacers.jsonc"
   ],
   "modules-left": [
+    "custom/leftend",
     "group/arch-group",
+    "custom/spacerleft1",
     "group/system-group",
+    "custom/spacerleft2",
     "mpris",
-    "group/window-group"
+    "custom/spacerleft3",
+    "group/window-group",
+    "custom/spacerleft4"
   ],
   "modules-center": [
-    "group/workspaces-group"
+    "custom/inversespacerleft",
+    "group/workspaces-group",
+    "custom/inversespacerright"
   ],
   "modules-right": [
+    "custom/spacerright1",
     "group/tray-group",
+    "custom/spacerright2",
     "group/fcitx-group",
+    "custom/spacerright3",
     "group/connections",
+    "custom/spacerright4",
     "group/audio",
-    "group/clock-group"
+    "custom/spacerright5",
+    "group/clock-group",
+    "custom/rightend"
   ]
 }

@@ -4,22 +4,22 @@
     "modules": ["hyprland/window"]
   },
   "hyprland/window": {
-    "format": "󰊠  {class} - {title}",
+    "format": "󰊠 {class} - {title}",
     "rewrite": {
-      "󰊠  (kitty|Alacritty|konsole) - (.*)":                  "󰆍  $2",
-      "󰊠  (code|codium) - (.*)":                              "󰨞  $2",
-      "󰊠  (mousepad|obsidian|Obsidian) - (.*)":               "󱓧  $2",
-      "󰊠  (firefox|Firefox) - (.*)":                          "  $2",
-      "󰊠  (chromium|chrome|Chromium) - (.*)":                 "  $2",
-      "󰊠  (nemo|Nemo) - (.*)":                                "  $2",
-      "󰊠  (org.inkscape.Inkscape) - (.*)":                    "  $2",
-      "󰊠  (org.kde.Kdenlive) - (.*)":                         "󰎁  $2",
-      "󰊠  (org.musicbrainz.Picard) - (.*)":                   "  $2",
-      "󰊠  (vlc|VLC|mpv) - (.*)":                              "󰕼  $2",
-      "󰊠  (blueman-manager) - (.*)":                          "  $2",
-      "󰊠  (org.pulseaudio.pavucontrol) - (.*)":               "󱕂  $2",
-      "󰊠  (nm-connection-editor) - (.*)":                     "󰐻  $2",
-      "󰊠  (nwg-look|qt5ct|qt6ct|qdbusviewer) - (.*)":         "󰒓  $2"
+      "󰊠 (kitty|Alacritty|konsole) - (.*)":                  "󰆍 $2",
+      "󰊠 (code|codium) - (.*)":                              "󰨞 $2",
+      "󰊠 (mousepad|obsidian|Obsidian) - (.*)":               "󱓧 $2",
+      "󰊠 (firefox|Firefox) - (.*)":                          " $2",
+      "󰊠 (chromium|chrome|Chromium) - (.*)":                 " $2",
+      "󰊠 (nemo|Nemo) - (.*)":                                " $2",
+      "󰊠 (org.inkscape.Inkscape) - (.*)":                    " $2",
+      "󰊠 (org.kde.Kdenlive) - (.*)":                         "󰎁 $2",
+      "󰊠 (org.musicbrainz.Picard) - (.*)":                   " $2",
+      "󰊠 (vlc|VLC|mpv) - (.*)":                              "󰕼 $2",
+      "󰊠 (blueman-manager) - (.*)":                          " $2",
+      "󰊠 (org.pulseaudio.pavucontrol) - (.*)":               "󱕂 $2",
+      "󰊠 (nm-connection-editor) - (.*)":                     "󰐻 $2",
+      "󰊠 (nwg-look|qt5ct|qt6ct|qdbusviewer) - (.*)":         "󰒓 $2"
     },
     "max-length": 30,
     "tooltip": false

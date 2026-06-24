@@ -1,0 +1,54 @@
+{
+  "custom/leftend": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerleft1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerleft2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerleft3": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerleft4": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/inversespacerleft": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/inversespacerright": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerright1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerright2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerright3": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerright4": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/spacerright5": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/rightend": {
+    "format": "",
+    "tooltip": false
+  }
+}

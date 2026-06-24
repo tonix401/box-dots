@@ -6,8 +6,8 @@
 
   "clock": {
     "timezone": "Europe/Berlin",
-    "format": "  <span size='11pt'>{:%H:%M}</span>",
-    "format-alt": "󰃱  <span size='11pt'>{:%Y/%m/%d}</span>",
+    "format": " {:%H:%M}",
+    "format-alt": "󰃱 {:%Y/%m/%d}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>"
   }
 }

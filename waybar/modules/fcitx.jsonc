@@ -7,7 +7,7 @@
     "exec": "~/.config/waybar/scripts/fcitx.sh",
     "interval": "once",
     "signal": 8,
-    "format": "󰗊  <span size='10pt'>{}</span>",
+    "format": "󰗊  <span size='14pt'>{}</span>",
     "on-click": "~/.config/waybar/scripts/fcitx-cycle.sh",
     "on-click-right": "fcitx5-remote -s keyboard-us",
     "tooltip": false

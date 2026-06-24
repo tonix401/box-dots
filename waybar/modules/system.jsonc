@@ -9,7 +9,7 @@
   "cpu": {
     "tooltip": false,
     "interval": 2,
-    "format": "󰻠 <span size='11pt'>{usage}%</span>",
+    "format": "󰻠 {usage}%",
     "on-right-click": "kitty -e btop",
     "on-click": "kitty -e btop",
     "states": {
@@ -22,7 +22,7 @@
     "interval": 2,
     "on-right-click": "kitty -e btop",
     "on-click": "kitty -e btop",
-    "format": "󰍛 <span size='11pt'>{used:0.1f}GB</span>",
+    "format": "󰍛 {used:0.1f}GB",
     "unit": "GB",
     "states": {
       "warning": 75,
