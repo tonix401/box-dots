@@ -10,6 +10,8 @@
     "tooltip": false,
     "interval": 2,
     "format": "󰻠 <span size='11pt'>{usage}%</span>",
+    "on-right-click": "kitty -e btop",
+    "on-click": "kitty -e btop",
     "states": {
       "warning": 75,
       "critical": 90
@@ -18,7 +20,9 @@
   "memory": {
     "tooltip": false,
     "interval": 2,
-    "format": "󰍛 <span size='11pt'>{used:0.1f}GB </span>",
+    "on-right-click": "kitty -e btop",
+    "on-click": "kitty -e btop",
+    "format": "󰍛 <span size='11pt'>{used:0.1f}GB</span>",
     "unit": "GB",
     "states": {
       "warning": 75,

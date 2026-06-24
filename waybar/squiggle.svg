@@ -1,0 +1,8 @@
+<svg
+   width="500" height="500" viewBox="0 0 500 500"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+     style="fill:none;stroke:#ffffff;stroke-width:18.36;stroke-linecap:round;stroke-linejoin:round"
+     d="M 0,250 C 250,125 250,375 500,250" 
+   />
+</svg>

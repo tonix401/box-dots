@@ -1,4 +1,8 @@
 {
+  "group/fcitx-group": {
+    "orientation": "horizontal",
+    "modules": ["custom/fcitx"]
+  },
   "custom/fcitx": {
     "exec": "~/.config/waybar/scripts/fcitx.sh",
     "interval": "once",

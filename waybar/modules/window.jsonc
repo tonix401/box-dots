@@ -1,4 +1,8 @@
 {
+  "group/window-group": {
+    "orientation": "horizontal",
+    "modules": ["hyprland/window"]
+  },
   "hyprland/window": {
     "format": "󰊠  {class} - {title}",
     "rewrite": {

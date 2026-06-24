@@ -1,7 +1,11 @@
 {
+  "group/arch-group": {
+    "orientation": "horizontal",
+    "modules": ["custom/arch"]
+  },
   "custom/arch": {
     "exec": "echo $USER@$HOSTNAME",
-    "format": " {}",
+    "format": "󰣇 {}",
     "tooltip": false,
     "on-click": "~/.config/hypr/scripts/rofi/power-menu.py"
   }

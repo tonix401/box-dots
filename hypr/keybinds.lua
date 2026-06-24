@@ -66,6 +66,7 @@ hl.bind("SUPER + SPACE",  exec("~/.config/hypr/scripts/rofi/app-launcher-menu.py
 hl.bind("SUPER + ESCAPE", exec("~/.config/hypr/scripts/rofi/power-menu.py"),             { desc = "Power menu" })
 hl.bind("SUPER + V",      exec("~/.config/hypr/scripts/rofi/clipboard-history-menu.py"), { desc = "Clipboard history" })
 hl.bind("SUPER + PERIOD", exec("~/.config/hypr/scripts/rofi/emoji-picker-menu.py"),      { desc = "Emoji picker" })
+hl.bind("SUPER + COMMA",      exec("~/.config/hypr/scripts/rofi/nerdfont-menu.py"),           { desc = "Nerd font picker" })
 hl.bind("SUPER + P",      exec("~/.config/hypr/scripts/rofi/wallpaper-menu.py"),         { desc = "Wallpaper picker" })
 hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
 

@@ -35,7 +35,7 @@
   "custom/tailscale": {
     "exec": "~/.config/waybar/scripts/tailscale_status.sh",
     "interval": 10000000, // refreshes on click anyway so we can do a large interval
-    "format": " <span size='10pt'>{} </span>",
+    "format": " <span size='10pt'>{}</span>",
     "on-click": "~/.config/waybar/scripts/toggle_tailscale.sh",
     "tooltip": true,
     "tooltip-format": "tailnet status"

@@ -1,4 +1,8 @@
 {
+  "group/workspaces-group": {
+    "orientation": "horizontal",
+    "modules": ["hyprland/workspaces"]
+  },
   "hyprland/workspaces": {
     "format": "{icon} {windows}",
     "on-click": "activate",
@@ -10,14 +14,14 @@
       "(kitty|Alacritty|konsole)":          "󰆍",
       "(code|codium)":                      "󰨞",
       "(mousepad|obsidian|Obsidian)":       "󱓧",
-      "(firefox|Firefox)":                  "",
+      "(firefox|Firefox)":                  "󰈹",
       "(chromium|chrome|Chromium)":         "",
       "(nemo|Nemo)":                        "",
-      "(org.inkscape.Inkscape)":            "",
+      "(org.inkscape.Inkscape)":            "",
       "(org.kde.Kdenlive)":                 "󰎁",
       "(org.musicbrainz.Picard)":           "",
       "(vlc|VLC|mpv)":                      "󰕼",
-      "(blueman-manager)":                  "",
+      "(blueman-manager)":                  "󰂯",
       "(pavucontrol|Pavucontrol)":          "󱕂",
       "(nm-connection-editor)":             "󰐻",
       "(nwg-look|qt5ct|qt6ct|qdbusviewer)": "󰒓"
@@ -27,7 +31,7 @@
       "special": "󱁂",
       "default": "󰊠",
       "urgent": "󰧵",
-      "empty": ""
+      "empty": "󰧞"
     },
     "show-special": true,
     "all-outputs": true
