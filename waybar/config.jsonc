@@ -1,6 +1,6 @@
 {
   "layer": "top",
-  "height": 26,
+  "height": 20,
   "margin-top": 5,
   "include": [
     "./modules/audio.jsonc",

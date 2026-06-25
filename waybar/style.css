@@ -7,7 +7,7 @@
   border: none;
   border-radius: 0;
   font-family: "JetBrainsMono Nerd Font";
-  font-size: 19px;
+  font-size: 15px;
 }
 
 window#waybar {
@@ -29,7 +29,7 @@ window#waybar {
 #custom-spacerright5,
 #custom-rightend {
   padding: 0;
-  font-size: 26px;
+  font-size: 22px;
 }
 
 #pulseaudio.microphone,

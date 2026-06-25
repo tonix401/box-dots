@@ -8,7 +8,7 @@
     ]
   },
   "network": {
-    "format-wifi": "{icon} {ipaddr}",
+    "format-wifi": "{icon} {essid}",
     "format-ethernet": "",
     "format-linked": "󱘖",
     "format-disconnected": "󰤣  disconnected",
