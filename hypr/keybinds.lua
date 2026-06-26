@@ -21,8 +21,8 @@ hl.bind("SUPER + ALT + Q", exec("hyprctl kill"),   { desc = "Kill window (pick w
 
 -- Float / fullscreen / pin
 hl.bind("SUPER + ALT + T", hl.dsp.window.float({ action = "toggle" }),              { desc = "Toggle floating" })
-hl.bind("SUPER + F",       hl.dsp.window.fullscreen({ internal = 3, client = 3 }),  { desc = "Toggle fullscreen" })
-hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen({ internal = 0, client = 3 }),  { desc = "Toggle fullscreen (fake)" })
+hl.bind("SUPER + F",       hl.dsp.window.fullscreen_state({ internal = 3, client = 3, action = "toggle" }),  { desc = "Toggle fullscreen" })
+hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen_state({ internal = 0, client = 3, action = "toggle" }),  { desc = "Toggle fullscreen (fake)" })
 hl.bind("SUPER + P",       hl.dsp.window.pin(),                                     { desc = "Pin window" })
 hl.bind("SUPER + T",       hl.dsp.window.tag({ tag = "full_opacity" }),             { desc = "Toggle transparency" })
 -- ── Workspace ─────────────────────────────────────────────────────────────────
