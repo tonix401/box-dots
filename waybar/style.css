@@ -11,7 +11,8 @@
 }
 
 window#waybar {
-  background-color: transparent;
+  background-color: @surface_container_lowest;
+  border-radius: 20px;
 }
 
 /* ── powerline arrows ── */
@@ -20,8 +21,6 @@ window#waybar {
 #custom-spacerleft2,
 #custom-spacerleft3,
 #custom-spacerleft4,
-#custom-inversespacerleft,
-#custom-inversespacerright,
 #custom-spacerright1,
 #custom-spacerright2,
 #custom-spacerright3,
@@ -43,7 +42,6 @@ window#waybar {
 #custom-leftend {
   color: @primary;
   background-color: transparent;
-  margin-left: 8px;
 }
 
 #arch-group {
@@ -90,14 +88,8 @@ window#waybar {
   background-color: transparent;
 }
 
-/* center — soft caps around workspaces */
-#custom-inversespacerleft {
-  color: @surface_container_low;
-  background-color: transparent;
-}
-
 #workspaces-group {
-  background-color: @surface_container_low;
+  background-color: transparent;
   color: @on_surface;
   padding: 0 4px;
 }
@@ -154,11 +146,6 @@ window#waybar {
 
 #workspaces button label:last-child {
   margin-left: 2px;
-}
-
-#custom-inversespacerright {
-  color: @surface_container_low;
-  background-color: transparent;
 }
 
 /* right side — surface_container → … → secondary → primary */
@@ -220,5 +207,4 @@ window#waybar {
 #custom-rightend {
   color: @primary;
   background-color: transparent;
-  margin-right: 8px;
 }

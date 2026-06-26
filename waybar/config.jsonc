@@ -2,6 +2,8 @@
   "layer": "top",
   "height": 20,
   "margin-top": 5,
+  "margin-left": 8,
+  "margin-right": 8,
   "include": [
     "./modules/audio.jsonc",
     "./modules/connections.jsonc",
@@ -27,9 +29,7 @@
     "custom/spacerleft4"
   ],
   "modules-center": [
-    "custom/inversespacerleft",
-    "group/workspaces-group",
-    "custom/inversespacerright"
+    "group/workspaces-group"
   ],
   "modules-right": [
     "custom/spacerright1",
