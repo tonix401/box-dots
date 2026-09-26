@@ -110,6 +110,9 @@ PanelWindow {
         height: parent.height
         spacing: 0
 
+        Gif {
+            Layout.rightMargin: 8
+        }
         Arrow {
             glyph: 0xe0b2
             fg: Theme.surface_container
