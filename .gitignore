@@ -29,3 +29,6 @@ __pycache__/
 *.save
 *.bak.*
 *.bak
+# local / temporary files
+gtk-3.0/bookmarks
+fcitx5/conf/*.conf_*
