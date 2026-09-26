@@ -21,4 +21,5 @@ win_safe = win_class.replace(" ", "_").replace("/", "_").replace("\\", "_")
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 file = SCREENSHOTS_DIR / f"{timestamp}_{win_safe}.png"
 
-subprocess.run(["grimblast", "copysave", "area", str(file)], check=True)
+# --freeze shows a still frame (via hyprpicker) while selecting the area
+subprocess.run(["grimblast", "--freeze", "copysave", "area", str(file)], check=True)

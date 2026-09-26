@@ -10,7 +10,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("/usr/lib/xdg-desktop-portal-gtk")
   hl.exec_cmd("/usr/lib/xdg-desktop-portal --replace")
   hl.exec_cmd("awww-daemon")
-  hl.exec_cmd("waybar")
+  hl.exec_cmd("qs") -- bar + menus, ~/.config/quickshell
   hl.exec_cmd("xsettingsd")
   hl.exec_cmd("wl-paste --watch cliphist store")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")

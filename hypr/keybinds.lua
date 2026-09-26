@@ -45,9 +45,9 @@ hl.bind("SUPER + ALT + S",  hl.dsp.window.move({ workspace = "special:scratchpad
 
 -- ── Media ─────────────────────────────────────────────────────────────────────
 local nextTrack = [[playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"`]]
-hl.bind("XF86MonBrightnessUp", exec("~/.config/waybar/scripts/brightness-change.sh 8 && pkill -SIGRTMIN+9 waybar"),
-{ locked = true, repeating = true, desc = "Increase brightness" })
-hl.bind("XF86MonBrightnessDown", exec("~/.config/waybar/scripts/brightness-change.sh -8 && pkill -SIGRTMIN+9 waybar"), { locked = true, repeating = true, desc = "Decrease brightness" })
+-- monitor backlight over DDC/CI, dimming further below 0 (~/.config/quickshell/Brightness.qml)
+hl.bind("XF86MonBrightnessUp",   exec("qs ipc call brightness change 8"),  { locked = true, repeating = true, desc = "Increase brightness" })
+hl.bind("XF86MonBrightnessDown", exec("qs ipc call brightness change -8"), { locked = true, repeating = true, desc = "Decrease brightness" })
 hl.bind("XF86AudioNext",  exec(nextTrack),              { locked = true, desc = "Next track" })
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
@@ -63,14 +63,14 @@ hl.bind("SUPER + E",       exec("nemo"),                 { desc = "Open file man
 hl.bind("SUPER + W",       exec("chromium"),             { desc = "Open browser" })
 hl.bind("SUPER + ALT + W", exec("chromium --incognito"), { desc = "Open browser (incognito)" })
 
--- ── Rofi Menus ────────────────────────────────────────────────────────────────
-hl.bind("SUPER + K",      exec("~/.config/hypr/scripts/rofi/keybinds-menu.py"),          { desc = "Keybind reference" })
-hl.bind("SUPER + SPACE",  exec("~/.config/hypr/scripts/rofi/app-launcher-menu.py"),      { desc = "App launcher" })
-hl.bind("SUPER + ESCAPE", exec("~/.config/hypr/scripts/rofi/power-menu.py"),             { desc = "Power menu" })
-hl.bind("SUPER + V",      exec("~/.config/hypr/scripts/rofi/clipboard-history-menu.py"), { desc = "Clipboard history" })
-hl.bind("SUPER + PERIOD", exec("~/.config/hypr/scripts/rofi/emoji-picker-menu.py"),      { desc = "Emoji picker" })
-hl.bind("SUPER + COMMA",      exec("~/.config/hypr/scripts/rofi/nerdfont-menu.py"),           { desc = "Nerd font picker" })
-hl.bind("SUPER + P",      exec("~/.config/hypr/scripts/rofi/wallpaper-menu.py"),         { desc = "Wallpaper picker" })
+-- ── Menus (Quickshell, ~/.config/quickshell/menus) ────────────────────────────
+hl.bind("SUPER + K",      exec("qs ipc call menu toggle keybinds"),  { desc = "Keybind reference" })
+hl.bind("SUPER + SPACE",  exec("qs ipc call menu toggle launcher"),  { desc = "App launcher" })
+hl.bind("SUPER + ESCAPE", exec("qs ipc call menu toggle power"),     { desc = "Power menu" })
+hl.bind("SUPER + V",      exec("qs ipc call menu toggle clipboard"), { desc = "Clipboard history" })
+hl.bind("SUPER + PERIOD", exec("qs ipc call menu toggle emoji"),     { desc = "Emoji picker" })
+hl.bind("SUPER + COMMA",  exec("qs ipc call menu toggle nerdfont"),  { desc = "Nerd font picker" })
+hl.bind("SUPER + P",      exec("qs ipc call menu toggle wallpaper"), { desc = "Wallpaper picker" })
 hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
 
 -- ── Input Method ──────────────────────────────────────────────────────────────
