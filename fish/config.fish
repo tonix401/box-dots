@@ -28,6 +28,7 @@ if status is-interactive # Commands to run in interactive sessions can go here
 end
 
 fish_add_path ~/.local/bin
+set -g fish_key_bindings fish_vi_key_bindings
 
 # The standard GOPATH is $HOME/go, but I prefer to keep it in .go because it trashes my home directory less
 export GOPATH="$HOME/.go"

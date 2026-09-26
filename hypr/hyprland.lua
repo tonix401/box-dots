@@ -47,16 +47,16 @@ hl.config({
     force_default_wallpaper = 0,
     disable_hyprland_logo   = true,
   },
-  plugin = {
-    hyprexpo = {
-      columns = 3,
-      gaps_in = 8,
-      gaps_out = 8,
-      bg_col = "rgb(000000)",
-      workspace_method = "center current",
-      show_cursor = 1,
-      tile_rounding = 12,
-      tile_rounding_power = 2.0
-    },
-  },
+  -- plugin = {
+  --   hyprexpo = {
+  --     columns = 3,
+  --     gaps_in = 8,
+  --     gaps_out = 8,
+  --     bg_col = "rgb(000000)",
+  --     workspace_method = "center current",
+  --     show_cursor = 1,
+  --     tile_rounding = 12,
+  --     tile_rounding_power = 2.0
+  --   },
+  -- },
 })
