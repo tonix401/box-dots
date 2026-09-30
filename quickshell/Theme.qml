@@ -4,7 +4,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Colors come from the matugen-generated waybar palette so both bars share one theme.
+// Colors come from colors.json, which matugen generates from
+// ~/.config/matugen/templates/colors-quickshell.json on every wallpaper change.
 Singleton {
     id: root
 
@@ -13,6 +14,7 @@ Singleton {
     readonly property int arrowPx: 22
     readonly property int workspacePx: 13
     readonly property int barHeight: 30
+    readonly property int barTop: 5 // gap between the screen edge and the bar
 
     property var palette: ({})
 
@@ -32,6 +34,7 @@ Singleton {
     readonly property color tertiary: c("tertiary")
     readonly property color on_tertiary: c("on_tertiary")
     readonly property color tertiary_fixed: c("tertiary_fixed")
+    readonly property color error: c("error")
     readonly property color error_container: c("error_container")
     readonly property color surface: c("surface")
     readonly property color on_surface: c("on_surface")
@@ -44,16 +47,15 @@ Singleton {
     readonly property color surface_container_highest: c("surface_container_highest")
 
     FileView {
-        path: Quickshell.env("HOME") + "/.config/waybar/colors.css"
+        path: Quickshell.env("HOME") + "/.config/quickshell/colors.json"
         watchChanges: true
         onFileChanged: reload()
         onLoaded: {
-            const out = {};
-            const re = /@define-color\s+(\w+)\s+(#[0-9a-fA-F]{6})/g;
-            let m;
-            while ((m = re.exec(text())) !== null)
-                out[m[1]] = m[2];
-            root.palette = out;
+            // matugen rewrites the file in place, so a change can be seen half-written: keep the
+            // last palette until it parses.
+            try {
+                root.palette = JSON.parse(text());
+            } catch (e) {}
         }
     }
 }

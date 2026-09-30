@@ -25,22 +25,10 @@ PanelWindow {
     property var results: []
     property int selected: 0
 
-    function fuzzy(text, token) {
-        let i = 0;
-        for (const ch of token) {
-            i = text.indexOf(ch, i);
-            if (i < 0)
-                return false;
-            i += ch.length;
-        }
-        return true;
-    }
-
     function refilter() {
-        const tokens = search.text.trim().toLowerCase().split(/\s+/).filter(t => t);
-        results = tokens.length === 0 ? [] : Apps.sorted.filter(e => {
-            const fields = [e.name, e.genericName, e.execString, e.categories.join(" "), e.keywords.join(" ")].map(f => (f ?? "").toLowerCase());
-            return tokens.every(t => fields.some(f => fuzzy(f, t)));
+        const q = search.text.trim();
+        results = q === "" ? [] : Search.rank(Apps.sorted, q, e => [e.name, e.genericName, e.keywords.join(" "), e.categories.join(" "), e.execString], {
+            fuzzy: true
         });
         selected = 0;
     }
@@ -368,7 +356,7 @@ PanelWindow {
 
                         Toggle {
                             glyph: active ? 0xf05a9 : 0xf05aa
-                            label: active ? (net.info.ssid || (net.info.state === "ethernet" ? "Ethernet" : "Wi-Fi")) : "Wi-Fi off"
+                            label: active ? (Privacy.mask(net.info.ssid) || (net.info.state === "ethernet" ? "Ethernet" : "Wi-Fi")) : "Wi-Fi off"
                             active: net.info.state !== undefined && net.info.state !== "disabled"
                             onClicked: net.poll.act(`bash ${root.waybarScripts}/toggle_wifi.sh`)
                         }
@@ -376,7 +364,7 @@ PanelWindow {
                             readonly property var adapter: Bluetooth.defaultAdapter
                             readonly property var device: adapter?.devices.values.find(d => d.connected) ?? null
                             glyph: active ? 0xf00af : 0xf00b2
-                            label: device ? device.name : active ? "Bluetooth" : "Bluetooth off"
+                            label: device ? Privacy.mask(device.name) : active ? "Bluetooth" : "Bluetooth off"
                             active: adapter?.enabled ?? false
                             onClicked: if (adapter)
                                 adapter.enabled = !adapter.enabled
@@ -506,7 +494,7 @@ PanelWindow {
 
                 Column {
                     Text {
-                        text: whoami.output
+                        text: Privacy.mask(whoami.output)
                         color: Theme.on_surface
                         font.family: Theme.fontFamily
                         font.pixelSize: 16
@@ -695,30 +683,6 @@ PanelWindow {
     }
 
     // ── pieces ──
-    component SectionLabel: RowLayout {
-        property alias text: label.text
-        property string hint: ""
-
-        Layout.fillWidth: true
-
-        Text {
-            id: label
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 15
-            font.weight: Font.Medium
-        }
-        Item {
-            Layout.fillWidth: true
-        }
-        Text {
-            text: parent.hint
-            color: Theme.outline
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
-        }
-    }
-
     component AppTile: Rectangle {
         id: tile
 
@@ -776,130 +740,6 @@ PanelWindow {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             cursorShape: Qt.PointingHandCursor
             onClicked: event => event.button === Qt.RightButton ? Apps.togglePin(tile.entry) : root.launch(tile.entry)
-        }
-    }
-
-    component Toggle: Rectangle {
-        id: toggle
-
-        property int glyph
-        property string label
-        property bool active
-        signal clicked
-
-        Layout.fillWidth: true
-        Layout.preferredHeight: 58
-        radius: 12
-        color: active ? Theme.primary : toggleMouse.containsMouse ? Theme.surface_container_highest : Theme.surface_container_high
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 150
-            }
-        }
-
-        Column {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 2
-
-            Text {
-                text: Theme.g(toggle.glyph)
-                color: toggle.active ? Theme.on_primary : Theme.primary
-                font.family: Theme.fontFamily
-                font.pixelSize: 18
-            }
-            Text {
-                width: parent.width
-                text: toggle.label
-                elide: Text.ElideRight
-                color: toggle.active ? Theme.on_primary : Theme.on_surface
-                font.family: Theme.fontFamily
-                font.pixelSize: 13
-            }
-        }
-
-        MouseArea {
-            id: toggleMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: toggle.clicked()
-        }
-    }
-
-    // icon + draggable track + percentage (volume, brightness)
-    component SliderRow: RowLayout {
-        id: slider
-
-        property int glyph
-        property real value // 0..1
-        property string label: Math.round(value * 100) + "%"
-        signal moved(real value)
-        signal iconClicked
-
-        Layout.fillWidth: true
-        spacing: 10
-
-        Text {
-            Layout.preferredWidth: 24
-            text: Theme.g(slider.glyph)
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 22
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: slider.iconClicked()
-            }
-        }
-
-        Rectangle {
-            id: sliderTrack
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: 8
-            radius: 4
-            color: Theme.surface_container_highest
-
-            Rectangle {
-                width: Math.max(height, parent.width * slider.value)
-                height: parent.height
-                radius: 4
-                color: Theme.primary
-            }
-
-            Rectangle {
-                x: parent.width * slider.value - width / 2
-                anchors.verticalCenter: parent.verticalCenter
-                width: 16
-                height: 16
-                radius: 8
-                color: Theme.primary
-                border.width: 3
-                border.color: Theme.surface
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                anchors.margins: -8
-                cursorShape: Qt.PointingHandCursor
-                function set(x) {
-                    slider.moved(Math.max(0, Math.min(1, (x - 8) / sliderTrack.width)));
-                }
-                onPressed: event => set(event.x)
-                onPositionChanged: event => set(event.x)
-            }
-        }
-
-        Text {
-            Layout.preferredWidth: 72
-            horizontalAlignment: Text.AlignRight
-            text: slider.label
-            color: Theme.on_surface
-            font.family: Theme.fontFamily
-            font.pixelSize: 15
         }
     }
 

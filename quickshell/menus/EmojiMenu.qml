@@ -14,7 +14,7 @@ Menu {
     placeholder: "Search emoji..."
     lines: 12
     rowPadV: 8
-    matchText: it => it.char + " " + it.description.replace(/<\/?small>/g, "")
+    matchText: it => [it.description.replace(/\s*<small>.*<\/small>/, ""), (it.description.match(/<small>(.*)<\/small>/) ?? ["", ""])[1]] // name, keywords
 
     onAccepted: it => {
         Quickshell.execDetached(["wl-copy", it.char]);

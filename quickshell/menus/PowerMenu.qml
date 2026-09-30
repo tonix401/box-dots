@@ -4,14 +4,30 @@ import Quickshell.Widgets
 import qs
 import qs.components
 
-// hypr/scripts/rofi/power-menu.py + rofi/powermenu.rasi
+// A small picture of the desktop: the wallpaper at the screen's aspect ratio with the widgets'
+// dark band, and the options from the picture's left edge to the week calendar's column's right
+// edge (shell.qml passes where that is), top to bottom, with the same inset on every side.
 Menu {
-    boxWidth: 720
-    fontPt: 13
+    id: menu
+
+    property rect calendarArea: Qt.rect(24, 51, 1320, 912) // on the screen; only its right edge is used
+    property int fade: 160 // the band's fade right of the widgets, on the screen
+
+    readonly property real screenWidth: screen?.width ?? 3440
+    readonly property real screenHeight: screen?.height ?? 1440
+    readonly property int inset: 6 // around the list
+    // Screen pixels to picture pixels, chosen so the options fill the picture's height; the
+    // picture sits inside the box's 2px border.
+    readonly property real scale: (items.length * rowHeight + (items.length - 1) * listSpacing + 2 * inset) / screenHeight
+
+    boxWidth: Math.round(screenWidth * scale) + 4
+    boxHeight: Math.round(screenHeight * scale) + 4
+    fontPt: 11
+    rowPadV: 8
+    rowPadH: 12
     showInput: false
     matching: "fuzzy"
-    lines: 6
-    fixedHeight: false
+    listArea: Qt.rect(2 + inset, 2 + inset, Math.round((calendarArea.x + calendarArea.width) * scale) - 2 * inset, boxHeight - 4 - 2 * inset)
     items: [
         {
             text: Theme.g(0xf0425) + "  Shutdown",
@@ -40,18 +56,27 @@ Menu {
     ]
     onAccepted: item => Util.run(item.cmd)
 
-    side: ClippingRectangle {
-        radius: 8
+    backdrop: ClippingRectangle {
+        radius: 10
         color: "transparent"
 
-        // background-image: url(wallpaper-square.png, width) — scaled to the width, drawn from the top
         Image {
-            width: parent.width
-            height: width
-            source: "file://" + Quickshell.env("HOME") + "/.cache/box-dots/current/wallpaper-square.png"
+            anchors.fill: parent
+            source: "file://" + Quickshell.env("HOME") + "/.cache/box-dots/current/wallpaper.png"
+            fillMode: Image.PreserveAspectCrop
             cache: false
             smooth: true
             mipmap: true
+        }
+        // The band behind the desktop widgets: from the screen's left edge to the column's right
+        // edge, then fading out.
+        Item {
+            width: (menu.calendarArea.x + menu.calendarArea.width + menu.fade) * menu.scale
+            height: parent.height
+
+            Backdrop {
+                fade: menu.fade * menu.scale
+            }
         }
     }
 

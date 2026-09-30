@@ -11,8 +11,8 @@ PanelWindow {
 
     // ── content ──
     property var items: []
-    property var matchText: item => item.text // a string, or an array of fields (any may match each token)
-    property string matching: "normal" // "normal" (all tokens are substrings) or "fuzzy" (subsequence)
+    property var matchText: item => item.text // a string, or an array of fields (primary first; see Search.qml)
+    property string matching: "normal" // "normal" (substrings anywhere) or "fuzzy" (also subsequences of the primary field)
     property Component rowContent // gets `parent.entry` and `parent.selected`
     signal accepted(var item)
 
@@ -32,39 +32,25 @@ PanelWindow {
     property bool highlightSelected: true
     property bool scrollbar: false
     property bool cycle: true
-    property Component side // optional widget left of the list (power menu image)
+    property Component side // optional widget left of the list
     property int sideSpacing: 10
+    property Component backdrop // optional picture filling the box inside its border (power menu)
+    property rect listArea // where the list goes in the box, when set; otherwise below the input
 
     readonly property int rowHeight: rowPadV * 2 + Math.ceil(Math.max(fm.height, rowContentHeight))
     readonly property int inputHeight: showInput ? 20 + Math.ceil(fm.height) : 0
-    readonly property int listHeight: fixedHeight || boxHeight === 0 ? lines * rowHeight + (lines - 1) * listSpacing : boxHeight - 4 - 20 - (showInput ? inputHeight + 8 : 0)
+    readonly property bool placedList: listArea.width > 0
+    readonly property int listHeight: placedList ? listArea.height : fixedHeight || boxHeight === 0 ? lines * rowHeight + (lines - 1) * listSpacing : boxHeight - 4 - 20 - (showInput ? inputHeight + 8 : 0)
     readonly property int visibleRows: Math.max(1, Math.floor((listHeight + listSpacing) / (rowHeight + listSpacing)))
 
     property var filtered: items
     property int selected: 0
 
-    // rofi splits the input into tokens; every token has to match (case-insensitively).
-    function tokenMatches(text, token) {
-        if (matching !== "fuzzy")
-            return text.includes(token);
-        let i = 0;
-        for (const ch of token) {
-            i = text.indexOf(ch, i);
-            if (i < 0)
-                return false;
-            i += ch.length;
-        }
-        return true;
-    }
-
-    function matches(fields, query) {
-        const texts = (Array.isArray(fields) ? fields : [fields]).map(f => String(f ?? "").toLowerCase());
-        return query.toLowerCase().split(/\s+/).every(t => texts.some(text => tokenMatches(text, t)));
-    }
-
     function refilter() {
-        const q = input.text.trim();
-        filtered = q === "" ? items : items.filter(it => matches(matchText(it), q));
+        filtered = Search.rank(items, input.text, matchText, {
+            fuzzy: matching === "fuzzy",
+            anywhere: matching !== "fuzzy"
+        });
         selected = 0;
     }
 
@@ -130,6 +116,13 @@ PanelWindow {
             anchors.fill: parent // swallow clicks so they don't close the menu
         }
 
+        Loader {
+            anchors.fill: parent
+            anchors.margins: 2
+            active: root.backdrop !== null
+            sourceComponent: root.backdrop
+        }
+
         Item {
             id: main
             anchors.fill: parent
@@ -188,9 +181,11 @@ PanelWindow {
             }
 
             Row {
-                y: root.showInput ? root.inputHeight + 8 : 0
-                width: parent.width
-                height: parent.height - y
+                // `main` is inset by the border and 10px of padding.
+                x: root.placedList ? root.listArea.x - 12 : 0
+                y: root.placedList ? root.listArea.y - 12 : root.showInput ? root.inputHeight + 8 : 0
+                width: root.placedList ? root.listArea.width : parent.width
+                height: root.placedList ? root.listArea.height : parent.height - y
                 spacing: root.sideSpacing
 
                 Loader {

@@ -23,13 +23,5 @@ Module {
     }
 
     text: player ? Util.truncate(`${statusIcon} ${player.trackArtist} ~ ${player.trackTitle}`, 30) : ""
-    onClicked: popup.pinned = !popup.pinned
     onRightClicked: player?.togglePlaying()
-
-    MediaPopup {
-        id: popup
-        target: root
-        player: root.player
-        hoverSource: root.hovered
-    }
 }

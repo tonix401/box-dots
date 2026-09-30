@@ -10,8 +10,17 @@ Module {
     property real down: 0
     property real up: 0
     property var last: null
+    property bool detailed: false // poll every second while the drawer shows the details
+    // Recent rates for the drawer's graph, oldest first.
+    property var downHistory: []
+    property var upHistory: []
+    readonly property int historyLength: 60
 
     readonly property var wifiIcons: [0xf092f, 0xf091f, 0xf0922, 0xf0925, 0xf0928]
+
+    function toggleWifi() {
+        net.act("bash ~/.config/waybar/scripts/toggle_wifi.sh");
+    }
 
     function rate(bytes) {
         const units = ["B", "kB", "MB", "GB"];
@@ -26,7 +35,7 @@ Module {
     text: {
         switch (info.state) {
         case "wifi":
-            return Theme.g(Util.bucket(wifiIcons, info.signal)) + " " + info.ssid;
+            return Theme.g(Util.bucket(wifiIcons, info.signal)) + " " + Privacy.mask(info.ssid);
         case "ethernet":
             return Theme.g(0xef09);
         case "disabled":
@@ -37,28 +46,13 @@ Module {
             return "";
         }
     }
-    tooltip: {
-        const bw = `${Theme.g(0xf019)}  ${rate(down)} ${Theme.g(0xf093)}  ${rate(up)}`;
-        switch (info.state) {
-        case "wifi":
-            return bw;
-        case "ethernet":
-            return `${Theme.g(0xf0200)}  ${info.ifname} (Connected)\n${bw}`;
-        case "disabled":
-            return "Wi-Fi is OFF";
-        case "disconnected":
-            return "No Connection";
-        default:
-            return "";
-        }
-    }
-    onClicked: net.act("bash ~/.config/waybar/scripts/toggle_wifi.sh")
+    onClicked: toggleWifi()
     onRightClicked: Util.run("iwgtk")
 
     Poll {
         id: net
         command: [Quickshell.shellDir + "/scripts/network.sh"]
-        interval: 5000
+        interval: root.detailed ? 1000 : 5000
         onOutputChanged: {
             let next;
             try {
@@ -71,6 +65,8 @@ Module {
                 const dt = (now - root.last.time) / 1000;
                 root.down = Math.max(0, (next.rx - root.last.rx) / dt);
                 root.up = Math.max(0, (next.tx - root.last.tx) / dt);
+                root.downHistory = root.downHistory.concat([root.down]).slice(-root.historyLength);
+                root.upHistory = root.upHistory.concat([root.up]).slice(-root.historyLength);
             }
             root.last = Object.assign({ time: now }, next);
             root.info = next;

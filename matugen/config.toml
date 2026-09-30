@@ -19,14 +19,10 @@ output_path = "~/.config/starship.toml"
 input_path = "~/.config/matugen/templates/btop.theme"
 output_path = "~/.config/btop/themes/matugen.theme"
 
-[templates.colors-waybar-css]
-input_path = "~/.config/matugen/templates/colors-waybar.css"
-output_path = "~/.config/waybar/colors.css"
-post_hook = "pkill -SIGUSR2 waybar 2>/dev/null || true"
-
-[templates.colors-rofi-rasi]
-input_path = "~/.config/matugen/templates/colors-rofi.rasi"
-output_path = "~/.config/rofi/themes/matugen.rasi"
+# Quickshell's Theme.qml watches this file and picks up the new palette itself.
+[templates.colors-quickshell-json]
+input_path = "~/.config/matugen/templates/colors-quickshell.json"
+output_path = "~/.config/quickshell/colors.json"
 
 [templates.colors-kitty-conf]
 input_path = "~/.config/matugen/templates/colors-kitty.conf"

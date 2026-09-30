@@ -8,6 +8,8 @@ import qs
 import qs.menus
 
 ShellRoot {
+    id: root
+
     Variants {
         model: Quickshell.screens
 
@@ -15,6 +17,62 @@ ShellRoot {
             required property var modelData
             screen: modelData
         }
+    }
+
+    // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D). The week
+    // calendar sits top left under the bar, the todo list and the habit tracker side by side below
+    // it down to the screen's bottom. Their windows reach to the screen's edges and meet halfway
+    // across the gaps, so their backdrops make one dark band from top to bottom that fades out
+    // right of the column.
+    readonly property int edge: 24 // from the screen's left and bottom edges
+    readonly property int gap: 16 // between the widgets and below the bar
+    readonly property int fade: 160 // the band's fade right of the widgets
+
+    WeekCalendar {
+        id: calendar
+        visible: Desktop.widgetsShown
+        anchors.top: true
+        anchors.left: true
+        room: ({
+                left: root.edge,
+                top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
+                right: root.fade,
+                bottom: root.gap / 2
+            })
+        fade: root.fade
+    }
+
+    TodoList {
+        id: todo
+        visible: Desktop.widgetsShown
+        anchors.top: true
+        anchors.bottom: true
+        anchors.left: true
+        margins.top: calendar.implicitHeight
+        panelWidth: calendar.panelWidth - root.gap - habits.size
+        room: ({
+                left: root.edge,
+                top: root.gap / 2,
+                right: root.gap / 2,
+                bottom: root.edge
+            })
+    }
+
+    HabitTracker {
+        id: habits
+        visible: Desktop.widgetsShown
+        anchors.top: true
+        anchors.bottom: true
+        anchors.left: true
+        margins.top: calendar.implicitHeight
+        margins.left: todo.implicitWidth
+        room: ({
+                left: root.gap / 2,
+                top: root.gap / 2,
+                right: root.fade,
+                bottom: root.edge
+            })
+        fade: root.fade
     }
 
     // Software dimming below the backlight minimum: a click-through black layer over everything.
@@ -56,6 +114,22 @@ ShellRoot {
         }
     }
 
+    // Desktop widgets: `qs ipc call widgets toggle` / `open` / `close` (`show` would clash with qs's own
+    // `ipc show`).
+    IpcHandler {
+        target: "widgets"
+
+        function toggle(): void {
+            Desktop.toggle();
+        }
+        function open(): void {
+            Desktop.setShown(true);
+        }
+        function close(): void {
+            Desktop.setShown(false);
+        }
+    }
+
     // Replacements for the rofi menus: `qs ipc call menu toggle <name>`.
     IpcHandler {
         target: "menu"
@@ -74,7 +148,11 @@ ShellRoot {
     // Each menu is created when opened and destroyed when closed, so it reloads its data every time like rofi.
     LazyLoader {
         active: Menus.active === "power"
-        PowerMenu {}
+        PowerMenu {
+            // Its options go where the calendar is on the desktop.
+            calendarArea: Qt.rect(root.edge, calendar.room.top, calendar.panelWidth, calendar.panelHeight)
+            fade: root.fade
+        }
     }
 
     LazyLoader {

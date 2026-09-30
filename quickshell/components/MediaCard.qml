@@ -12,6 +12,7 @@ ClippingRectangle {
     id: root
 
     required property MprisPlayer player
+    property bool bordered: true
     readonly property bool hovered: hover.hovered
 
     readonly property PwNode sink: Pipewire.defaultAudioSink
@@ -298,6 +299,7 @@ ClippingRectangle {
     // border on top of the art, like hyprland's window border
     Rectangle {
         anchors.fill: parent
+        visible: root.bordered
         radius: root.radius
         color: "transparent"
         border.width: 2

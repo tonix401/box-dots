@@ -31,20 +31,10 @@ PanelWindow {
     property var results: []
     property int selected: 0 // index into the grid or the result list
 
-    function fuzzy(text, token) {
-        let i = 0;
-        for (const ch of token) {
-            i = text.indexOf(ch, i);
-            if (i < 0)
-                return false;
-            i += ch.length;
-        }
-        return true;
-    }
-
     function refilter() {
-        const tokens = search.text.trim().toLowerCase().split(/\s+/).filter(t => t);
-        results = wallpapers.filter(w => tokens.every(t => fuzzy(w.stem.toLowerCase(), t)));
+        results = Search.rank(wallpapers, search.text, w => w.stem, {
+            fuzzy: true
+        });
         selected = 0;
     }
 
