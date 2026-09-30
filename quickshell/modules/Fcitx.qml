@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell
 import qs
 import qs.components
 
@@ -25,7 +24,7 @@ Item {
         BarText {
             id: name
             anchors.verticalCenter: parent.verticalCenter
-            text: im.output
+            text: Ime.label
             color: root.fg
             font.pixelSize: 13 // 10pt
         }
@@ -34,12 +33,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: event => im.act(event.button === Qt.RightButton ? "fcitx5-remote -s keyboard-us" : "~/.config/waybar/scripts/fcitx-cycle.sh")
-    }
-
-    Poll {
-        id: im
-        command: ["bash", Quickshell.env("HOME") + "/.config/waybar/scripts/fcitx.sh"]
-        interval: 1000
+        onClicked: event => event.button === Qt.RightButton ? Ime.toEnglish() : Ime.cycle()
     }
 }

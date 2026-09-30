@@ -75,7 +75,7 @@ hl.bind("SUPER + D",      exec("qs ipc call widgets toggle"),        { desc = "T
 hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
 
 -- ── Input Method ──────────────────────────────────────────────────────────────
-hl.bind("CTRL + SPACE", exec("~/.config/waybar/scripts/fcitx-cycle.sh"), { desc = "Cycle input method" })
+hl.bind("CTRL + SPACE", hl.dsp.global("quickshell:cycleInputMethod"), { desc = "Cycle input method" }) -- ~/.config/quickshell/Ime.qml
 
 -- ─── Utils ────────────────────────────────────────────────────────────────────
 hl.bind("SHIFT + SUPER + S", exec("~/.config/hypr/scripts/screenshot.py"), { desc = "Screenshot" })

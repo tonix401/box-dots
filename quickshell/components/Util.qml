@@ -15,6 +15,11 @@ Singleton {
         return icons[Math.max(0, Math.min(icons.length - 1, i))];
     }
 
+    // Powers the wifi device (iwd, the same one scripts/network.sh reads) on or off.
+    function wifiPowerCommand(on) {
+        return `iwctl device wlan1 set-property Powered ${on ? "on" : "off"}`;
+    }
+
     function run(cmd) {
         Quickshell.execDetached(["sh", "-c", cmd]);
     }

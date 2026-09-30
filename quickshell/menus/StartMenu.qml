@@ -18,7 +18,6 @@ PanelWindow {
     id: root
 
     readonly property string home: Quickshell.env("HOME")
-    readonly property string waybarScripts: home + "/.config/waybar/scripts"
     readonly property bool searching: search.text.trim() !== ""
 
     // ── search ──
@@ -358,7 +357,7 @@ PanelWindow {
                             glyph: active ? 0xf05a9 : 0xf05aa
                             label: active ? (Privacy.mask(net.info.ssid) || (net.info.state === "ethernet" ? "Ethernet" : "Wi-Fi")) : "Wi-Fi off"
                             active: net.info.state !== undefined && net.info.state !== "disabled"
-                            onClicked: net.poll.act(`bash ${root.waybarScripts}/toggle_wifi.sh`)
+                            onClicked: net.poll.act(Util.wifiPowerCommand(!active))
                         }
                         Toggle {
                             readonly property var adapter: Bluetooth.defaultAdapter

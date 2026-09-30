@@ -19,7 +19,7 @@ Module {
     readonly property var wifiIcons: [0xf092f, 0xf091f, 0xf0922, 0xf0925, 0xf0928]
 
     function toggleWifi() {
-        net.act("bash ~/.config/waybar/scripts/toggle_wifi.sh");
+        net.act(Util.wifiPowerCommand(info.state === "disabled"));
     }
 
     function rate(bytes) {

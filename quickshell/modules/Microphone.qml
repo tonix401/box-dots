@@ -7,12 +7,18 @@ Module {
     id: root
 
     readonly property PwNode source: Pipewire.defaultAudioSource
+    // Every input device, so muting covers all mics, not just the default one.
+    readonly property var inputs: Pipewire.nodes.values.filter(n => n.audio && !n.isSink && !n.isStream)
 
     text: source?.audio?.muted ? Theme.g(0xf131) + "  muted" : Theme.g(0xf130) + " listen"
-    onClicked: Util.run("bash ~/.config/waybar/scripts/toggle_mute_mics.sh")
+    onClicked: {
+        const muted = !(source?.audio?.muted ?? false);
+        for (const n of inputs)
+            n.audio.muted = muted;
+    }
     onRightClicked: Util.run("pavucontrol")
 
     PwObjectTracker {
-        objects: [root.source]
+        objects: root.inputs
     }
 }

@@ -6,7 +6,7 @@ import qs
 import qs.components
 
 // An animated gif on the bar (what waybar's cffi/dance-gif plugin did). Shows the gifs in
-// ~/.cache/box-dots/, which waybar/scripts/gif-watch.sh scales to bar height from ~/Pictures/waybar-gifs.
+// ~/Pictures/waybar-gifs, decoded at bar height and cached, so the frames are scaled only once.
 // Click for the next one, right-click for the previous; the choice is remembered.
 Item {
     id: root
@@ -30,7 +30,7 @@ Item {
 
     FolderListModel {
         id: gifs
-        folder: "file://" + Quickshell.env("HOME") + "/.cache/box-dots"
+        folder: "file://" + Quickshell.env("HOME") + "/Pictures/waybar-gifs"
         nameFilters: ["*.gif", "*.GIF"]
         showDirs: false
         sortField: FolderListModel.Name
@@ -48,9 +48,10 @@ Item {
         id: image
         anchors.fill: parent
         source: root.count > 0 ? gifs.folder + "/" + root.names[root.index] : ""
+        sourceSize.height: Theme.barHeight
         fillMode: Image.PreserveAspectFit
         playing: root.visible
-        cache: false
+        cache: true
     }
 
     MouseArea {
