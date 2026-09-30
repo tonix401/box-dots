@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 
-// hypr/scripts/rofi/clipboard-history-menu.py + rofi/clipboard.rasi
+// Clipboard history (SUPER+V), from cliphist.
 Menu {
     id: root
 

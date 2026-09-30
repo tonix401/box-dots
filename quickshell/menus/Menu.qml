@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import qs
 
 // A rofi -dmenu lookalike: bordered box centered in the usable area, input bar and a list.
-// Geometry defaults follow the shared shape of the rofi/*.rasi themes.
+// Geometry defaults match the rofi menus this replaced.
 PanelWindow {
     id: root
 

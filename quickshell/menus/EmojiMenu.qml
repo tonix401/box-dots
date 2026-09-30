@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 
-// hypr/scripts/rofi/emoji-picker-menu.py (rofimoji, clipboard action, neutral skin tone) + rofi/emoji.rasi
+// Emoji picker (SUPER+PERIOD): rofimoji's emoji data, copies the pick to the clipboard, neutral skin tone.
 Menu {
     id: root
 

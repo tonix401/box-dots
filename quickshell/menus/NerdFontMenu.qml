@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 
-// hypr/scripts/rofi/nerdfont-menu.py + rofi/nerdfont.rasi
+// Nerd Font glyph picker (SUPER+COMMA).
 Menu {
     id: root
 

@@ -8,7 +8,7 @@ import Quickshell.Widgets
 import qs
 
 // Wallpaper picker (SUPER+P): a 3×3 grid of the most used wallpapers; typing switches to a searchable list.
-// Applying runs the same steps as hypr/scripts/rofi/wallpaper-menu.py (awww, current-wallpaper files, matugen).
+// Applying sets it with awww, updates the current-wallpaper files and re-themes with matugen.
 PanelWindow {
     id: root
 

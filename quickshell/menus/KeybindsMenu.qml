@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Io
 import qs
 
-// hypr/scripts/rofi/keybinds-menu.py + rofi/keybindsmenu.rasi (reference only, nothing runs on accept).
+// Keybind reference (SUPER+K), read-only: nothing runs on accept.
 Menu {
     id: root
 
@@ -69,7 +69,7 @@ Menu {
     rowPadV: 10
     rowPadH: 16
     scrollbar: true
-    highlightSelected: false // keybindsmenu.rasi never styles the selected element
+    highlightSelected: false // a reference list, nothing to select
 
     rowContent: MenuText {}
 

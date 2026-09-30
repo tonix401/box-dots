@@ -1,66 +1,89 @@
 # Box Dots
 
-My hyprland configs with automatic wallpaper theming and rofi menus
+My Hyprland configs: a Quickshell bar, menus and desktop widgets, all themed from the
+current wallpaper with matugen.
 
-### Packages that need to be installed for these configs to work (maybe not complete)
-power-profiles-daemon \
-rofi \
-rofimoji \
-waybar \
+### Packages these configs need (maybe not complete)
+
+hyprland \
+quickshell \
 kitty \
-awww \
-grimblast \
-cliphist \
-wtype \
-wl-clipboard \
+fish \
+starship \
+zoxide \
 matugen \
-python-pyvips
+awww \
+python-pyvips \
+cliphist \
+wl-clipboard \
+wtype \
+grimblast \
+hyprpicker \
+hyprlock \
+swaync \
+fcitx5 fcitx5-mozc fcitx5-chinese-addons \
+rofimoji (only for its emoji data) \
+playerctl \
+pavucontrol \
+ddcutil \
+power-profiles-daemon \
+iwd iwgtk \
+blueman \
+tailscale \
+dankcalendar (dcal)
 
+```
 hyprpm add https://github.com/sandwichfarm/hyprexpo
 hyprpm enable hyprexpo
 hyprpm reload
+```
 
-### Wallpapers and theme generation flow with matugen and rofi
+### Layout
 
-![wallpaper picker](resources/wallpaper-picker.png)
+- `hypr/`: Hyprland config in Lua (`hyprland.lua` entry point, `exec.lua` autostart,
+  `keybinds.lua`, `look.lua`, `windowrules.lua`, `env.lua`)
+- `quickshell/`: everything on screen besides windows, run as `qs` (hot-reloads on save)
+  - `Bar.qml` + `modules/`: the powerline bar, some blocks open drawers (audio, media,
+    calendar, connections)
+  - `menus/`: launcher, clipboard, emoji, nerd font, keybinds, power and wallpaper menus
+  - `WeekCalendar.qml`, `TodoList.qml`, `HabitTracker.qml`: desktop widgets backed by dcal
+- `matugen/`: templates for every generated color file
+- `hypr/scripts/`: screenshot script and the Python helpers the menus call
 
-Wallpapers from ~/Pictures/Wallpapers are processed into previews and the right resolution and then shown in a rofi menu with a shortcut (SUPER + P)
+### Wallpapers and theming
 
-- hypr/keybinds.lua 
-- hypr/scripts: scripts for preprocessing and caching wallpapers
-- ~/.cache/box-dots: cached previews and formatted wallpapers for faster load
+Wallpapers in `~/Pictures/Wallpapers` are resized and thumbnailed into `~/.cache/box-dots`
+and shown in the wallpaper picker (SUPER + P). Picking one sets it with awww and runs
+`matugen`, which regenerates the colors for Hyprland, Quickshell, kitty, fish, starship,
+btop, swaync, hyprlock, fastfetch and the fcitx5 theme. Quickshell picks up the new
+palette by itself.
 
-### Clipboard with history
+### Menus
 
-![clipboard history](resources/clipboard-history.png)
+| Key | Menu |
+|---|---|
+| SUPER + SPACE | Start menu: app launcher, recent files, media, quick toggles, volume and brightness |
+| SUPER + V | Clipboard history, with image previews |
+| SUPER + . | Emoji picker (copies to the clipboard) |
+| SUPER + , | Nerd Font glyph picker |
+| SUPER + P | Wallpaper picker |
+| SUPER + K | Keybind reference |
+| SUPER + ESCAPE | Power menu |
 
-Copy and paste with history, accessible through rofi menu (SUPER + V)
+### Other keys
 
-Preview for images and colors
+| Key | Action |
+|---|---|
+| SUPER + D | Show / hide the desktop widgets |
+| SUPER + TAB | Workspace overview (hyprexpo) |
+| CTRL + SPACE | Cycle input method (English, Japanese, Chinese) |
+| SHIFT + SUPER + S | Screenshot of an area |
+| SHIFT + SUPER + C | Pick a color to the clipboard |
+| SUPER + L | Lock screen |
 
-- hypr/exec.lua: Initialize cliphist and wcopy
-- hypr/keybinds.lua: menu key bind
-- hypr/scripts/clipboard-history-menu.sh: run the clipboard history menu
-- rofi/clipboard.rasi: layout
-
-### Emoji Selection
-
-![emoji picker](resources/emoji-picker.png)
-
-Rofi menu and rofimoji, (SUPER + .)
-
-- hypr/scripts/emoji-picker.sh + rofi/emoji.rasi
-
-
-### Power menu
-
-![power menu](resources/power-menu.png)
-
-- hypr/scripts and rofi
-
-### App launcher
-
-![app launcher](resources/app-launcher.png)
+The bar has workspaces, the window title, CPU/memory, media, audio, network, bluetooth,
+tailscale and input method blocks, the tray and an animated gif (any gif dropped into
+`~/Pictures/waybar-gifs`; click to switch). The Arch logo opens the power menu.
 
 ### Cute pets in the terminal
 
