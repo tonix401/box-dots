@@ -9,7 +9,9 @@ import qs.components
 // The last four weeks (Monday to Sunday, this week last) as a grid of days with a dot per habit,
 // on the desktop right of the todo list. A check-in is an all-day event titled like the habit in
 // the "Habits" Google calendar (Dcal.habitsCalendarId), so it syncs to the phone and one added
-// there counts too. Clicking one of today's dots (drawn bigger) adds or removes today's event;
+// there counts too. Next to each habit, the share of the last 30 days with a check-in, and an
+// arrow for whether the last 7 days are ahead of, behind or level with that.
+// Clicking one of today's dots (drawn bigger) adds or removes today's event;
 // past days only show what was logged: the habit's icon, or a thin grey ring when missed. Clicking a habit below the grid edits it, + adds one.
 // Arrows or the mouse wheel move by a week; clicking the title (or a minute without the pointer
 // on it) goes back to this week.
@@ -40,10 +42,12 @@ PanelWindow {
     readonly property var days: Array.from({
         length: 28
     }, (_, i) => new Date(firstDay.getFullYear(), firstDay.getMonth(), firstDay.getDate() + i))
-    // Shown days up to today.
-    readonly property int elapsed: days.filter(d => dayKey(d) <= today).length
     readonly property bool ready: Dcal.connected && Dcal.habitsCalendarId !== ""
     readonly property var done: checkIns(events, habits)
+    // The Habits calendar's events in the last 30 days, for the legend's percentages, whichever
+    // weeks are shown.
+    property var recentEvents: []
+    readonly property var recentDone: checkIns(recentEvents, habits)
 
     function parseDay(s) {
         const [y, m, d] = s.slice(0, 10).split("-").map(Number);
@@ -82,8 +86,25 @@ PanelWindow {
         const key = h + ":" + day;
         return key in pending ? pending[key] : key in done;
     }
-    function count(h) {
-        return days.filter(d => isDone(h, dayKey(d))).length;
+    // Share of the last n days (up to 30) with a check-in. Today only counts once it is ticked, so
+    // the number doesn't drop every morning: until then the window is the n days before today.
+    function rate(h, n) {
+        const t = parseDay(today);
+        const recently = day => {
+            const key = h + ":" + day;
+            return key in pending ? pending[key] : key in recentDone;
+        };
+        const start = recently(today) ? 0 : 1;
+        let k = 0;
+        for (let i = start; i < start + n; i++)
+            if (recently(dayKey(new Date(t.getFullYear(), t.getMonth(), t.getDate() - i))))
+                k++;
+        return k / n;
+    }
+    // The last 7 days against the last 30: 1 ahead, -1 behind, 0 within 10 points.
+    function trend(h) {
+        const d = rate(h, 7) - rate(h, 30);
+        return d >= 0.1 ? 1 : d <= -0.1 ? -1 : 0;
     }
 
     function load() {
@@ -101,6 +122,23 @@ PanelWindow {
             if (from.getTime() !== root.firstDay.getTime())
                 return; // older weeks answered late
             root.events = (result?.events ?? []).filter(ev => ev.calendarId === Dcal.habitsCalendarId);
+        });
+    }
+    function loadRecent() {
+        if (!ready) {
+            recentEvents = [];
+            return;
+        }
+        const day = today;
+        const t = parseDay(day);
+        Dcal.request("events.list", {
+            from: new Date(t.getFullYear(), t.getMonth(), t.getDate() - 30).toISOString(),
+            to: new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1).toISOString(),
+            limit: 1000
+        }, result => {
+            if (day !== root.today)
+                return; // answered after midnight
+            root.recentEvents = (result?.events ?? []).filter(ev => ev.calendarId === Dcal.habitsCalendarId);
         });
     }
 
@@ -133,6 +171,7 @@ PanelWindow {
                     id: id
                 }, () => {
                     root.events = root.events.filter(ev => ev.id !== id);
+                    root.recentEvents = root.recentEvents.filter(ev => ev.id !== id);
                     if (--left === 0)
                         root.setPending(key, undefined);
                 }, message => root.fail(key, message));
@@ -145,9 +184,11 @@ PanelWindow {
                 end: new Date(Date.UTC(y, m - 1, d + 1)).toISOString(),
                 allDay: true
             }, result => {
-                root.events = root.events.concat([Object.assign({
-                        calendarId: Dcal.habitsCalendarId
-                    }, result)]);
+                const ev = Object.assign({
+                    calendarId: Dcal.habitsCalendarId
+                }, result);
+                root.events = root.events.concat([ev]);
+                root.recentEvents = root.recentEvents.concat([ev]);
                 root.setPending(key, undefined);
             }, message => root.fail(key, message));
         }
@@ -164,13 +205,21 @@ PanelWindow {
         pending = {};
         load();
     }
-    onReadyChanged: load()
-    Component.onCompleted: load()
+    onTodayChanged: loadRecent()
+    onReadyChanged: {
+        load();
+        loadRecent();
+    }
+    Component.onCompleted: {
+        load();
+        loadRecent();
+    }
 
     Connections {
         target: Dcal
         function onRevisionChanged() {
             root.load();
+            root.loadRecent();
         }
     }
 
@@ -377,7 +426,8 @@ PanelWindow {
                 }
             }
 
-            // Which dot is which habit, with its check-ins in the shown weeks.
+            // Which dot is which habit, with how many of the last 30 days have a check-in and whether the
+            // last 7 are ahead of that.
             Grid {
                 id: legend
 
@@ -518,14 +568,30 @@ PanelWindow {
             font.family: Theme.fontFamily
             font.pixelSize: 12
         }
-        Text {
+        Row {
             id: count
+
+            readonly property int trend: root.trend(entry.index)
+
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: root.count(entry.index) + "/" + root.elapsed
-            color: Theme.on_surface
-            font.family: Theme.fontFamily
-            font.pixelSize: 11
+            spacing: 4
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Math.round(100 * root.rate(entry.index, 30)) + "%"
+                color: Theme.on_surface
+                font.family: Theme.fontFamily
+                font.pixelSize: 11
+            }
+            // trending-up / -neutral / -down
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Theme.g(count.trend > 0 ? 0xf0535 : count.trend < 0 ? 0xf0533 : 0xf0534)
+                color: count.trend > 0 ? Theme.primary : count.trend < 0 ? Theme.error : Theme.on_surface_variant
+                font.family: Theme.fontFamily
+                font.pixelSize: 13
+            }
         }
     }
 
