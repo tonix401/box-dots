@@ -4,9 +4,9 @@ import Quickshell
 import qs
 import qs.components
 
-// The clock block growing down into a month calendar with ISO week numbers.
+// Below the clock block: a month calendar with ISO week numbers.
 // Arrows or the mouse wheel change the month; clicking the month name goes back to today.
-Drawer {
+Popout {
     id: root
 
     alignRight: true
@@ -56,20 +56,18 @@ Drawer {
         precision: root.open ? SystemClock.Seconds : SystemClock.Minutes
     }
 
-    // The bar shows the time; open, it gains seconds and the full date.
+    // The bar shows the time; the header adds seconds and the full date.
     header: Item {
         BarText {
-            x: 10
             height: parent.height
             text: Theme.g(0xf017) + " " + Qt.formatTime(root.now, "HH:mm:ss")
-            color: root.segment.fg
+            color: Theme.on_surface
         }
         BarText {
             anchors.right: parent.right
-            anchors.rightMargin: 10
             height: parent.height
             text: Qt.formatDate(root.now, "dddd, d MMMM")
-            color: root.segment.fg
+            color: Theme.on_surface
         }
     }
 
@@ -84,7 +82,7 @@ Drawer {
                 Layout.fillWidth: true
                 text: Qt.formatDate(new Date(root.year, root.month, 1), "MMMM yyyy")
                 color: Theme.primary
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 15
                 font.weight: Font.Medium
 
@@ -169,6 +167,6 @@ Drawer {
         height: 22
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        font.family: Theme.fontFamily
+        font.family: Theme.uiFont
     }
 }

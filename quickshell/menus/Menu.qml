@@ -20,6 +20,7 @@ PanelWindow {
     property int boxWidth: 580
     property int boxHeight: 0 // 0 = fit to `lines`
     property real fontPt: 12
+    property string fontFamily: Theme.uiFont
     property bool showInput: true
     property string placeholder: ""
     property int lines: 10
@@ -90,7 +91,7 @@ PanelWindow {
 
     FontMetrics {
         id: fm
-        font.family: Theme.fontFamily
+        font.family: root.fontFamily
         font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
         font.pointSize: root.fontPt
     }
@@ -140,7 +141,7 @@ PanelWindow {
                 color: Theme.primary
                 selectionColor: Theme.primary
                 selectedTextColor: Theme.on_primary
-                font.family: Theme.fontFamily
+                font.family: root.fontFamily
                 font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
                 font.pointSize: root.fontPt
                 renderType: Text.NativeRendering
@@ -241,6 +242,7 @@ PanelWindow {
                                 readonly property var entry: row.modelData
                                 readonly property bool selected: row.isSelected && root.highlightSelected
                                 readonly property real fontPt: root.fontPt
+                                readonly property string fontFamily: root.fontFamily
 
                                 x: root.rowPadH
                                 width: parent.width - 2 * root.rowPadH

@@ -262,7 +262,7 @@ PanelWindow {
                         return Qt.formatDate(a, a.getFullYear() === b.getFullYear() ? "MMMM" : "MMMM yyyy") + " – " + Qt.formatDate(b, "MMMM yyyy");
                     }
                     color: Theme.primary
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 15
                     font.weight: Font.Medium
 
@@ -277,7 +277,7 @@ PanelWindow {
                 Text {
                     text: "Week " + root.isoWeek(root.days[0])
                     color: Theme.on_surface
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 Item {
@@ -287,7 +287,7 @@ PanelWindow {
                     visible: !Dcal.connected
                     text: "dcal is not running"
                     color: Theme.on_surface
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 // Syncs all calendars (and task lists) with their servers; spins until they report back.
@@ -343,7 +343,7 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: Qt.formatDate(dayHead.modelData, "ddd")
                                 color: dayHead.index >= 5 ? Theme.primary : Theme.on_surface
-                                font.family: Theme.fontFamily
+                                font.family: Theme.uiFont
                                 font.pixelSize: 12
                             }
                             Rectangle {
@@ -356,7 +356,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     text: dayHead.modelData.getDate()
                                     color: dayHead.isToday ? Theme.on_primary : Theme.on_surface
-                                    font.family: Theme.fontFamily
+                                    font.family: Theme.uiFont
                                     font.pixelSize: 13
                                     font.weight: dayHead.isToday ? Font.Bold : Font.Normal
                                 }
@@ -411,7 +411,7 @@ PanelWindow {
                         horizontalAlignment: Text.AlignRight
                         text: String(root.firstHour + index).padStart(2, "0") + ":00"
                         color: Theme.on_surface
-                        font.family: Theme.fontFamily
+                        font.family: Theme.uiFont
                         font.pixelSize: 11
                     }
                 }
@@ -548,7 +548,7 @@ PanelWindow {
                             y: 5
                             text: root.clock(parent.r?.s ?? 0) + "–" + root.clock(parent.r?.e ?? 0)
                             color: Theme.primary
-                            font.family: Theme.fontFamily
+                            font.family: Theme.uiFont
                             font.pixelSize: 11
                         }
                     }
@@ -677,7 +677,7 @@ PanelWindow {
                 maximumLineCount: block.open ? 100 : Math.max(1, Math.floor((block.baseHeight - 10 - (block.roomy ? 15 : 0)) / 15))
                 elide: Text.ElideRight
                 color: block.accent
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: block.open ? 13 : 12
                 font.weight: Font.Medium
                 font.strikeout: block.ev.status === "cancelled"
@@ -831,7 +831,7 @@ PanelWindow {
                 // Wide enough for any time: the fields' text margins plus "00:00".
                 TextMetrics {
                     id: timeText
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                     text: "00:00"
                 }
@@ -849,7 +849,7 @@ PanelWindow {
                     visible: !editor.allDay
                     text: "–"
                     color: Theme.on_surface_variant
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 Field {
@@ -890,7 +890,7 @@ PanelWindow {
                 text: editor.error
                 wrapMode: Text.Wrap
                 color: Theme.error
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 11
             }
             RowLayout {
@@ -916,7 +916,7 @@ PanelWindow {
         width: parent.width
         wrapMode: Text.Wrap
         color: Theme.on_surface_variant
-        font.family: Theme.fontFamily
+        font.family: Theme.uiFont
         font.pixelSize: 11
     }
 }

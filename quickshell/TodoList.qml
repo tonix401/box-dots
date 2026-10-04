@@ -314,14 +314,14 @@ PanelWindow {
                 Text {
                     text: "To do"
                     color: Theme.primary
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 15
                     font.weight: Font.Medium
                 }
                 Text {
                     text: root.openCount === 0 ? "all done" : root.openCount + " open"
                     color: Theme.on_surface
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 Item {
@@ -331,7 +331,7 @@ PanelWindow {
                     visible: !Dcal.connected
                     text: "dcal is not running"
                     color: Theme.on_surface
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 GlyphButton {
@@ -367,7 +367,7 @@ PanelWindow {
                 text: root.addError || "Enter adds it  ·  @tomorrow, @fri or @3.10. sets a due date"
                 wrapMode: Text.Wrap
                 color: root.addError ? Theme.error : Theme.on_surface_variant
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 11
             }
 
@@ -389,7 +389,7 @@ PanelWindow {
                     visible: list.count === 0 && Dcal.connected
                     text: "Nothing to do"
                     color: Theme.on_surface_variant
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
             }
@@ -485,7 +485,7 @@ PanelWindow {
                 maximumLineCount: 3
                 elide: Text.ElideRight
                 color: row.accent
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 12
                 font.weight: Font.Medium
                 font.strikeout: row.done
@@ -631,7 +631,7 @@ PanelWindow {
                 color: Theme.on_surface
                 selectionColor: Theme.primary
                 selectedTextColor: Theme.on_primary
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 12
                 Keys.onEscapePressed: root.close()
                 Keys.onReturnPressed: event => {
@@ -656,7 +656,7 @@ PanelWindow {
             text: editor.error || "Click the bin again to delete the task"
             wrapMode: Text.Wrap
             color: Theme.error
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 11
         }
         RowLayout {
@@ -687,7 +687,7 @@ PanelWindow {
         width: parent.width
         wrapMode: Text.Wrap
         color: Theme.on_surface_variant
-        font.family: Theme.fontFamily
+        font.family: Theme.uiFont
         font.pixelSize: 11
     }
 }

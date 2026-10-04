@@ -309,7 +309,7 @@ PanelWindow {
                 Text {
                     text: "Habits"
                     color: Theme.primary
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 15
                     font.weight: Font.Medium
 
@@ -324,7 +324,7 @@ PanelWindow {
                 Text {
                     text: Qt.formatDate(root.days[0], "d MMM") + " – " + Qt.formatDate(root.days[27], "d MMM")
                     color: Theme.on_surface
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 Item {
@@ -334,7 +334,7 @@ PanelWindow {
                     visible: !Dcal.connected
                     text: "dcal is not running"
                     color: Theme.on_surface
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 12
                 }
                 GlyphButton {
@@ -365,7 +365,7 @@ PanelWindow {
                 }
                 wrapMode: Text.Wrap
                 color: root.error !== "" ? Theme.error : Theme.on_surface_variant
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 11
             }
 
@@ -399,7 +399,7 @@ PanelWindow {
                             horizontalAlignment: Text.AlignHCenter
                             text: Qt.formatDate(root.days[index], "ddd")
                             color: Theme.on_surface
-                            font.family: Theme.fontFamily
+                            font.family: Theme.uiFont
                             font.pixelSize: 10
                         }
                     }
@@ -473,7 +473,7 @@ PanelWindow {
             text: cell.modelData.getDate() === 1 ? Qt.formatDate(cell.modelData, "d MMM") : cell.modelData.getDate()
             color: cell.isToday ? Theme.primary : cell.future ? Theme.on_surface_variant : Theme.on_surface
             opacity: cell.future ? 0.6 : 1
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 11
             font.weight: cell.isToday ? Font.Bold : Font.Normal
         }
@@ -565,7 +565,7 @@ PanelWindow {
             text: entry.modelData.name
             elide: Text.ElideRight
             color: label.containsMouse || root.editing === entry.index ? entry.accent : Theme.on_surface
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 12
         }
         Row {
@@ -581,7 +581,7 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 text: Math.round(100 * root.rate(entry.index, 30)) + "%"
                 color: Theme.on_surface
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 11
             }
             // trending-up / -neutral / -down
@@ -710,7 +710,7 @@ PanelWindow {
                 text: editor.error || "Click the bin again to remove the habit (its check-ins stay in the calendar)"
                 wrapMode: Text.Wrap
                 color: Theme.error
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 11
             }
             RowLayout {

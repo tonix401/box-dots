@@ -9,7 +9,9 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string fontFamily: "JetBrainsMono Nerd Font"
+    readonly property string fontFamily: "JetBrainsMono Nerd Font" // the bar, and glyphs everywhere
+    readonly property string uiFont: "Adwaita Sans" // text in menus, popups and widgets (the GTK UI font)
+    readonly property string monoFont: "Adwaita Mono" // menus whose columns line up with spaces
     readonly property int fontPx: 15
     readonly property int arrowPx: 22
     readonly property int workspacePx: 13

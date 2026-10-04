@@ -4,9 +4,9 @@ import Quickshell.Services.Pipewire
 import qs
 import qs.components
 
-// The speaker / microphone block growing down into volume sliders with live level meters and
-// pickers for the default output and input. The output volume stays in the bar text above.
-Drawer {
+// Below the speaker / microphone block: volume sliders with live level meters and
+// pickers for the default output and input. Both go up to 150%.
+Popout {
     id: root
 
     alignRight: true
@@ -35,7 +35,7 @@ Drawer {
         Channel {
             node: root.sink
             glyph: root.sink?.audio?.muted ? 0xeee8 : 0xf028
-            showPercent: false
+            maximum: 1.5
         }
         Repeater {
             model: root.sinks
@@ -55,7 +55,7 @@ Drawer {
         Channel {
             node: root.source
             glyph: root.source?.audio?.muted ? 0xf131 : 0xf130
-            showPercent: true
+            maximum: 1.5
         }
         Repeater {
             model: root.sources
@@ -81,7 +81,7 @@ Drawer {
 
         property PwNode node
         property int glyph
-        property bool showPercent
+        property real maximum: 1
 
         Layout.fillWidth: true
         spacing: 4
@@ -94,8 +94,8 @@ Drawer {
 
         SliderRow {
             glyph: channel.glyph
-            value: Math.min(1, channel.node?.audio?.volume ?? 0)
-            label: channel.showPercent ? Math.round((channel.node?.audio?.volume ?? 0) * 100) + "%" : ""
+            value: channel.node?.audio?.volume ?? 0
+            maximum: channel.maximum
             opacity: channel.node?.audio?.muted ? 0.5 : 1
             onMoved: v => {
                 if (channel.node?.audio)
@@ -111,7 +111,7 @@ Drawer {
         Rectangle {
             Layout.fillWidth: true
             Layout.leftMargin: 34
-            Layout.rightMargin: channel.showPercent ? 82 : 0
+            Layout.rightMargin: 82
             Layout.preferredHeight: 3
             radius: 1.5
             color: Theme.surface_container_high
@@ -165,7 +165,7 @@ Drawer {
                 text: root.label(choice.node)
                 elide: Text.ElideRight
                 color: Theme.on_surface
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 13
                 font.weight: choice.selected ? Font.Medium : Font.Normal
             }

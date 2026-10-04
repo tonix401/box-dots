@@ -12,7 +12,7 @@ Text {
     elide: Text.ElideRight
     text: entry.text
     color: selected ? Theme.on_primary : Theme.primary
-    font.family: Theme.fontFamily
+    font.family: parent.fontFamily
     font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
     font.pointSize: parent.fontPt
     renderType: Text.NativeRendering

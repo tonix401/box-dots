@@ -30,27 +30,27 @@ Menu {
     listArea: Qt.rect(2 + inset, 2 + inset, Math.round((calendarArea.x + calendarArea.width) * scale) - 2 * inset, boxHeight - 4 - 2 * inset)
     items: [
         {
-            text: Theme.g(0xf0425) + "  Shutdown",
+            text: Theme.g(0xf0425) + "   Shutdown",
             cmd: "systemctl poweroff"
         },
         {
-            text: Theme.g(0xf0709) + "  Reboot",
+            text: Theme.g(0xf0709) + "   Reboot",
             cmd: "systemctl reboot"
         },
         {
-            text: Theme.g(0xf035b) + "  Reboot into UEFI",
+            text: Theme.g(0xf035b) + "   Reboot into UEFI",
             cmd: "systemctl reboot --firmware-setup"
         },
         {
-            text: Theme.g(0xf033e) + "  Lock",
+            text: Theme.g(0xf033e) + "   Lock",
             cmd: "hyprlock"
         },
         {
-            text: Theme.g(0xf0343) + "  Log out",
+            text: Theme.g(0xf0343) + "   Log out",
             cmd: "hyprshutdown -vt 2"
         },
         {
-            text: Theme.g(0xf16a1) + "  Kill open Apps",
+            text: Theme.g(0xf16a1) + "   Kill open Apps",
             cmd: "hyprctl -j clients | jq -r '.[].pid' | xargs -r kill"
         }
     ]

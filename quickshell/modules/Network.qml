@@ -10,8 +10,8 @@ Module {
     property real down: 0
     property real up: 0
     property var last: null
-    property bool detailed: false // poll every second while the drawer shows the details
-    // Recent rates for the drawer's graph, oldest first.
+    property bool detailed: false // poll every second while the popout shows the details
+    // Recent rates for the popout's graph, oldest first.
     property var downHistory: []
     property var upHistory: []
     readonly property int historyLength: 60

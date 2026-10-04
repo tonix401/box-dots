@@ -40,7 +40,7 @@ Rectangle {
             visible: pill.text !== ""
             text: pill.text
             color: pill.active ? Theme.on_primary : Theme.on_surface
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 12
         }
     }

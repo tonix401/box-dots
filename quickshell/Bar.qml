@@ -15,29 +15,13 @@ PanelWindow {
         left: true
         right: true
     }
-    // No top margin: the drawers' hover areas reach the screen edge; the bar sits Theme.barTop below it.
+    // No top margin: the popouts' hover areas reach the screen edge; the bar sits Theme.barTop below it.
     margins {
         left: 8
         right: 8
     }
-    // Tall enough for the drawers; only the bar and the drawers take input, only the bar reserves space.
-    implicitHeight: Theme.barTop + Theme.barHeight + Math.max(mediaDrawer.fullHeight, connDrawer.fullHeight, audioDrawer.fullHeight, calendarDrawer.fullHeight)
+    implicitHeight: Theme.barTop + Theme.barHeight
     exclusiveZone: Theme.barTop + Theme.barHeight
-    mask: Region {
-        item: barArea
-        Region {
-            item: mediaDrawer
-        }
-        Region {
-            item: connDrawer
-        }
-        Region {
-            item: audioDrawer
-        }
-        Region {
-            item: calendarDrawer
-        }
-    }
     color: "transparent"
     WlrLayershell.namespace: "quickshell-bar"
 
@@ -98,12 +82,10 @@ PanelWindow {
                 color: Theme.tertiary
                 fg: Theme.on_tertiary
                 visible: mpris.player !== null
-                Layout.preferredWidth: mediaDrawer.segmentWidth
                 Mpris {
                     id: mpris
                     fg: mprisSeg.fg
-                    opacity: 1 - mediaDrawer.expansion // the drawer's header takes over while open
-                    onClicked: mediaDrawer.pinned = !mediaDrawer.pinned
+                    onClicked: mediaPopout.pinned = !mediaPopout.pinned
                 }
             }
             Arrow {
@@ -176,22 +158,18 @@ PanelWindow {
                 id: connSeg
                 color: Theme.tertiary
                 fg: Theme.on_tertiary
-                Layout.preferredWidth: connDrawer.segmentWidth
                 Bluetooth {
                     fg: connSeg.fg
-                    opacity: 1 - connDrawer.expansion
                 }
                 Network {
                     id: networkMod
                     fg: connSeg.fg
                     Layout.leftMargin: 16
-                    opacity: 1 - connDrawer.expansion
-                    detailed: connDrawer.open
+                    detailed: connPopout.open
                 }
                 Tailscale {
                     fg: connSeg.fg
                     Layout.leftMargin: 16
-                    opacity: 1 - connDrawer.expansion
                 }
             }
             Arrow {
@@ -203,7 +181,6 @@ PanelWindow {
                 id: audioSeg
                 color: Theme.secondary
                 fg: Theme.on_secondary
-                Layout.preferredWidth: audioDrawer.segmentWidth
                 Speaker {
                     fg: audioSeg.fg
                 }
@@ -221,11 +198,9 @@ PanelWindow {
                 id: clockSeg
                 color: Theme.primary
                 fg: Theme.on_primary
-                Layout.preferredWidth: calendarDrawer.segmentWidth
                 Clock {
                     fg: clockSeg.fg
-                    opacity: 1 - calendarDrawer.expansion
-                    onClicked: calendarDrawer.pinned = !calendarDrawer.pinned
+                    onClicked: calendarPopout.pinned = !calendarPopout.pinned
                 }
             }
             Arrow {
@@ -235,23 +210,23 @@ PanelWindow {
         }
     }
 
-    // Declared after the bar so they lie on top of their segments.
-    MediaDrawer {
-        id: mediaDrawer
+    // Declared after the bar so their hover areas lie on top of their segments.
+    MediaPopout {
+        id: mediaPopout
         segment: mprisSeg
         player: mpris.player
     }
-    ConnDrawer {
-        id: connDrawer
+    ConnPopout {
+        id: connPopout
         segment: connSeg
         network: networkMod
     }
-    AudioDrawer {
-        id: audioDrawer
+    AudioPopout {
+        id: audioPopout
         segment: audioSeg
     }
-    CalendarDrawer {
-        id: calendarDrawer
+    CalendarPopout {
+        id: calendarPopout
         segment: clockSeg
     }
 }

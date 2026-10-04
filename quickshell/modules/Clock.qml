@@ -3,7 +3,7 @@ import Quickshell
 import qs
 import qs.components
 
-// The calendar lives in CalendarDrawer; a click here pins it (see Bar.qml).
+// The calendar lives in CalendarPopout; a click here pins it (see Bar.qml).
 Module {
     text: Theme.g(0xf017) + " " + Qt.formatTime(clock.date, "HH:mm")
 

@@ -39,12 +39,18 @@ PanelWindow {
     }
 
     function apply(w) {
-        // use the resized copy when prepare-wallpaper-files.py made one
-        const cmd = `img="$1"; [ -e "$2" ] && img="$2"
-            awww img --transition-type grow --transition-duration 1.8 "$img" &
-            python3 "$3/update-current-wallpaper.py" "$img" &
-            matugen image "$img" --prefer saturation &`;
-        Quickshell.execDetached(["sh", "-c", cmd, "sh", w.path, `${outDir}/${w.stem}.png`, helpers]);
+        // use the resized copy when prepare-wallpaper-files.py made one.
+        // Each step's exit is logged to wallpaper-apply.log in ms since the click/Enter ($5), to chase slow transitions.
+        const cmd = `img="$1"; [ -e "$2" ] && img="$2"; log="$4"; t0="$5"
+            ts() { echo "+$(( $(date +%s%3N) - t0 ))ms $*" >> "$log"; }
+            echo "--- $(date '+%F %T') $img" >> "$log"
+            ts "sh started"
+            { awww img --transition-type grow --transition-duration 1.8 "$img"; ts "awww img exited $?"; } &
+            { python3 "$3/update-current-wallpaper.py" "$img"; ts "update-current-wallpaper exited $?"; } &
+            { matugen image "$img" --prefer saturation; ts "matugen exited $?"; } &
+            wait
+            tail -n 500 "$log" > "$log.tmp" && mv "$log.tmp" "$log"`;
+        Quickshell.execDetached(["sh", "-c", cmd, "sh", w.path, `${outDir}/${w.stem}.png`, helpers, `${home}/.cache/box-dots/wallpaper-apply.log`, String(Date.now())]);
         const counts = Object.assign({}, usage);
         counts[w.stem] = (counts[w.stem] ?? 0) + 1;
         usageFile.setText(JSON.stringify(counts, null, 2) + "\n");
@@ -127,7 +133,7 @@ PanelWindow {
                         color: Theme.on_surface
                         selectionColor: Theme.primary
                         selectedTextColor: Theme.on_primary
-                        font.family: Theme.fontFamily
+                        font.family: Theme.uiFont
                         font.pixelSize: 17
                         onTextChanged: root.refilter()
 
@@ -237,7 +243,7 @@ PanelWindow {
                                     text: tile.modelData.stem.replace(/\s*\(.*\)$/, "") // drop the "(tags)"
                                     elide: Text.ElideRight
                                     color: Theme.on_surface
-                                    font.family: Theme.fontFamily
+                                    font.family: Theme.uiFont
                                     font.pixelSize: 12
                                 }
                             }
@@ -337,7 +343,7 @@ PanelWindow {
                             text: row.modelData.stem
                             elide: Text.ElideRight
                             color: row.current ? Theme.on_primary : Theme.primary
-                            font.family: Theme.fontFamily
+                            font.family: Theme.uiFont
                             font.pixelSize: 15
                         }
                     }
@@ -356,7 +362,7 @@ PanelWindow {
                     visible: root.results.length === 0
                     text: "No wallpapers found"
                     color: Theme.on_surface_variant
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 15
                 }
             }

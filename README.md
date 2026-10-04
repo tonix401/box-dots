@@ -43,7 +43,7 @@ hyprpm reload
 - `hypr/`: Hyprland config in Lua (`hyprland.lua` entry point, `exec.lua` autostart,
   `keybinds.lua`, `look.lua`, `windowrules.lua`, `env.lua`)
 - `quickshell/`: everything on screen besides windows, run as `qs` (hot-reloads on save)
-  - `Bar.qml` + `modules/`: the powerline bar, some blocks open drawers (audio, media,
+  - `Bar.qml` + `modules/`: the powerline bar, some blocks open hover popups (audio, media,
     calendar, connections)
   - `menus/`: launcher, clipboard, emoji, nerd font, keybinds, power and wallpaper menus
   - `WeekCalendar.qml`, `TodoList.qml`, `HabitTracker.qml`: desktop widgets backed by dcal

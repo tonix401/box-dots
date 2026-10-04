@@ -3,14 +3,13 @@ import Quickshell.Services.Mpris
 import qs
 import qs.components
 
-// The mpris block growing down into the media card. Click on the block pins it.
-Drawer {
+// The media card below the mpris block. Click on the block pins it.
+Popout {
     id: root
 
     required property MprisPlayer player
 
     available: player !== null
-    card: false
     contentWidth: 360
 
     function time(seconds) {
@@ -23,22 +22,20 @@ Drawer {
     // The card already shows the track, so the header has the player name and elapsed/total time.
     header: Item {
         BarText {
-            x: 10
             height: parent.height
             width: timeLabel.x - x - 12
             elide: Text.ElideRight
             text: `${Theme.g(0xf075a)} ${root.player?.identity ?? ""}`
-            color: root.segment.fg
+            color: Theme.on_surface
         }
 
         BarText {
             id: timeLabel
             anchors.right: parent.right
-            anchors.rightMargin: 10
             height: parent.height
             visible: (root.player?.lengthSupported ?? false) && root.player.length > 0
             text: visible ? `${root.time(root.player.position)} / ${root.time(root.player.length)}` : ""
-            color: root.segment.fg
+            color: Theme.on_surface
         }
 
         MouseArea {

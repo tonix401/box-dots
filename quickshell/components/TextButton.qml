@@ -19,7 +19,7 @@ Rectangle {
         id: label
         anchors.centerIn: parent
         color: Theme.on_surface
-        font.family: Theme.fontFamily
+        font.family: Theme.uiFont
         font.pixelSize: 12
     }
 

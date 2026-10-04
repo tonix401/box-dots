@@ -160,7 +160,7 @@ ClippingRectangle {
                 text: root.sink?.description || root.sink?.nickname || "Output"
                 elide: Text.ElideRight
                 color: Theme.on_primary
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 11
                 font.weight: Font.Medium
             }
@@ -185,7 +185,7 @@ ClippingRectangle {
             text: root.player?.trackTitle || "Unknown title"
             elide: Text.ElideRight
             color: Theme.on_surface
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 16
             font.weight: Font.Medium
         }
@@ -194,7 +194,7 @@ ClippingRectangle {
             text: root.player?.trackArtist || root.player?.identity || ""
             elide: Text.ElideRight
             color: Qt.alpha(Theme.on_surface, 0.7)
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 12
         }
     }

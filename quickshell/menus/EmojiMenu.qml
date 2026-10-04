@@ -21,21 +21,39 @@ Menu {
         Quickshell.execDetached([helper, "pick", it.char]);
     }
 
-    rowContent: Text {
+    // the emoji in a fixed column, so the names line up with a clear gap
+    rowContent: Row {
+        id: row
+
         property var entry: parent.entry
         property bool selected: parent.selected
+        property real fontPt: parent.fontPt
 
         width: parent.width
         height: parent.height
-        verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
-        textFormat: Text.StyledText
-        text: entry.char + " " + entry.description.replace(/\s*<small>.*<\/small>/, "") // keywords stay searchable, just not shown
-        color: selected ? Theme.on_primary : Theme.primary
-        font.family: Theme.fontFamily
-        font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
-        font.pointSize: parent.fontPt
-        renderType: Text.NativeRendering
+        spacing: 14
+
+        Text {
+            width: 26
+            height: parent.height
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: row.entry.char
+            font.pointSize: row.fontPt + 1
+        }
+        Text {
+            width: parent.width - 26 - parent.spacing
+            height: parent.height
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            textFormat: Text.StyledText
+            text: row.entry.description.replace(/\s*<small>.*<\/small>/, "") // keywords stay searchable, just not shown
+            color: row.selected ? Theme.on_primary : Theme.primary
+            font.family: Theme.uiFont
+            font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
+            font.pointSize: row.fontPt
+            renderType: Text.NativeRendering
+        }
     }
 
     Process {

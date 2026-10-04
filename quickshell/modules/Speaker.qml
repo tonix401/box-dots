@@ -32,7 +32,7 @@ Module {
     onRightClicked: Util.run("pavucontrol")
     onScrolled: (dx, dy) => {
         if (sink?.audio && dy !== 0)
-            sink.audio.volume = Math.max(0, Math.min(100, volume + 5 * dy)) / 100;
+            sink.audio.volume = Math.max(0, Math.min(150, volume + 5 * dy)) / 100;
     }
 
     PwObjectTracker {

@@ -38,7 +38,7 @@ Rectangle {
             text: toggle.label
             elide: Text.ElideRight
             color: toggle.active ? Theme.on_primary : Theme.on_surface
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 13
         }
     }

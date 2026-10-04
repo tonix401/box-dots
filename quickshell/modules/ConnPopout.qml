@@ -4,9 +4,9 @@ import Quickshell.Bluetooth
 import qs
 import qs.components
 
-// The bluetooth / network / tailscale block growing down into quick toggles, link details,
+// Below the bluetooth / network / tailscale block: quick toggles, link details,
 // a throughput graph and the paired bluetooth devices.
-Drawer {
+Popout {
     id: root
 
     required property Item network // modules/Network.qml
@@ -32,20 +32,18 @@ Drawer {
         return parts.join(" · ");
     }
 
-    // The bar text (states) moves into the toggles; the header shows live traffic and the address.
+    // The header shows live traffic and the address; the states are on the toggles.
     header: Item {
         BarText {
-            x: 10
             height: parent.height
             text: `${Theme.g(0xf019)} ${root.network.rate(root.network.down)}  ${Theme.g(0xf093)} ${root.network.rate(root.network.up)}`
-            color: root.segment.fg
+            color: Theme.on_surface
         }
         BarText {
             anchors.right: parent.right
-            anchors.rightMargin: 10
             height: parent.height
             text: Privacy.mask((root.info.ip ?? "").split("/")[0])
-            color: root.segment.fg
+            color: Theme.on_surface
         }
     }
 
@@ -94,7 +92,7 @@ Drawer {
             text: root.linkDetails
             elide: Text.ElideRight
             color: Theme.on_surface_variant
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 12
         }
 
@@ -196,7 +194,7 @@ Drawer {
             anchors.margins: 6
             text: `peak ${root.network.rate(graph.peak)}`
             color: Theme.on_surface_variant
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 10
         }
     }
@@ -238,7 +236,7 @@ Drawer {
                 text: Privacy.mask(row.device.name)
                 elide: Text.ElideRight
                 color: Theme.on_surface
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 13
                 font.weight: row.device.connected ? Font.Medium : Font.Normal
             }
@@ -246,13 +244,13 @@ Drawer {
                 visible: row.device.batteryAvailable && row.device.connected
                 text: `${Math.round(row.device.battery * 100)}%`
                 color: Theme.on_surface_variant
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 12
             }
             Text {
                 text: row.busy ? "…" : row.device.connected ? "Disconnect" : "Connect"
                 color: Theme.primary
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 12
                 font.weight: Font.Medium
             }

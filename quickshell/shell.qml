@@ -145,6 +145,17 @@ ShellRoot {
         }
     }
 
+    // Screen-share requests from the portal's picker script (hypr/scripts/share-picker.sh); see Share.qml.
+    // Answers "ok" so the script knows the menu took it, and falls back to hyprland-share-picker otherwise.
+    IpcHandler {
+        target: "share"
+
+        function pick(fifo: string, windows: string, allowToken: bool): string {
+            Share.request(fifo, windows, allowToken);
+            return "ok";
+        }
+    }
+
     // Each menu is created when opened and destroyed when closed, so it reloads its data every time like rofi.
     LazyLoader {
         active: Menus.active === "power"
@@ -178,5 +189,9 @@ ShellRoot {
     LazyLoader {
         active: Menus.active === "wallpaper"
         WallpaperMenu {}
+    }
+    LazyLoader {
+        active: Menus.active === "share"
+        ShareMenu {}
     }
 }

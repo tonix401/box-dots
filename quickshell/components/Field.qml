@@ -42,7 +42,7 @@ Rectangle {
         color: Theme.on_surface
         selectionColor: Theme.primary
         selectedTextColor: Theme.on_primary
-        font.family: Theme.fontFamily
+        font.family: Theme.uiFont
         font.pixelSize: 12
         onAccepted: field.accepted()
         Keys.onEscapePressed: field.cancelled()

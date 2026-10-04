@@ -61,6 +61,7 @@ Menu {
     lines: 12
     rowPadV: 6
     rowContentHeight: 28
+    fontFamily: Theme.monoFont // entry ids line up
     scrollbar: true
 
     onAccepted: it => Quickshell.execDetached(["sh", "-c", "printf '%s\\n' \"$1\" | cliphist decode | wl-copy", "sh", it.text])
@@ -71,6 +72,7 @@ Menu {
         property var entry: parent.entry
         property bool selected: parent.selected
         property real fontPt: parent.fontPt
+        property string fontFamily: parent.fontFamily
 
         height: parent.height
 
@@ -98,7 +100,7 @@ Menu {
             textFormat: Text.StyledText
             text: row.entry.markup
             color: row.selected ? Theme.on_primary : Theme.primary
-            font.family: Theme.fontFamily
+            font.family: row.fontFamily
             font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
             font.pointSize: row.fontPt
             renderType: Text.NativeRendering

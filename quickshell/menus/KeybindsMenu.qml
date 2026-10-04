@@ -71,6 +71,7 @@ Menu {
     scrollbar: true
     highlightSelected: false // a reference list, nothing to select
 
+    fontFamily: Theme.monoFont // descriptions are padded with spaces so the keys line up
     rowContent: MenuText {}
 
     Process {

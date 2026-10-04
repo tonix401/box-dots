@@ -120,7 +120,7 @@ PanelWindow {
                         color: Theme.on_surface
                         selectionColor: Theme.primary
                         selectedTextColor: Theme.on_primary
-                        font.family: Theme.fontFamily
+                        font.family: Theme.uiFont
                         font.pixelSize: 17
                         onTextChanged: root.refilter()
 
@@ -188,7 +188,7 @@ PanelWindow {
                         Text {
                             text: resultRow.modelData.name
                             color: resultRow.current ? Theme.on_primary : Theme.on_surface
-                            font.family: Theme.fontFamily
+                            font.family: Theme.uiFont
                             font.pixelSize: 16
                         }
                         Text {
@@ -196,7 +196,7 @@ PanelWindow {
                             text: resultRow.modelData.genericName || resultRow.modelData.comment || ""
                             elide: Text.ElideRight
                             color: resultRow.current ? Qt.alpha(Theme.on_primary, 0.7) : Theme.on_surface_variant
-                            font.family: Theme.fontFamily
+                            font.family: Theme.uiFont
                             font.pixelSize: 14
                         }
                     }
@@ -215,7 +215,7 @@ PanelWindow {
                     visible: root.searching && root.results.length === 0
                     text: "No apps found"
                     color: Theme.on_surface_variant
-                    font.family: Theme.fontFamily
+                    font.family: Theme.uiFont
                     font.pixelSize: 16
                 }
             }
@@ -290,7 +290,7 @@ PanelWindow {
                                         text: fileRow.modelData.name
                                         elide: Text.ElideMiddle
                                         color: Theme.on_surface
-                                        font.family: Theme.fontFamily
+                                        font.family: Theme.uiFont
                                         font.pixelSize: 15
                                     }
                                     Text {
@@ -298,14 +298,14 @@ PanelWindow {
                                         text: fileRow.modelData.dir
                                         elide: Text.ElideMiddle
                                         color: Theme.on_surface_variant
-                                        font.family: Theme.fontFamily
+                                        font.family: Theme.uiFont
                                         font.pixelSize: 12
                                     }
                                 }
                                 Text {
                                     text: root.ago(fileRow.modelData.modified)
                                     color: Theme.outline
-                                    font.family: Theme.fontFamily
+                                    font.family: Theme.uiFont
                                     font.pixelSize: 13
                                 }
                             }
@@ -404,7 +404,8 @@ PanelWindow {
                     SliderRow {
                         readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
                         glyph: audio?.muted ? 0xf0581 : 0xf057e
-                        value: Math.min(1, audio?.volume ?? 0)
+                        value: audio?.volume ?? 0
+                        maximum: 1.5
                         onMoved: v => {
                             if (audio)
                                 audio.volume = v;
@@ -495,14 +496,14 @@ PanelWindow {
                     Text {
                         text: Privacy.mask(whoami.output)
                         color: Theme.on_surface
-                        font.family: Theme.fontFamily
+                        font.family: Theme.uiFont
                         font.pixelSize: 16
                         font.weight: Font.Medium
                     }
                     Text {
                         text: stats.uptime
                         color: Theme.on_surface_variant
-                        font.family: Theme.fontFamily
+                        font.family: Theme.uiFont
                         font.pixelSize: 13
                     }
                 }
@@ -727,7 +728,7 @@ PanelWindow {
                 text: tile.entry.name
                 elide: Text.ElideRight
                 color: Theme.on_surface
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 13
             }
         }
@@ -767,7 +768,7 @@ PanelWindow {
             Text {
                 text: parent.parent.value
                 color: Theme.on_surface
-                font.family: Theme.fontFamily
+                font.family: Theme.uiFont
                 font.pixelSize: 13
             }
         }
@@ -808,7 +809,7 @@ PanelWindow {
             visible: power.armed
             text: power.tip + "?"
             color: Theme.on_surface
-            font.family: Theme.fontFamily
+            font.family: Theme.uiFont
             font.pixelSize: 14
         }
 

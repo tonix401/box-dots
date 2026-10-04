@@ -15,5 +15,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("wl-paste --watch cliphist store")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
   hl.exec_cmd("fcitx5 -d")
+  hl.exec_cmd("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
+  hl.exec_cmd("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
   hl.exec_cmd("hyprpm reload")
 end)
