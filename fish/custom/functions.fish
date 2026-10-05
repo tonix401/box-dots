@@ -76,18 +76,20 @@ function vscode_greeting
 end
 
 function kitty_greeting
+    # Each picture's height in --place matches the newlines after it, so it never runs into the
+    # prompt, whatever shape the terminal's cells have (they differ between scales and fonts).
     set -l choice (random 1 2) # I dont like the penguin enough, but you can add it by changing the 2 to a 3
 
     switch $choice
         case 1
         
-            kitten icat --place 16x8@4x0 --align left ~/.config/fish/images/cat.png
+            kitten icat --place 16x6@4x0 --align left ~/.config/fish/images/cat.png
             printf "\n\n\n\n\n\n"
         case 2
-            kitten icat --place 13x9@4x0 --align left ~/.config/fish/images/fat-cat.png
+            kitten icat --place 13x5@4x0 --align left ~/.config/fish/images/fat-cat.png
             printf "\n\n\n\n\n"
         case 3
-            kitten icat --place 19x10@4x0 --align left ~/.config/fish/images/penguin.png
+            kitten icat --place 19x3@4x0 --align left ~/.config/fish/images/penguin.png
             printf "\n\n\n"
     end
 end
