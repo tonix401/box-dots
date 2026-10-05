@@ -66,8 +66,3 @@ output_path = "~/.config/fastfetch/config.jsonc"
 input_path = "~/.config/matugen/templates/fcitx5-theme.conf"
 output_path = "~/.local/share/fcitx5/themes/matugen/theme.conf"
 post_hook = "fcitx5 -r &>/dev/null &"
-
-[templates.colors-swaync-css]
-input_path = "~/.config/matugen/templates/colors-swaync.css"
-output_path = "~/.config/swaync/tokens/variables.css"
-post_hook = "swaync-client -rs &>/dev/null &"

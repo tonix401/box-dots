@@ -378,8 +378,8 @@ PanelWindow {
                         Toggle {
                             glyph: active ? 0xf009b : 0xf009a
                             label: active ? "Silenced" : "Notifications"
-                            active: dnd.output === "true"
-                            onClicked: dnd.act("swaync-client -d -sw")
+                            active: Notifs.dnd
+                            onClicked: Notifs.setDnd(!Notifs.dnd)
                         }
                         Toggle {
                             glyph: PowerProfiles.profile === PowerProfile.PowerSaver ? 0xf032a : PowerProfiles.profile === PowerProfile.Performance ? 0xf14de : 0xf05d1
@@ -555,11 +555,6 @@ PanelWindow {
                 } catch (e) {}
             }
         }
-    }
-
-    Poll {
-        id: dnd
-        command: ["swaync-client", "-D"]
     }
 
     // GTK's recently-used list, newest first

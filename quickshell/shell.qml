@@ -75,6 +75,14 @@ ShellRoot {
         fade: root.fade
     }
 
+    // Notification popups; the center is created when opened (bell in the bar).
+    NotificationPopups {}
+
+    LazyLoader {
+        active: Notifs.centerOpen
+        NotificationCenter {}
+    }
+
     // Software dimming below the backlight minimum: a click-through black layer over everything.
     Variants {
         model: Quickshell.screens
@@ -127,6 +135,24 @@ ShellRoot {
         }
         function close(): void {
             Desktop.setShown(false);
+        }
+    }
+
+    // Notification center and do not disturb: `qs ipc call notifications toggle` / `dnd` / `clear`.
+    IpcHandler {
+        target: "notifications"
+
+        function toggle(): void {
+            Notifs.toggleCenter();
+        }
+        function close(): void {
+            Notifs.centerOpen = false;
+        }
+        function dnd(): void {
+            Notifs.setDnd(!Notifs.dnd);
+        }
+        function clear(): void {
+            Notifs.clearAll();
         }
     }
 
