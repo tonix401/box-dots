@@ -106,6 +106,7 @@ PanelWindow {
         id: box
 
         anchors.centerIn: parent
+        scale: Theme.popoutScale // laid out at full size, smaller on small screens
         width: root.boxWidth
         height: root.boxHeight > 0 ? root.boxHeight : 4 + 20 + (root.showInput ? root.inputHeight + 8 : 0) + (root.fixedHeight ? root.listHeight : list.contentHeight)
         radius: 12
@@ -144,7 +145,7 @@ PanelWindow {
                 font.family: root.fontFamily
                 font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
                 font.pointSize: root.fontPt
-                renderType: Text.NativeRendering
+                renderType: Theme.renderType
                 onTextChanged: root.refilter()
 
                 Text {
@@ -154,7 +155,7 @@ PanelWindow {
                     text: root.placeholder
                     color: Theme.on_surface_variant
                     font: input.font
-                    renderType: Text.NativeRendering
+                    renderType: Theme.renderType
                 }
 
                 Keys.onPressed: event => {

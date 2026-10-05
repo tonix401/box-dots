@@ -62,8 +62,8 @@ Row {
     }
 
     // #workspaces-group padding 0 4px + #workspaces padding 0 6px
-    leftPadding: 10
-    rightPadding: 10
+    leftPadding: Theme.compact ? 6 : 10
+    rightPadding: Theme.compact ? 6 : 10
     height: Theme.barHeight
 
     Component.onCompleted: Hyprland.refreshToplevels()
@@ -89,7 +89,7 @@ Row {
             readonly property bool active: ws !== null && (special ? ws.active || Hyprland.focusedWorkspace === ws : Hyprland.focusedWorkspace === ws)
             readonly property bool urgent: ws?.urgent ?? false
             readonly property bool empty: toplevels.length === 0
-            readonly property int hPad: active ? 12 : 4
+            readonly property int hPad: Theme.compact ? (active ? 7 : 2) : (active ? 12 : 4)
 
             readonly property string icon: Theme.g(urgent ? 0xf09f5 : active ? 0xf0baf : special ? 0xf1042 : empty ? 0xf09de : 0xf02a0)
 
@@ -111,7 +111,7 @@ Row {
             y: 3
             height: Theme.barHeight - 6
             // GTK min-width is content-box: it applies before the padding
-            readonly property real contentWidth: Math.max(28, label.implicitWidth + 10)
+            readonly property real contentWidth: Math.max(Theme.compact ? 22 : 28, label.implicitWidth + 10)
 
             width: contentWidth + 2 * hPad + 4
             radius: height / 2
@@ -143,7 +143,7 @@ Row {
                 color: button.fgColor
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.workspacePx
-                renderType: Text.NativeRendering
+                renderType: Theme.renderType
 
                 Behavior on color {
                     ColorAnimation {

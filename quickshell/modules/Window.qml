@@ -33,5 +33,5 @@ Module {
         return hit ? `${Theme.g(hit[1])} ${title}` : `${Theme.g(0xf02a0)} ${cls} - ${title}`;
     }
 
-    text: win && win.title ? Util.truncate(format(cls, win.title), 30) : ""
+    text: win && win.title ? Util.truncate(format(cls, win.title), Theme.titleChars) : ""
 }

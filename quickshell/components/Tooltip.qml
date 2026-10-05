@@ -38,7 +38,7 @@ PopupWindow {
             color: Theme.on_surface
             font.family: Theme.uiFont
             font.pixelSize: 13
-            renderType: Text.NativeRendering
+            renderType: Theme.renderType
         }
     }
 }

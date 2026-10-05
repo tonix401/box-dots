@@ -22,6 +22,6 @@ Module {
         }
     }
 
-    text: player ? Util.truncate(`${statusIcon} ${player.trackArtist} ~ ${player.trackTitle}`, 30) : ""
+    text: player ? Util.truncate(`${statusIcon} ${player.trackArtist} ~ ${player.trackTitle}`, Theme.titleChars) : ""
     onRightClicked: player?.togglePlaying()
 }

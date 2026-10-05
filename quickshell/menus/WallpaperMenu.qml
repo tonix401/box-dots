@@ -87,6 +87,7 @@ PanelWindow {
         readonly property real tileHeight: Math.round(tileWidth * 1440 / 3440)
 
         anchors.centerIn: parent
+        scale: Theme.popoutScale // laid out at full size, smaller on small screens
         width: 760
         height: 18 + 48 + 14 + 3 * tileHeight + 2 * 12 + 18
         radius: 12

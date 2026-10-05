@@ -15,5 +15,5 @@ Text {
     font.family: parent.fontFamily
     font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
     font.pointSize: parent.fontPt
-    renderType: Text.NativeRendering
+    renderType: Theme.renderType
 }

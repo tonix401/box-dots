@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Window
 import qs
 
 // A solid powerline block, like a waybar group with `padding: 3px 10px`.
@@ -9,13 +10,13 @@ Rectangle {
     property color fg
     default property alias content: row.data
 
-    implicitWidth: Math.ceil(row.implicitWidth) + 20
+    implicitWidth: Util.snap(Math.ceil(row.implicitWidth) + 2 * Theme.segmentPad, Screen.devicePixelRatio)
     implicitHeight: Theme.barHeight
 
     RowLayout {
         id: row
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: Theme.segmentPad
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
     }

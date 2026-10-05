@@ -103,7 +103,7 @@ Menu {
             font.family: row.fontFamily
             font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
             font.pointSize: row.fontPt
-            renderType: Text.NativeRendering
+            renderType: Theme.renderType
         }
     }
 

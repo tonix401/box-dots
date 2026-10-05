@@ -67,8 +67,9 @@ Item {
 
         visible: root.shown > 0
         color: "transparent"
-        implicitWidth: card.width
-        implicitHeight: card.height + root.slide
+        // The card is laid out at full size and scaled down as a whole on small screens.
+        implicitWidth: Math.ceil(card.width * card.scale)
+        implicitHeight: Math.ceil(card.height * card.scale) + root.slide
 
         Rectangle {
             id: card
@@ -77,6 +78,8 @@ Item {
             width: root.contentWidth + 2 * root.padding
             height: column.height + 2 * root.padding
             opacity: root.shown
+            scale: Theme.popoutScale
+            transformOrigin: Item.TopLeft
             radius: 16
             color: Theme.surface_container
             border.width: 1

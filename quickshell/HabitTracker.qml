@@ -268,7 +268,10 @@ PanelWindow {
     WlrLayershell.keyboardFocus: editing !== -1 || hover.hovered ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     // Only the panel takes clicks, not the backdrop around it.
     mask: Region {
-        item: panel
+        x: panel.x
+        y: panel.y
+        width: root.size
+        height: root.size
     }
 
     Backdrop {
@@ -278,10 +281,13 @@ PanelWindow {
     Item {
         id: panel
 
+        // size is on the screen; the panel is laid out larger and scaled down.
         x: root.room.left
         y: root.room.top
-        width: root.size
-        height: root.size
+        width: root.size / scale
+        height: root.size / scale
+        scale: Theme.widgetScale
+        transformOrigin: Item.TopLeft
 
         HoverHandler {
             id: hover

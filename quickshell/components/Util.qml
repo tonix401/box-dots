@@ -20,6 +20,12 @@ Singleton {
         return `iwctl device "$(basename "$(dirname /sys/class/net/*/wireless | head -n1)")" set-property Powered ${on ? "on" : "off"}`;
     }
 
+    // Rounds a width up to whole device pixels, so blocks laid side by side meet on a pixel edge
+    // at fractional scales too (at 1.5 an odd logical width ends mid-pixel and leaves a dark seam).
+    function snap(w, dpr) {
+        return Math.ceil(Math.round(w * dpr * 100) / 100) / dpr;
+    }
+
     function run(cmd) {
         Quickshell.execDetached(["sh", "-c", cmd]);
     }

@@ -76,6 +76,7 @@ PanelWindow {
         id: box
 
         anchors.centerIn: parent
+        scale: Theme.popoutScale // laid out at full size, smaller on small screens
         width: 880
         height: 670
         radius: 12

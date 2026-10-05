@@ -15,7 +15,7 @@ PanelWindow {
 
     readonly property int firstHour: 7
     readonly property int lastHour: 22
-    readonly property int hourHeight: 52
+    readonly property int hourHeight: Theme.compact ? 25 : 52 // before Theme.widgetScale
     readonly property int gutter: 48 // hour labels
     readonly property int pad: 8
 
@@ -220,11 +220,12 @@ PanelWindow {
             bottom: 0
         })
     property int fade: 0
-    readonly property int panelWidth: 1320
-    readonly property int panelHeight: panel.height
+    // On the screen; the panel is laid out 1 / Theme.widgetScale as large and scaled down.
+    readonly property int panelWidth: Theme.compact ? 780 : 1320
+    readonly property int panelHeight: Math.ceil(panel.height * panel.scale)
 
     implicitWidth: room.left + panelWidth + room.right
-    implicitHeight: room.top + content.implicitHeight + 2 * pad + room.bottom
+    implicitHeight: room.top + panelHeight + room.bottom
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Bottom
@@ -242,8 +243,10 @@ PanelWindow {
 
         x: root.room.left
         y: root.room.top
-        width: root.panelWidth
+        width: root.panelWidth / scale
         height: content.implicitHeight + 2 * root.pad
+        scale: Theme.widgetScale
+        transformOrigin: Item.TopLeft
 
         HoverHandler {
             id: hover

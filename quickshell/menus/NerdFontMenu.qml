@@ -48,7 +48,7 @@ Menu {
             font.family: Theme.uiFont
             font.hintingPreference: Font.PreferFullHinting // pango rounds advances to whole pixels
             font.pointSize: row.fontPt
-            renderType: Text.NativeRendering
+            renderType: Theme.renderType
         }
     }
 

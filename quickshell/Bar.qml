@@ -69,7 +69,7 @@ PanelWindow {
                 }
                 Memory {
                     fg: systemSeg.fg
-                    Layout.leftMargin: 16
+                    Layout.leftMargin: Theme.moduleGap
                 }
             }
             Arrow {
@@ -164,12 +164,12 @@ PanelWindow {
                 Network {
                     id: networkMod
                     fg: connSeg.fg
-                    Layout.leftMargin: 16
+                    Layout.leftMargin: Theme.moduleGap
                     detailed: connPopout.open
                 }
                 Tailscale {
                     fg: connSeg.fg
-                    Layout.leftMargin: 16
+                    Layout.leftMargin: Theme.moduleGap
                 }
             }
             Arrow {
@@ -186,7 +186,7 @@ PanelWindow {
                 }
                 Microphone {
                     fg: audioSeg.fg
-                    Layout.leftMargin: 16
+                    Layout.leftMargin: Theme.moduleGap
                 }
             }
             Arrow {

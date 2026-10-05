@@ -26,7 +26,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: Ime.label
             color: root.fg
-            font.pixelSize: 13 // 10pt
+            font.pixelSize: Theme.compact ? 10 : 13 // 10pt
         }
     }
 
