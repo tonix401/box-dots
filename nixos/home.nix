@@ -32,11 +32,6 @@ in
     };
   };
 
-  programs.gh = {
-    enable = true;
-    gitCredentialHelper.enable = true;
-  };
-
   # Started by hypr/exec.lua once the Wayland environment is exported, so services that need
   # the session (graphical-session.target) can wait for it; plain Hyprland never starts it.
   systemd.user.targets.hyprland-session.Unit = {
