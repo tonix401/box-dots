@@ -42,6 +42,13 @@ PanelWindow {
     readonly property int allDayLanes: allDay.reduce((n, x) => Math.max(n, x.lane + 1), 0)
 
     readonly property var accents: [Theme.primary, Theme.tertiary, Theme.secondary]
+    // Rooms whose events probably aren't the user's (another course's lectures): shown greyed out.
+    readonly property var otherRooms: ["A234"]
+
+    function isOther(ev) {
+        const words = (ev.location ?? "").toUpperCase().split(/\s+/);
+        return otherRooms.some(r => words.includes(r));
+    }
 
     function parseDay(s) {
         const [y, m, d] = s.slice(0, 10).split("-").map(Number);
@@ -607,7 +614,8 @@ PanelWindow {
 
         readonly property string key: ev.id + ev.start
         readonly property bool open: root.expanded === key
-        readonly property color accent: root.accent(ev.calendarId)
+        readonly property bool other: root.isOther(ev)
+        readonly property color accent: other ? Theme.outline : root.accent(ev.calendarId)
         readonly property bool roomy: baseHeight >= 38
         readonly property string where: (ev.location ?? "").trim()
         readonly property string notes: root.description(ev)
@@ -623,7 +631,7 @@ PanelWindow {
         color: Qt.alpha(Qt.tint(Theme.surface_container, Qt.alpha(accent, mouse.containsMouse ? 0.38 : 0.26)), open ? 0.95 : 0.7)
         border.width: 1
         border.color: Qt.alpha(accent, open ? 0.8 : 0.45)
-        opacity: !open && new Date(ev.end) < root.now ? 0.65 : 1
+        opacity: open ? 1 : other ? 0.5 : new Date(ev.end) < root.now ? 0.65 : 1
         clip: true
 
         Behavior on x {
