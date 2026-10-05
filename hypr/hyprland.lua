@@ -1,3 +1,6 @@
+-- Provided by the NixOS config; on other systems hyprpm loads it (see exec.lua)
+pcall(hl.plugin.load, "/etc/hypr/plugins/hyprexpo.so")
+
 require("exec")
 require("keybinds")
 require("env")

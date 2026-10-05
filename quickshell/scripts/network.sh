@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Prints one line of JSON describing the current network state (iwd + sysfs).
-WIFI=wlan1
+# first wireless and first wired physical interface (wlan1/eno1 on Arch, wlan0 on NixOS)
+WIFI=$(basename "$(dirname /sys/class/net/*/wireless | head -n1)")
 ETH=eno1
+for dev in /sys/class/net/*; do
+  [ -e "$dev/device" ] && [ ! -e "$dev/wireless" ] && { ETH=${dev##*/}; break; }
+done
 
 strip() { sed 's/\x1b\[[0-9;]*m//g'; }
 

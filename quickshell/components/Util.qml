@@ -17,7 +17,7 @@ Singleton {
 
     // Powers the wifi device (iwd, the same one scripts/network.sh reads) on or off.
     function wifiPowerCommand(on) {
-        return `iwctl device wlan1 set-property Powered ${on ? "on" : "off"}`;
+        return `iwctl device "$(basename "$(dirname /sys/class/net/*/wireless | head -n1)")" set-property Powered ${on ? "on" : "off"}`;
     }
 
     function run(cmd) {

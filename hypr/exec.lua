@@ -6,9 +6,10 @@
 
 hl.on("hyprland.start", function()
   hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
-  hl.exec_cmd("/usr/lib/xdg-desktop-portal-hyprland")
-  hl.exec_cmd("/usr/lib/xdg-desktop-portal-gtk")
-  hl.exec_cmd("/usr/lib/xdg-desktop-portal --replace")
+  -- NixOS starts the portals itself and loads plugins in hyprland.lua instead of hyprpm
+  hl.exec_cmd("[ -e /etc/NIXOS ] || /usr/lib/xdg-desktop-portal-hyprland")
+  hl.exec_cmd("[ -e /etc/NIXOS ] || /usr/lib/xdg-desktop-portal-gtk")
+  hl.exec_cmd("[ -e /etc/NIXOS ] || /usr/lib/xdg-desktop-portal --replace")
   hl.exec_cmd("awww-daemon")
   hl.exec_cmd("qs") -- bar + menus, ~/.config/quickshell
   hl.exec_cmd("xsettingsd")
@@ -17,5 +18,5 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("fcitx5 -d")
   hl.exec_cmd("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
   hl.exec_cmd("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
-  hl.exec_cmd("hyprpm reload")
+  hl.exec_cmd("[ -e /etc/NIXOS ] || hyprpm reload")
 end)
