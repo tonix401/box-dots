@@ -52,6 +52,19 @@ hyprpm reload
 - `matugen/`: templates for every generated color file
 - `hypr/scripts/`: screenshot script and the Python helpers the menus call
 
+### NixOS (laptop)
+
+`nixos/` is the laptop's system config: `configuration.nix` (SDDM, Hyprland, fonts, services),
+`home.nix` (home-manager: links these configs out of `~/box-dots`, user packages, the dcal
+service) and its `hardware-configuration.nix`. Apply it with
+
+```
+sudo cp nixos/*.nix /etc/nixos/ && sudo nixos-rebuild switch
+```
+
+The configs check for `/etc/NIXOS` where NixOS differs from Arch (portals, hyprexpo, package
+aliases). On small screens Quickshell shrinks the bar, menus and widgets on its own.
+
 ### Wallpapers and theming
 
 Wallpapers in `~/Pictures/Wallpapers` are resized and thumbnailed into `~/.cache/box-dots`
