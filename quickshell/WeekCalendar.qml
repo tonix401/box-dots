@@ -8,8 +8,9 @@ import qs.components
 // This week's dcal events from 7:00 to 22:00, on the desktop below all windows.
 // Arrows or the mouse wheel change the week; clicking the title (or a minute without the
 // pointer on it) goes back to this week. Clicking an event grows its block to show everything
-// about it; clicking it again or anywhere else in the grid shrinks it back. Clicking an empty
-// slot (or dragging over a time range) opens an editor for a new appointment.
+// about it; clicking it again or anywhere else in the grid shrinks it back. Opened events in
+// writable calendars can be edited or deleted from there. Clicking an empty slot (or dragging
+// over a time range) opens an editor for a new appointment.
 PanelWindow {
     id: root
 
@@ -21,7 +22,9 @@ PanelWindow {
 
     property int weekOffset: 0
     property string expanded: "" // key of the block showing its details
-    property var draft: null // {day, s, e} (minutes after firstHour) of the appointment being added
+    // {day, s, e} (minutes after firstHour) of the appointment being added; editing one also
+    // carries `ev` and its start `date` (which may lie outside this week).
+    property var draft: null
     property string lastCalendar: "" // where the last new appointment went
     // Calendars that take new events: not read-only, not task lists.
     readonly property var writable: Dcal.calendars.filter(c => !c.readOnly && !c.hidden && (c.supportedComponents?.includes("VEVENT") ?? true))
@@ -156,6 +159,29 @@ PanelWindow {
 
     function toggle(key) {
         expanded = expanded === key ? "" : key;
+    }
+    function canEdit(ev) {
+        return writable.some(c => c.id === ev.calendarId);
+    }
+    // Instances of a series all share the series' id; only the first lacks a recurringId.
+    function recurring(ev) {
+        return (ev.recurringId ?? "") !== "" || (ev.recurrence?.rrule?.length ?? 0) > 0;
+    }
+    // Opens the editor on an existing event, next to where it starts.
+    function edit(ev) {
+        const start = ev.allDay ? parseDay(ev.start) : new Date(ev.start);
+        const date = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        const total = (lastHour - firstHour) * 60;
+        const s = ev.allDay ? 0 : Math.max(0, Math.min(total - 60, start.getHours() * 60 + start.getMinutes() - firstHour * 60));
+        expanded = "";
+        draft = null; // a fresh editor, even when another one was open
+        draft = {
+            day: Math.max(0, Math.min(6, Math.round((date - weekStart) / 86400000))),
+            s: s,
+            e: s + 60,
+            date: date,
+            ev: ev
+        };
     }
     function calendarName(id) {
         return Dcal.calendars.find(c => c.id === id)?.name ?? "";
@@ -539,7 +565,7 @@ PanelWindow {
                     Rectangle {
                         readonly property var r: slots.range ?? root.draft
 
-                        visible: r !== null
+                        visible: r !== null && !r.ev
                         x: (r?.day ?? 0) * card.width / 7 + 3
                         y: (r?.s ?? 0) * root.hourHeight / 60 + 1
                         width: card.width / 7 - 6
@@ -619,6 +645,9 @@ PanelWindow {
         readonly property bool roomy: baseHeight >= 38
         readonly property string where: (ev.location ?? "").trim()
         readonly property string notes: root.description(ev)
+        property bool confirming: false // asking before a delete
+        property bool deleting: false
+        property string error: ""
         readonly property real targetWidth: open ? Math.max(baseWidth, 300) : baseWidth
         readonly property real targetHeight: open ? Math.max(baseHeight, info.implicitHeight + 12) : baseHeight
 
@@ -633,6 +662,34 @@ PanelWindow {
         border.color: Qt.alpha(accent, open ? 0.8 : 0.45)
         opacity: open ? 1 : other ? 0.5 : new Date(ev.end) < root.now ? 0.65 : 1
         clip: true
+
+        function remove(occurrenceOnly) {
+            if (deleting)
+                return;
+            const params = {
+                id: ev.id
+            };
+            if (occurrenceOnly)
+                params.occurrenceStart = ev.start;
+            deleting = true;
+            const sent = Dcal.request("events.delete", params, () => {
+                root.expanded = "";
+                root.load();
+            }, message => {
+                block.deleting = false;
+                block.error = message;
+            });
+            if (!sent) {
+                deleting = false;
+                error = "dcal is not running";
+            }
+        }
+
+        onOpenChanged: {
+            confirming = false;
+            deleting = false;
+            error = "";
+        }
 
         Behavior on x {
             NumberAnimation {
@@ -725,41 +782,105 @@ PanelWindow {
                 maximumLineCount: 16
                 elide: Text.ElideRight
             }
+            Detail {
+                visible: block.open && block.error !== ""
+                text: block.error
+                color: Theme.error
+            }
+            // Delete asks first; a repeating event can lose just this time or the whole series.
+            Flow {
+                visible: block.open && root.canEdit(block.ev)
+                width: parent.width
+                topPadding: 4
+                bottomPadding: 2
+                spacing: 6
+
+                Pill {
+                    visible: !block.confirming
+                    glyph: 0xf040
+                    text: "Edit"
+                    onClicked: root.edit(block.ev)
+                }
+                Pill {
+                    visible: !block.confirming
+                    glyph: 0xf1f8
+                    text: "Delete"
+                    onClicked: block.confirming = true
+                }
+                Pill {
+                    visible: block.confirming
+                    active: true
+                    text: block.deleting ? "Deleting…" : root.recurring(block.ev) ? "Only this time" : "Delete"
+                    onClicked: block.remove(root.recurring(block.ev))
+                }
+                Pill {
+                    visible: block.confirming && root.recurring(block.ev)
+                    text: "Whole series"
+                    onClicked: block.remove(false)
+                }
+                Pill {
+                    visible: block.confirming
+                    text: "Keep"
+                    onClicked: block.confirming = false
+                }
+            }
         }
     }
 
-    // Form for a new appointment in the `draft` slot. Enter saves, Escape cancels.
+    // Form for a new appointment in the `draft` slot, or for changing `draft.ev`. Enter saves,
+    // Escape cancels. An edit keeps the event's calendar (and how many days it spans); on a
+    // repeating event it changes the whole series, which dcal shifts by as much as this time moved.
     component Editor: Rectangle {
         id: editor
 
-        property bool allDay: false
+        readonly property var editing: root.draft?.ev ?? null
+        property bool allDay: editing?.allDay ?? false
         property bool saving: false
         property string error: ""
         property string calendarId: {
+            if (editing)
+                return editing.calendarId;
             const ids = root.writable.map(c => c.id);
             if (ids.includes(root.lastCalendar))
                 return root.lastCalendar;
             // The account's main calendar is named after the account.
             return (root.writable.find(c => c.name === c.accountName) ?? root.writable[0])?.id ?? "";
         }
-        readonly property date day: root.days[root.draft?.day ?? 0]
+        property date day: root.draft?.date ?? root.days[root.draft?.day ?? 0] // moved by the arrows
+        // Days from the edited event's start date to its end date (exclusive end for all-day ones).
+        readonly property int span: {
+            if (!editing)
+                return 0;
+            const a = editing.allDay ? root.parseDay(editing.start) : new Date(editing.start);
+            const b = editing.allDay ? root.parseDay(editing.end) : new Date(editing.end);
+            return Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
+        }
 
-        function time(text) {
+        function time(text, days) {
             const m = /^(\d{1,2}):?(\d{2})$/.exec(text.trim());
             if (!m || +m[1] > 23 || +m[2] > 59)
                 return null;
-            return new Date(day.getFullYear(), day.getMonth(), day.getDate(), +m[1], +m[2]);
+            return new Date(day.getFullYear(), day.getMonth(), day.getDate() + days, +m[1], +m[2]);
+        }
+        function initialTime(field, fallback) {
+            if (!editing)
+                return root.clock(fallback);
+            return editing.allDay ? (field === "start" ? "09:00" : "10:00") : Qt.formatTime(new Date(editing[field]), "HH:mm");
+        }
+        function shiftDay(n) {
+            day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + n);
         }
 
         function save() {
             const title = titleField.text.trim();
             let start, end;
             if (allDay) {
+                const days = editing?.allDay ? Math.max(1, span) : 1;
                 start = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()));
-                end = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate() + 1));
+                end = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate() + days));
             } else {
-                start = time(fromField.text);
-                end = time(toField.text);
+                start = time(fromField.text, 0);
+                end = time(toField.text, editing && !editing.allDay ? span : 0);
             }
             if (title === "")
                 error = "Add a title";
@@ -774,16 +895,26 @@ PanelWindow {
             if (error !== "" || saving)
                 return;
 
-            saving = true;
-            const sent = Dcal.request("events.create", {
-                calendarId: calendarId,
+            // An update leaves out fields it doesn't name (description, reminders) as they were.
+            const params = {
                 summary: title,
                 location: locationField.text.trim(),
                 start: start.toISOString(),
                 end: end.toISOString(),
                 allDay: allDay
-            }, () => {
-                root.lastCalendar = editor.calendarId;
+            };
+            if (!editing)
+                params.calendarId = calendarId;
+            else {
+                params.id = editing.id;
+                if (root.recurring(editing))
+                    params.occurrenceStart = editing.start; // the series moves by start - occurrenceStart
+            }
+
+            saving = true;
+            const sent = Dcal.request(editing ? "events.update" : "events.create", params, () => {
+                if (!editor.editing)
+                    root.lastCalendar = editor.calendarId;
                 root.draft = null;
                 root.load();
             }, message => {
@@ -822,13 +953,43 @@ PanelWindow {
             width: parent.width - 24
             spacing: 8
 
-            SectionLabel {
-                text: "New appointment"
-                hint: Qt.formatDate(editor.day, "ddd d MMM")
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 2
+
+                Text {
+                    text: editor.editing ? "Edit appointment" : "New appointment"
+                    color: Theme.primary
+                    font.family: Theme.uiFont
+                    font.pixelSize: 15
+                    font.weight: Font.Medium
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
+                GlyphButton {
+                    size: 22
+                    glyph: 0xf0141
+                    fg: Theme.outline
+                    onClicked: editor.shiftDay(-1)
+                }
+                Text {
+                    text: Qt.formatDate(editor.day, "ddd d MMM")
+                    color: Theme.outline
+                    font.family: Theme.uiFont
+                    font.pixelSize: 12
+                }
+                GlyphButton {
+                    size: 22
+                    glyph: 0xf0142
+                    fg: Theme.outline
+                    onClicked: editor.shiftDay(1)
+                }
             }
             Field {
                 id: titleField
                 placeholder: "Title"
+                text: editor.editing?.summary ?? ""
                 onAccepted: editor.save()
                 onCancelled: root.draft = null
             }
@@ -849,7 +1010,7 @@ PanelWindow {
                     Layout.preferredWidth: 28 + Math.ceil(timeText.advanceWidth) + 10
                     visible: !editor.allDay
                     glyph: 0xf017
-                    text: root.clock(root.draft?.s ?? 0)
+                    text: editor.initialTime("start", root.draft?.s ?? 0)
                     onAccepted: editor.save()
                     onCancelled: root.draft = null
                 }
@@ -865,7 +1026,7 @@ PanelWindow {
                     Layout.fillWidth: false
                     Layout.preferredWidth: 10 + Math.ceil(timeText.advanceWidth) + 10
                     visible: !editor.allDay
-                    text: root.clock(root.draft?.e ?? 0)
+                    text: editor.initialTime("end", root.draft?.e ?? 0)
                     onAccepted: editor.save()
                     onCancelled: root.draft = null
                 }
@@ -882,15 +1043,28 @@ PanelWindow {
                 id: locationField
                 glyph: 0xf041
                 placeholder: "Location"
+                text: editor.editing?.location ?? ""
                 onAccepted: editor.save()
                 onCancelled: root.draft = null
             }
             Pill {
+                readonly property bool cycles: !editor.editing && root.writable.length > 1
+
                 Layout.fillWidth: true
                 glyph: 0xf073
-                text: (root.writable.find(c => c.id === editor.calendarId)?.name ?? "No calendar") + (root.writable.length > 1 ? "  " + Theme.g(0xf0e2) : "")
+                text: (root.writable.find(c => c.id === editor.calendarId)?.name ?? "No calendar") + (cycles ? "  " + Theme.g(0xf0e2) : "")
                 dot: root.accent(editor.calendarId)
-                onClicked: editor.cycleCalendar()
+                onClicked: if (cycles)
+                    editor.cycleCalendar()
+            }
+            Text {
+                Layout.fillWidth: true
+                visible: editor.editing !== null && root.recurring(editor.editing)
+                text: Theme.g(0xf0456) + "  Changes every time this repeats"
+                wrapMode: Text.Wrap
+                color: Theme.on_surface_variant
+                font.family: Theme.uiFont
+                font.pixelSize: 11
             }
             Text {
                 Layout.fillWidth: true
