@@ -254,9 +254,9 @@ PanelWindow {
         }
     }
 
-    // Placed by shell.qml (below the calendar, left of the habit tracker), which sets the panel's
-    // width and `room`: how far the window (and the dark backdrop) reaches past each edge of the
-    // panel. The panel fills the window's height.
+    // Placed by shell.qml (at the screen's right edge, above the habit tracker), which sets the
+    // panel's width and `room`: how far the window (and the dark backdrop) reaches past each edge of
+    // the panel. The panel fills the window's height.
     property int panelWidth: 420
     property var room: ({
             left: 0,
@@ -265,6 +265,7 @@ PanelWindow {
             bottom: 0
         })
     property int fade: 0
+    property bool fadeLeft: false
 
     implicitWidth: room.left + panelWidth + room.right
     implicitHeight: 600
@@ -285,6 +286,7 @@ PanelWindow {
 
     Backdrop {
         fade: root.fade
+        fadeLeft: root.fadeLeft
     }
 
     Item {

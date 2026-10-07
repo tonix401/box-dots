@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import qs
 import qs.components
 
-// This week's dcal events from 7:00 to 22:00, on the desktop below all windows.
+// This week's dcal events from 6:00 to 24:00, on the desktop below all windows.
 // Arrows or the mouse wheel change the week; clicking the title (or a minute without the
 // pointer on it) goes back to this week. Clicking an event grows its block to show everything
 // about it; clicking it again or anywhere else in the grid shrinks it back. Clicking an empty
@@ -13,12 +13,11 @@ import qs.components
 PanelWindow {
     id: root
 
-    readonly property int firstHour: 7
-    readonly property int lastHour: 22
-    // Before Theme.widgetScale. Outside compact, the hours take up to 55% of the screen's height,
-    // so the todo list and habit tracker below keep their room on shorter screens.
+    readonly property int firstHour: 6
+    readonly property int lastHour: 24
     readonly property int screenHeight: screen?.height ?? Math.min(...Quickshell.screens.map(s => s.height))
-    readonly property int hourHeight: Theme.compact ? 32 : Math.min(52, Math.floor(screenHeight * 0.55 / (lastHour - firstHour)))
+    // Before Theme.widgetScale. The hours split whatever height the panel has left.
+    readonly property int hourHeight: Math.max(1, Math.floor(hours.height / (lastHour - firstHour)))
     readonly property int gutter: 48 // hour labels
     readonly property int pad: 8
 
@@ -214,7 +213,7 @@ PanelWindow {
         }
     }
 
-    // Placed by shell.qml (top left, under the bar), which sets `room`: how far the window (and the
+    // Placed by shell.qml (top left, under the bar, down to the screen's bottom), which sets `room`: how far the window (and the
     // dark backdrop) reaches past each edge of the panel, the last `fade` px on the right fading out.
     property var room: ({
             left: 0,
@@ -224,14 +223,14 @@ PanelWindow {
         })
     property int fade: 0
     // On the screen; the panel is laid out 1 / Theme.widgetScale as large and scaled down.
-    // At most half the screen, counted from its left edge; the todo list and habit tracker below
-    // share this width.
+    // At most half the screen, counted from its left edge; the todo list and habit tracker sit
+    // at the right edge.
     readonly property int screenWidth: screen?.width ?? Math.min(...Quickshell.screens.map(s => s.width))
     readonly property int panelWidth: Math.min(Theme.compact ? 780 : 1320, Math.floor(screenWidth / 2) - room.left)
     readonly property int panelHeight: Math.ceil(panel.height * panel.scale)
 
     implicitWidth: room.left + panelWidth + room.right
-    implicitHeight: room.top + panelHeight + room.bottom
+    implicitHeight: 600
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Bottom
@@ -250,7 +249,7 @@ PanelWindow {
         x: root.room.left
         y: root.room.top
         width: root.panelWidth / scale
-        height: content.implicitHeight + 2 * root.pad
+        height: (root.height - root.room.top - root.room.bottom) / scale
         scale: Theme.widgetScale
         transformOrigin: Item.TopLeft
 
@@ -264,6 +263,7 @@ PanelWindow {
             x: root.pad
             y: root.pad
             width: parent.width - 2 * root.pad
+            height: parent.height - 2 * root.pad
             spacing: 10
 
             RowLayout {
@@ -408,8 +408,9 @@ PanelWindow {
 
             // Hours
             Item {
+                id: hours
                 Layout.fillWidth: true
-                Layout.preferredHeight: (root.lastHour - root.firstHour) * root.hourHeight
+                Layout.fillHeight: true
                 Layout.topMargin: 4
 
                 WheelHandler {
@@ -755,7 +756,8 @@ PanelWindow {
 
         function time(text) {
             const m = /^(\d{1,2}):?(\d{2})$/.exec(text.trim());
-            if (!m || +m[1] > 23 || +m[2] > 59)
+            // 24:00 is the day's end (the Date rolls over to the next midnight).
+            if (!m || +m[2] > 59 || +m[1] > 24 || (+m[1] === 24 && +m[2] > 0))
                 return null;
             return new Date(day.getFullYear(), day.getMonth(), day.getDate(), +m[1], +m[2]);
         }

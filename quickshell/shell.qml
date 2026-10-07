@@ -20,24 +20,27 @@ ShellRoot {
     }
 
     // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D). The week
-    // calendar sits top left under the bar, the todo list and the habit tracker side by side below
-    // it down to the screen's bottom. Their windows reach to the screen's edges and meet halfway
-    // across the gaps, so their backdrops make one dark band from top to bottom that fades out
-    // right of the column.
-    readonly property int edge: Theme.compact ? 16 : 24 // from the screen's left and bottom edges
+    // calendar sits top left under the bar, down to the screen's bottom; the todo list and the habit tracker are stacked at the
+    // right edge, the todo list under the bar down to the habit tracker, the habit tracker (square,
+    // as wide as the column) down to the screen's bottom. Their windows reach to the screen's edges
+    // and meet halfway across the gap, so their backdrops make one dark band from top to bottom
+    // that fades out left of the column.
+    readonly property int edge: Theme.compact ? 16 : 24 // from the screen's left, right and bottom edges
     readonly property int gap: Theme.compact ? 12 : 16 // between the widgets and below the bar
-    readonly property int fade: 160 // the band's fade right of the widgets
+    readonly property int fade: 160 // the bands' fade beside the widgets
+    readonly property int column: Math.round(calendar.screenHeight * 0.4) // the right column's width
 
     WeekCalendar {
         id: calendar
         visible: Desktop.widgetsShown
         anchors.top: true
+        anchors.bottom: true
         anchors.left: true
         room: ({
                 left: root.edge,
                 top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
                 right: root.fade,
-                bottom: root.gap / 2
+                bottom: root.edge
             })
         fade: root.fade
     }
@@ -47,32 +50,33 @@ ShellRoot {
         visible: Desktop.widgetsShown
         anchors.top: true
         anchors.bottom: true
-        anchors.left: true
-        margins.top: calendar.implicitHeight
-        panelWidth: calendar.panelWidth - root.gap - habits.panelWidth
+        anchors.right: true
+        margins.bottom: habits.implicitHeight
+        panelWidth: habits.panelWidth
         room: ({
-                left: root.edge,
-                top: root.gap / 2,
-                right: root.gap / 2,
-                bottom: root.edge
+                left: root.fade,
+                top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
+                right: root.edge,
+                bottom: root.gap / 2
             })
+        fade: root.fade
+        fadeLeft: true
     }
 
     HabitTracker {
         id: habits
         visible: Desktop.widgetsShown
-        anchors.top: true
         anchors.bottom: true
-        anchors.left: true
-        margins.top: calendar.implicitHeight
-        margins.left: todo.implicitWidth
+        anchors.right: true
+        implicitHeight: room.top + root.column + room.bottom
         room: ({
-                left: root.gap / 2,
+                left: root.fade,
                 top: root.gap / 2,
-                right: root.fade,
+                right: root.edge,
                 bottom: root.edge
             })
         fade: root.fade
+        fadeLeft: true
     }
 
     // Notification popups; the center is created when opened (bell in the bar).

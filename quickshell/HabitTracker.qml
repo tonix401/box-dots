@@ -248,8 +248,8 @@ PanelWindow {
         }
     }
 
-    // Placed by shell.qml (right of the todo list), which sets `room`: how far the window (and the
-    // dark backdrop) reaches past each edge of the panel, the last `fade` px on the right fading out. The
+    // Placed by shell.qml (at the screen's right edge, below the todo list), which sets `room`: how far
+    // the window (and the dark backdrop) reaches past each edge of the panel, the `fade` px fading out. The
     // panel fills the window's height and is as wide as it is tall, or wider when the day cells need
     // the room to fit every habit's dot.
     property var room: ({
@@ -259,6 +259,7 @@ PanelWindow {
             bottom: 0
         })
     property int fade: 0
+    property bool fadeLeft: false
     readonly property int size: Math.max(0, height - room.top - room.bottom)
     // Before Theme.widgetScale: how many lines of (today's larger) dots fit in a cell, so how wide a
     // cell has to be for the rest of them.
@@ -283,6 +284,7 @@ PanelWindow {
 
     Backdrop {
         fade: root.fade
+        fadeLeft: root.fadeLeft
     }
 
     Item {
