@@ -17,6 +17,7 @@
 !fcitx5
 !swaync
 !quickshell
+!cat
 
 # generated files
 __pycache__/

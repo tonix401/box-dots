@@ -75,6 +75,8 @@ ShellRoot {
         fade: root.fade
     }
 
+    KittyCat {}
+
     // Software dimming below the backlight minimum: a click-through black layer over everything.
     Variants {
         model: Quickshell.screens
@@ -130,6 +132,42 @@ ShellRoot {
         }
     }
 
+    // The terminal cats (KittyCat, Pet): `qs ipc call cat react error|ok|cheer|wake|pet` plays a reaction
+    // on every cat, `reactPid <event> <pid>` only on the window of that process,
+    // `mood <expression>` pins one (see ~/.config/cat/poses.json), `unpin` lets context decide again,
+    // `tester` opens or closes CatTester, `kitty` hides or shows the cats.
+    IpcHandler {
+        target: "cat"
+
+        function react(event: string): bool {
+            return Pet.react(event);
+        }
+        // Only the cat on the window of process `pid` (the fish hook sends $KITTY_PID).
+        function reactPid(event: string, pid: int): bool {
+            return Pet.reactPid(event, pid);
+        }
+        // The fish hook: a command (`id`) in the window of `pid` started, then finished with `event`
+        // ("none", or a reaction) — the cat strains, squished, in between.
+        function busyPid(pid: int, id: string): bool {
+            return Pet.busyPid(pid, id);
+        }
+        function finishedPid(pid: int, id: string, event: string): bool {
+            return Pet.finishedPid(pid, id, event);
+        }
+        function mood(expression: string): void {
+            Pet.pin(expression);
+        }
+        function unpin(): void {
+            Pet.unpin();
+        }
+        function tester(): void {
+            Pet.testerOpen = !Pet.testerOpen;
+        }
+        function kitty(): void {
+            Pet.kittyShown = !Pet.kittyShown;
+        }
+    }
+
     // Replacements for the rofi menus: `qs ipc call menu toggle <name>`.
     IpcHandler {
         target: "menu"
@@ -154,6 +192,11 @@ ShellRoot {
             Share.request(fifo, windows, allowToken);
             return "ok";
         }
+    }
+
+    LazyLoader {
+        active: Pet.testerOpen
+        CatTester {}
     }
 
     // Each menu is created when opened and destroyed when closed, so it reloads its data every time like rofi.

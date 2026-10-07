@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The cat avatar's rig: the source of truth for the terminal-pet cats and the Quickshell desktop cat.
+  See SPEC.md. build.py turns this into rig.json and the matugen templates; never edit those by hand.
+
+  - A part is a <g id="…" data-pivot="x y">; parts nest (a child moves with its parent).
+  - A part either holds its paths directly, or <g data-variant="name"> groups to choose between
+    (the first is the default).
+  - <g data-key="name"> inside a part is a shape key: the same paths in the same order with the
+    same commands, moved. Hidden here; renderers blend towards it by a weight.
+  - <g data-key="name" data-tip="degrees scale" /> (empty) is a hinge key, computed by build.py: the
+    part's first path is a flap (an ear) whose endpoints stay put; its tip (the point farthest from the
+    line between them) turns that far about their midpoint and moves that much closer, and one affine
+    map taking the endpoints to themselves and the tip there moves every path of the part. So the whole
+    ear moves as one piece and stays joined to the head.
+  - data-chain/data-chain-index stitch paths back into one for the exports (the head outline).
+  - data-skin="bone" data-skin-y="y0 y1" on a part: its points follow the bone part (fully at y <= y0,
+    not at all at y >= y1, smoothly between), so the body stays joined to the head when it moves.
+  - class: "line" = miter joins, "line-join"/"ear" = round joins, "filled" = filled with the stroke color,
+    "solid" = filled without a stroke, "blush" = a faint fill, "hole" = cut out of the shape before it.
+-->
+<svg width="100mm" height="100mm" viewBox="0 0 130.7191 134.00444" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    path, ellipse { stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
+    .line-join, .ear { stroke-linejoin: round; }
+    .filled { fill: currentColor; }
+    .solid, .blush { fill: currentColor; stroke: none; }
+    .blush { fill-opacity: 0.35; }
+    .hole { fill: white; stroke: none; }
+  </style>
+  <g id="rig" transform="translate(-8.072492,-9.4651044)">
+    <g id="body" data-pivot="75 138" data-skin="head" data-skin-y="98 132">
+      <g data-variant="slim">
+        <path class="line" d="m 27.138344,99.54953 c -8.643584,32.9389 7.177546,34.48347 22.319384,37.02989" />
+        <path class="line" d="m 64.42186,137.59394 c 7.079001,0.47898 13.549214,0.19698 19.275833,-1.01452" />
+        <path class="line" d="M 99.295899,135.18446 C 115.56041,134.39982 129.11722,126.89187 125.54654,112.231 121.97586,97.570132 123.06018,101.16663 122.6298,94.984201" />
+        <path class="line" d="m 47.555507,123.77113 c -0.576058,24.92895 20.190748,23.72027 17.627242,3.55081" />
+        <path class="line" d="m 83.697693,125.80017 c -2.324936,20.21984 17.289067,21.11657 16.23228,-1.52178" />
+      </g>
+      <g data-variant="fat" display="none">
+        <path class="line-join" d="m 24.965831,98.32891 c 0,0 -8.315498,16.38312 -10.140288,25.51428 -1.072357,5.36602 -5.4406764,19.43271 24.969094,18.42697 25.550678,-0.84504 57.7937,-0.22691 71.745263,-1e-5 17.35329,0.28224 18.09694,-5.67644 17.44565,-15.59205 -0.7663,-11.66641 -7.63247,-30.311826 -7.63247,-30.311826" />
+        <path class="line-join" d="m 45.596434,109.23204 c -4.538379,12.39673 10.083426,16.36022 14.186334,3.08398" />
+        <path class="line-join" d="m 88.926426,111.54502 c 8.68719,15.54579 19.141994,5.613 13.723734,-4.00918" />
+        <path class="line-join" d="m 46.367431,118.48398 c 0.477652,-0.99882 0.715013,-2.07969 1.967978,-3.50142" />
+        <path class="line-join" d="m 50.99341,120.33437 c 0.530268,-1.23086 1.07911,-1.96884 1.272144,-3.46948" />
+        <path class="line-join" d="m 97.560786,119.40918 c -0.405492,-1.42424 -0.683971,-2.68731 -0.924393,-4.47178" />
+        <path class="line-join" d="m 100.18297,113.70381 c 0.83189,1.06515 1.61465,2.204 2.15879,3.70078" />
+      </g>
+    </g>
+    <g id="head" data-pivot="75 99">
+      <path class="line" data-chain="outline" data-chain-index="0" d="M 32.281749,99.894079 C 21.558942,101.39816 -5.3694586,75.583106 18.83102,51.561128" />
+      <path class="line" data-chain="outline" data-chain-index="2" d="M 53.623572,27.798172 c 4.668109,-1.871659 10.012292,-3.037016 15.360218,-3.03392 13.886785,-11.538338 10.905775,-1.21569 9.909154,0.496727 3.666731,0.510943 7.106677,1.37477 10.06121,2.537193" />
+      <path class="line" data-chain="outline" data-chain-index="4" d="M 123.92605,48.422623 c 24.73173,13.73911 12.65245,42.185004 -6.99438,49.319338" />
+      <g id="bow" data-pivot="75.327927 101.0079">
+        <ellipse class="line-join" cx="75.327927" cy="101.0079" rx="3.2971818" ry="2.2192569" />
+        <path class="line-join" d="m 72.411187,99.676343 c -1.543539,-1.174898 -2.687525,-2.509618 -5.833475,-3.043552 -1.19821,2.242258 -0.780984,4.946069 0.380442,7.862509 1.404117,-0.51641 2.578773,-0.80336 4.945774,-2.28266" />
+        <path class="line-join" d="m 78.371477,99.549528 c 2.446939,-2.399856 3.717969,-2.447896 5.199401,-2.916737 1.454689,2.556903 1.285067,4.881759 0.380444,7.101619 -1.90222,-0.45056 -3.423996,-0.60723 -5.326216,-2.02904" />
+      </g>
+      <g id="ear-l" data-pivot="36.227296 39.67965">
+        <path class="line" data-chain="outline" data-chain-index="1" d="M 18.83102,51.561128 c 0.243545,-3.866694 -6.227978,-62.402676 34.792552,-23.762956" />
+        <path class="ear" d="M 31.323227,41.468402 C 29.64392,28.260153 33.340717,25.636109 42.48292,33.732708 38.597064,35.979357 34.870934,38.545455 31.323227,41.468402 Z" />
+        <g data-key="twitch" data-tip="-14 0.97" />
+        <g data-key="flat" data-tip="-50 0.74" />
+        <g data-key="perk" data-tip="10 1.08" />
+      </g>
+      <g id="ear-r" data-pivot="106.440102 38.110398">
+        <path class="line" data-chain="outline" data-chain-index="3" d="M 88.954154,27.798172 c 37.316726,-48.677612 34.971896,20.624451 34.971896,20.624451" />
+        <path class="ear" d="m 100.31042,33.986337 c 9.35582,-13.837644 10.06261,-7.156808 11.92058,6.721176 -3.61976,-3.124803 -7.62478,-5.286476 -11.92058,-6.721176 z" />
+        <g data-key="twitch" data-tip="14 0.97" />
+        <g data-key="flat" data-tip="50 0.74" />
+        <g data-key="perk" data-tip="-10 1.08" />
+      </g>
+      <g id="whiskers-l" data-pivot="20.35 71.27">
+        <path class="line" d="M 9.2574721,73.045261 C 13.288289,70.436659 17.062412,68.087814 20.417165,66.831339" />
+        <path class="line" d="m 11.413322,82.683176 c 2.772585,-3.062889 5.766726,-5.263008 8.877028,-6.974807" />
+      </g>
+      <g id="whiskers-r" data-pivot="130.62 67.97">
+        <path class="line" d="m 129.85824,63.914601 c 2.84962,0.146666 5.56168,2.222394 7.73569,4.05807" />
+        <path class="line" d="m 131.38002,72.030743 c 1.97062,0.906914 3.64743,2.738572 4.94577,5.326215" />
+      </g>
+      <g id="eyes" data-pivot="74.56 58.7">
+        <g data-variant="open">
+          <ellipse class="filled" cx="57.320236" cy="59.095646" rx="5.0725875" ry="5.7066612" />
+          <ellipse class="filled" cx="91.795074" cy="58.29578" rx="5.0725875" ry="5.7066612" />
+        </g>
+        <g data-variant="sparkle" display="none">
+          <ellipse class="solid" cx="57.320236" cy="59.095646" rx="6.2" ry="6.9" />
+          <ellipse class="hole" cx="55.4" cy="56.8" rx="1.75" ry="1.85" />
+          <ellipse class="hole" cx="59.4" cy="61.5" rx="0.85" ry="0.9" />
+          <ellipse class="solid" cx="91.795074" cy="58.29578" rx="6.2" ry="6.9" />
+          <ellipse class="hole" cx="89.9" cy="56" rx="1.75" ry="1.85" />
+          <ellipse class="hole" cx="93.9" cy="60.7" rx="0.85" ry="0.9" />
+        </g>
+        <g data-variant="squint" display="none">
+          <path class="line-join" d="m 51.456007,54.953888 10.485548,7.555764 -10.022952,8.943556" />
+          <path class="line-join" d="m 94.015003,55.416483 -10.948148,7.555764 9.560355,8.94356" />
+        </g>
+        <g data-variant="closed" display="none">
+          <path class="line" d="M 51.4,59.4 C 53.6,64.6 61,64.6 63.2,59.4" />
+          <path class="line" d="M 85.9,58.6 C 88.1,63.8 95.5,63.8 97.7,58.6" />
+        </g>
+        <g data-variant="stars" display="none">
+          <path class="filled" d="M 57.32,50.5 C 58.34,56.89 59.53,58.08 64.72,59.1 C 59.53,60.12 58.34,61.31 57.32,67.7 C 56.3,61.31 55.11,60.12 49.92,59.1 C 55.11,58.08 56.3,56.89 57.32,50.5 Z" />
+          <path class="filled" d="M 91.8,49.7 C 92.82,56.09 94.01,57.28 99.2,58.3 C 94.01,59.32 92.82,60.51 91.8,66.9 C 90.78,60.51 89.59,59.32 84.4,58.3 C 89.59,57.28 90.78,56.09 91.8,49.7 Z" />
+        </g>
+        <g data-variant="x" display="none">
+          <path class="line" d="M 53,54.8 L 61.6,63.4" />
+          <path class="line" d="M 61.6,54.8 L 53,63.4" />
+          <path class="line" d="M 87.5,54 L 96.1,62.6" />
+          <path class="line" d="M 96.1,54 L 87.5,62.6" />
+        </g>
+        <g data-variant="wide" display="none">
+          <ellipse class="line" cx="57.320236" cy="59.095646" rx="6.6" ry="7.4" />
+          <ellipse class="line" cx="91.795074" cy="58.29578" rx="6.6" ry="7.4" />
+          <ellipse class="filled" cx="57.9" cy="59.6" rx="1.6" ry="1.9" />
+          <ellipse class="filled" cx="91.2" cy="58.8" rx="1.6" ry="1.9" />
+        </g>
+      </g>
+      <g id="sweat" data-pivot="112 56" display="none">
+        <path class="line-join" d="M 108.83,49.20 C 108.30,53.75 108.31,56.62 109.16,58.43 C 110.09,60.42 112.22,61.20 114.03,60.35 C 115.84,59.51 116.62,57.38 115.69,55.38 C 114.84,53.57 112.65,51.72 108.83,49.20 Z" />
+      </g>
+      <g id="cheeks" data-pivot="74.5 70" display="none">
+        <ellipse class="blush" cx="46.5" cy="70.5" rx="5.2" ry="2.9" />
+        <ellipse class="blush" cx="102.5" cy="69.5" rx="5.2" ry="2.9" />
+      </g>
+      <g id="mouth" data-pivot="76.28 76.3">
+        <g data-variant="smile">
+          <path class="line" d="m 72.791631,74.693851 c -0.431896,5.04021 7.021119,4.336653 6.974809,0" />
+        </g>
+        <g data-variant="cat" display="none">
+          <path class="line-join" d="M 72.2,74.3 C 72.3,77.5 75.9,77.9 76.28,74.9 76.66,77.9 80.26,77.5 80.36,74.3" />
+        </g>
+        <g data-variant="none" display="none" />
+        <g data-variant="open" display="none">
+          <ellipse class="line" cx="76.28" cy="77.2" rx="2.3" ry="2.9" />
+        </g>
+      </g>
+    </g>
+    <g id="zzz" data-pivot="128 30" display="none">
+      <path class="line-join" d="m 122,34 h 5 l -5,6 h 5" />
+      <path class="line-join" d="m 131,20 h 7 l -7,8 h 7" />
+      <path class="line-join" d="m 142,3 h 9 l -9,10 h 9" />
+    </g>
+  </g>
+</svg>

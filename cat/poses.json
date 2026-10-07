@@ -1,0 +1,52 @@
+{
+  "exports": {
+    "cat": { "variants": { "body": "slim", "eyes": "open", "mouth": "smile" } },
+    "fat-cat": { "variants": { "body": "fat", "eyes": "squint", "mouth": "none" } }
+  },
+  "expressions": {
+    "neutral": {
+      "variants": { "body": "slim", "eyes": "sparkle", "mouth": "cat" }
+    },
+    "happy": {
+      "variants": { "body": "slim", "eyes": "squint", "mouth": "cat" },
+      "show": ["cheeks"],
+      "motion": "hop"
+    },
+    "purr": {
+      "variants": { "body": "slim", "eyes": "squint", "mouth": "cat" },
+      "keys": { "ear-l.flat": 0.3, "ear-r.flat": 0.3 },
+      "show": ["cheeks"]
+    },
+    "vibing": {
+      "variants": { "body": "slim", "eyes": "squint", "mouth": "cat" },
+      "show": ["cheeks"],
+      "motion": "bob"
+    },
+    "sleepy": {
+      "variants": { "body": "slim", "eyes": "open", "mouth": "none" },
+      "keys": { "ear-l.flat": 0.3, "ear-r.flat": 0.3 },
+      "transforms": { "eyes": { "sy": 0.35 } }
+    },
+    "asleep": {
+      "variants": { "body": "fat", "eyes": "closed", "mouth": "cat" },
+      "keys": { "ear-l.flat": 0.5, "ear-r.flat": 0.5 },
+      "show": ["zzz", "cheeks"],
+      "breath": 6
+    },
+    "impressed": {
+      "variants": { "body": "slim", "eyes": "stars", "mouth": "open" },
+      "keys": { "ear-l.perk": 1, "ear-r.perk": 1 },
+      "show": ["cheeks"],
+      "motion": "jolt"
+    },
+    "straining": {
+      "variants": { "body": "slim", "eyes": "squint", "mouth": "none" },
+      "show": ["sweat"],
+      "motion": "tremble"
+    },
+    "startled": {
+      "variants": { "body": "slim", "eyes": "x", "mouth": "open" },
+      "motion": "jolt"
+    }
+  }
+}

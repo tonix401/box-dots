@@ -72,6 +72,7 @@ hl.bind("SUPER + PERIOD", exec("qs ipc call menu toggle emoji"),     { desc = "E
 hl.bind("SUPER + COMMA",  exec("qs ipc call menu toggle nerdfont"),  { desc = "Nerd font picker" })
 hl.bind("SUPER + P",      exec("qs ipc call menu toggle wallpaper"), { desc = "Wallpaper picker" })
 hl.bind("SUPER + D",      exec("qs ipc call widgets toggle"),        { desc = "Toggle desktop widgets" })
+hl.bind("SUPER + SHIFT + C", exec("qs ipc call cat tester"),         { desc = "Cat tester (the terminal cats' moods and reactions)" })
 hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
 
 -- ── Input Method ──────────────────────────────────────────────────────────────
