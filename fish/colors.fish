@@ -1,1 +1,1 @@
-set primary "\e[38;2;255;179;174m"
+set primary "\e[38;2;134;209;232m"
