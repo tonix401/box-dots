@@ -2,10 +2,10 @@
 
 * {
   /* Backgrounds */
-  --bg-panel:          #171c1e;
-  --bg-widget:         #1b2022;
-  --bg-tile:           #252b2d;
-  --bg-tile-hover:     #303638;
+  --bg-panel:          #1a1b21;
+  --bg-widget:         #1f1f25;
+  --bg-tile:           #292a2f;
+  --bg-tile-hover:     #34343a;
   --bg-critical:       #93000a;
   --bg-critical-hover: #93000a;
 
@@ -14,27 +14,27 @@
   --shadow-critical:   #93000a;
 
   /* Buttons */
-  --btn-on:            #86d1e8;
-  --btn-off:           #303638;
+  --btn-on:            #b8c4ff;
+  --btn-off:           #34343a;
 
   /* Accent (primary) */
-  --accent:            #86d1e8;
-  --on-accent:         #003641;
-  --accent-dim:        #004e5e;
-  --accent-hover:      #86d1e8;
+  --accent:            #b8c4ff;
+  --on-accent:         #1f2d61;
+  --accent-dim:        #364379;
+  --accent-hover:      #b8c4ff;
 
   /* Hover */
-  --hover-dim:         #303638;
+  --hover-dim:         #34343a;
 
   /* Borders */
-  --border-subtle:     #40484b;
-  --border-glass:      #899296;
+  --border-subtle:     #45464f;
+  --border-glass:      #90909a;
 
   /* Text */
-  --text-primary:      #dee3e6;
-  --text-secondary:    #bfc8cb;
-  --text-dim:          #bfc8cb;
-  --text-hover:        #dee3e6;
+  --text-primary:      #e3e1e9;
+  --text-secondary:    #c6c5d0;
+  --text-dim:          #c6c5d0;
+  --text-hover:        #e3e1e9;
 
   /* Error text */
   --error-text:        #ffdad6;
