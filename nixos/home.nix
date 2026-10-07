@@ -87,8 +87,9 @@ in
     libnotify
     imagemagick
     librsvg
-    # rofimoji's module provides the emoji data for quickshell/scripts/emoji.py
-    (python3.withPackages (ps: [ ps.pyvips (ps.toPythonModule rofimoji) ]))
+    # rofimoji's module provides the emoji data for quickshell/scripts/emoji.py; numpy is for
+    # cat/voice.py (the kitty cats singing along)
+    (python3.withPackages (ps: [ ps.pyvips ps.numpy (ps.toPythonModule rofimoji) ]))
 
     # quickshell bar and menus
     jq
@@ -98,6 +99,7 @@ in
     pavucontrol
     iwgtk
     playerctl
+    pulseaudio # pactl: cat/voice.py watches playback with it (the sound server is pipewire-pulse)
     brightnessctl
 
     # terminal
