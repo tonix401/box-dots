@@ -135,7 +135,8 @@ ShellRoot {
     // The terminal cats (KittyCat, Pet): `qs ipc call cat react error|ok|cheer|wake|pet` plays a reaction
     // on every cat, `reactPid <event> <pid>` only on the window of that process,
     // `mood <expression>` pins one (see ~/.config/cat/poses.json), `unpin` lets context decide again,
-    // `tester` opens or closes CatTester, `kitty` hides or shows the cats.
+    // `tester` opens or closes CatTester, `kitty` hides or shows the cats, `sing` turns singing along to
+// the audio off or on, `singOffset <ms>` shifts the mouths later (or earlier, negative) to match the sound.
     IpcHandler {
         target: "cat"
 
@@ -165,6 +166,13 @@ ShellRoot {
         }
         function kitty(): void {
             Pet.kittyShown = !Pet.kittyShown;
+        }
+        function sing(): bool {
+            Pet.singAlong = !Pet.singAlong;
+            return Pet.singAlong;
+        }
+        function singOffset(ms: int): void {
+            Pet.singOffset = ms;
         }
     }
 

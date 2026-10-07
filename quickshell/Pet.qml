@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
 
@@ -17,6 +18,8 @@ import Quickshell.Wayland
 // Driven by the `cat` IPC target in shell.qml: the fish prompt reports failed and long commands,
 // HabitTracker and TodoList cheer on check-ins. CatTester (`qs ipc call cat
 // tester`) triggers all of it by hand, and can fake the context via `overrides`.
+// While audio plays, the cats sing along: ~/.config/cat/voice.py listens to the speakers and `voice`
+// carries its mouth shapes to every cat (in the expressions that sing; see SPEC.md there, "Singing").
 Singleton {
     id: root
 
@@ -33,6 +36,11 @@ Singleton {
     property bool squishAll: false // the tester's hold-to-squish
     property bool testerOpen: false
     property bool kittyShown: true // the small cats on kitty windows (KittyCat)
+
+    property bool singAlong: true
+    property int singOffset: 0 // ms on top of the speakers' latency; negative moves the mouths earlier
+    property var voice: [0, 0, 0, 0] // [active, open, wide, round], from voice.py
+    property bool voiceRestarting: false
 
     // Context as measured, and as used: an override (true/false, for testing) replaces the measurement.
     property var overrides: ({}) // "idle" | "playing" | "night" -> bool
@@ -217,6 +225,41 @@ Singleton {
         for (const a in busy)
             if (busy[a].includes("tester"))
                 setBusy(a, "tester", false);
+    }
+
+    onSingAlongChanged: voiceProc.running = singAlong
+    onSingOffsetChanged: if (voiceProc.running) {
+        voiceRestarting = true;
+        voiceProc.running = false;
+    }
+
+    // One line per 16 ms of sound while something plays (it idles otherwise).
+    Process {
+        id: voiceProc
+        command: ["python3", Quickshell.env("HOME") + "/.config/cat/voice.py", "--offset", String(root.singOffset)]
+        running: true
+        stdout: SplitParser {
+            onRead: line => {
+                const v = line.split(" ").map(Number);
+                if (v.length === 4)
+                    root.voice = v;
+            }
+        }
+        // Restarted for a new offset, or it died (pactl gone, say): try again in a while.
+        onExited: {
+            root.voice = [0, 0, 0, 0];
+            if (root.singAlong)
+                voiceRetry.start();
+        }
+    }
+
+    Timer {
+        id: voiceRetry
+        interval: root.voiceRestarting ? 100 : 10000
+        onTriggered: {
+            root.voiceRestarting = false;
+            voiceProc.running = root.singAlong;
+        }
     }
 
     IdleMonitor {

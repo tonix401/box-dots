@@ -5,20 +5,24 @@
   },
   "expressions": {
     "neutral": {
-      "variants": { "body": "slim", "eyes": "sparkle", "mouth": "cat" }
+      "variants": { "body": "slim", "eyes": "sparkle", "mouth": "cat" },
+      "sing": true
     },
     "happy": {
       "variants": { "body": "slim", "eyes": "squint", "mouth": "cat" },
+      "sing": true,
       "show": ["cheeks"],
       "motion": "hop"
     },
     "purr": {
       "variants": { "body": "slim", "eyes": "squint", "mouth": "cat" },
+      "sing": true,
       "keys": { "ear-l.flat": 0.3, "ear-r.flat": 0.3 },
       "show": ["cheeks"]
     },
     "vibing": {
-      "variants": { "body": "slim", "eyes": "squint", "mouth": "cat" },
+      "variants": { "body": "slim", "eyes": "sparkle", "mouth": "cat" },
+      "sing": true,
       "show": ["cheeks"],
       "motion": "bob"
     },

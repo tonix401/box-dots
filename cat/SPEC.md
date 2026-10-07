@@ -13,6 +13,7 @@ mouth and body.
 | `rig.json` | Generated manifest for renderers |
 | `preview.html` | Browser renderer + tuning panel (expressions, motions, shape-key sliders; hold the mouse on the cat to squish it). Carries its own copies of `rig.json` and `engine.js`; `?expr=startled&idle=0` |
 | `~/.config/quickshell/components/CatEngine.js` | Generated copy of `engine.js` for Cat.qml |
+| `voice.py` | The sing-along analyser Pet.qml runs: listens to the speakers while something plays, prints mouth shapes (see "Singing") |
 | `build.py --export cat\|fat-cat` | The two original drawings on demand, path data verbatim (`--color '#hex'`, else matugen's color tag). They used to be matugen templates rendered for the kitty greeting; since 2026-10-07 nothing renders them |
 
 Renderers: `~/.config/quickshell/components/Cat.qml` (used by `KittyCat.qml`, a cat in the top right
@@ -61,6 +62,7 @@ After editing a source, run `./build.py`; the cats reload `rig.json` by themselv
 | `cheeks` | head | | hidden by default; blush |
 | `sweat` | head | | hidden by default; a drop at the right temple |
 | `mouth` | head | mouth | `smile` (cat.svg), `cat` (`ω`), `none`, `open` |
+| `sing` | head | mouth | hidden by default; the singing mouth, a closed smile with shape keys `open` ("ah"), `wide` ("ee"), `round` ("oo"). Shown instead of `mouth` while singing |
 | `zzz` | – | | hidden by default; three z's |
 
 ## rig.json
@@ -93,12 +95,14 @@ matrix is `parent world · local`. `rot` is in degrees, clockwise on screen (y p
 | `neutral` | sparkle | cat | slim | | |
 | `happy` | squint | cat | slim | cheeks | `hop` on entry |
 | `purr` | squint | cat | slim | ears `flat` 0.3, cheeks | |
-| `vibing` | squint | cat | slim | cheeks | `bob` while held |
+| `vibing` | sparkle | cat | slim | cheeks | `bob` while held |
 | `sleepy` | open | none | slim | ears `flat` 0.3, eyes `sy` 0.35 | |
 | `asleep` | closed | cat | fat | ears `flat` 0.5, zzz, cheeks | breath every 6 s |
 | `impressed` | stars | open | slim | ears `perk` 1, cheeks | `jolt` on entry |
 | `straining` | squint | none | slim | sweat drop | `tremble` while held (whole cat ±0.5 at 13 Hz) |
 | `startled` | x | open | slim | | `jolt` on entry |
+
+`"sing": true` (neutral, happy, purr, vibing) lets an expression sing along; the others keep their mouth.
 
 `exports.cat` / `exports["fat-cat"]` are the poses of the two original drawings (`build.py --export`).
 
@@ -123,6 +127,9 @@ matrix is `parent world · local`. `rot` is in degrees, clockwise on screen (y p
      Underdamped, so letting go boings
 5. **Skinning**: the body's points blend between the body's and the head's world matrices by their weights.
 6. `zzz`: the z's fade in and out in turn on a 3.6 s cycle.
+7. **Singing** (`voice(st, [active, open, wide, round])`): in an expression with `sing`, while `active`,
+   the `sing` mouth fades in over `mouth` (~0.12 s) and its keys follow `open`/`wide`/`round` (~0.05 s);
+   the head lifts by up to 0.8 as the mouth opens.
 
 ## Behaviour (Quickshell: Pet.qml)
 
@@ -146,6 +153,16 @@ command's reaction, if any. A squish lasts exactly as long as the command (no mi
 hook sends `busyPid <pid> <id>` before and `finishedPid <pid> <id> <event|none>` after each command; the
 per-command id makes the two racing calls safe (a `busy` after its `finished` is ignored).
 
+**Singing:** while audio plays, every cat sings along in the expressions that sing. `voice.py`
+records the default sink's monitor (only while a playback stream is uncorked, followed with
+`pactl subscribe`), takes the centre of the stereo image minus the sides (vocals are mixed centre),
+150–4000 Hz, and per 16 ms frame prints `active open wide round`: loudness against the loudest recent
+frame (fading ~8 dB/s) opens the mouth, weighed by periodicity (a pitch: a voice, not drums); the
+formant bands pick the vowel (high band strong against mid: "ee"; mid weak against low: "oo"; else
+"ah"). Lines are held back by the sink's PipeWire latency (~145 ms on the Bluetooth headset) so the
+mouth moves when the sound is heard. `qs ipc call cat sing` toggles it, `singOffset <ms>` shifts it
+(negative: earlier). `voice.py --debug` prints the features to stderr.
+
 One cat shows: its window's reaction, else an every-cat reaction, else `straining` while busy, else
 the pin, else the base mood.
 A reaction for every cat replaces any per-window ones. The fish hook sends kitty's `$KITTY_PID`;
@@ -155,7 +172,7 @@ several share one, the focused one).
 `qs ipc call cat react <event>` (every cat), `qs ipc call cat reactPid <event> <pid>` (the window of
 that process), `busyPid <pid> <id>` / `finishedPid <pid> <id> <event|none>` (the squish around a command), `qs ipc call cat mood <expression>` (pins it in place of the base mood; reactions still
 play over it), `qs ipc call cat unpin`, `qs ipc call cat tester` or **SUPER + SHIFT + C** (the CatTester panel; its "only …"
-toggle aims reactions at the focused window), `qs ipc call cat kitty` (hide/show the cats).
+toggle aims reactions at the focused window), `qs ipc call cat kitty` (hide/show the cats), `qs ipc call cat sing` / `singOffset <ms>` (singing along).
 
 ## Adding things
 

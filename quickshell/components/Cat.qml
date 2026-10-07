@@ -7,7 +7,8 @@ import "CatEngine.js" as Engine
 
 // The cat avatar drawn from its rig (~/.config/cat/rig.json, built from rig.svg; see SPEC.md there),
 // in the theme's primary color. `expression` picks one of the rig's expressions; `act("hop" | "jolt",
-// count)` plays a motion; `press(true/false)` squishes it while held and lets it boing back.
+// count)` plays a motion; `press(true/false)` squishes it while held and lets it boing back; `voice`
+// ([active, open, wide, round], from Pet) makes it sing along.
 //
 // All the animation is CatEngine.js (generated from ~/.config/cat/engine.js, shared with the
 // browser preview): each frame it returns part matrices, moved paths and opacities, and this only
@@ -18,6 +19,7 @@ Item {
     property string expression: "neutral"
     property color color: Theme.primary
     property bool squished: false // held squished while true; boings back when it turns false
+    property var voice: [0, 0, 0, 0]
 
     property var rig: null
     property var engine: null // the engine's state
@@ -48,6 +50,8 @@ Item {
     onExpressionChanged: if (engine)
         Engine.CatEngine.setExpression(engine, expression)
     onSquishedChanged: press(squished)
+    onVoiceChanged: if (engine)
+        Engine.CatEngine.voice(engine, voice)
 
     FileView {
         path: Quickshell.env("HOME") + "/.config/cat/rig.json"
@@ -59,6 +63,7 @@ Item {
                 const rig = JSON.parse(text());
                 root.engine = Engine.CatEngine.create(rig, root.expression);
                 Engine.CatEngine.press(root.engine, root.squished);
+                Engine.CatEngine.voice(root.engine, root.voice);
                 root.rig = rig;
                 root.frame = Engine.CatEngine.step(root.engine, 0);
             } catch (e) {}

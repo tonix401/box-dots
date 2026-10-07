@@ -5,6 +5,7 @@
 //
 //   var st = CatEngine.create(rig, "neutral");
 //   CatEngine.setExpression(st, "happy");   CatEngine.act(st, "hop", 2);   CatEngine.press(st, true);
+//   CatEngine.voice(st, [active, open, wide, round]);   // sing along (0..1 each; see voice.py)
 //   var frame = CatEngine.step(st, dt);     // {worlds, paths, variantOpacity, partOpacity, shapeOpacity}
 //
 // frame.worlds[part] is an affine [a, b, c, d, e, f] (x' = a x + c y + e, y' = b x + d y + f) in rig
@@ -81,6 +82,9 @@ var CatEngine = (function () {
             squash: { x: 0, v: 0 }, // whole-cat squish: -0.2 is squashed flat, + is stretched
             pressed: false,
             prevTy: 0, prevVy: 0,
+            voice: [0, 0, 0, 0], // [active, open, wide, round], as last given to voice()
+            singing: 0, // 0..1: the sing mouth fading in over the expression's mouth
+            lips: { open: 0, wide: 0, round: 0 }, // the sing mouth's shape keys, eased
         };
     }
 
@@ -99,6 +103,12 @@ var CatEngine = (function () {
         var m = st.rig.expressions[name].motion;
         if (m === "hop" || m === "jolt")
             act(st, m, 1);
+    }
+
+    // The audio being sung along to, per frame of analysis: `active` (0/1) shows the sing mouth in
+    // expressions that sing, `open`, `wide`, `round` (0..1) shape it.
+    function voice(st, v) {
+        st.voice = v;
     }
 
     // Held down: squish flat. Let go: boing back (the squash spring overshoots).
@@ -181,6 +191,13 @@ var CatEngine = (function () {
 
         var breath = idle ? (1 - Math.cos(2 * Math.PI * t / (e.breath || 4))) / 2 : 0;
 
+        // ── singing: the sing mouth takes over from the expression's mouth while there's a voice ──
+        var singGoal = e.sing && st.voice[0] > 0 ? 1 : 0;
+        st.singing = snap ? singGoal : ease(st.singing, singGoal, dt, 0.12);
+        var lipNames = ["open", "wide", "round"];
+        for (var li = 0; li < 3; li++)
+            st.lips[lipNames[li]] = snap ? st.voice[li + 1] : ease(st.lips[lipNames[li]], st.voice[li + 1], dt, 0.05);
+
         // ── whole-cat motion, and the springs it shakes ──
         var o = motionPose(st, t);
         if (dt > 0) {
@@ -222,7 +239,7 @@ var CatEngine = (function () {
             }
             var shown = !part.hidden || e.show.indexOf(name) >= 0 ? 1 : 0;
             c.shown = snap ? shown : ease(c.shown, shown, dt, 0.22);
-            po[name] = c.shown;
+            po[name] = name === "sing" ? st.singing : name === "mouth" ? c.shown * (1 - st.singing) : c.shown;
 
             var tr = { tx: c.tr.tx, ty: c.tr.ty, sx: c.tr.sx, sy: c.tr.sy, rot: c.tr.rot };
             var keys = {};
@@ -238,8 +255,11 @@ var CatEngine = (function () {
                 tr.sy *= 1 + 0.025 * breath;
                 tr.sx *= 1 + 0.015 * breath;
             }
-            if (name === "head") {
-                tr.ty += st.head.x - 1.3 * breath - 1.2 * Math.abs(bob);
+            if (name === "sing")
+                for (key in st.lips)
+                    keys[key] += st.lips[key];
+            if (name === "head") { // lifted a little as the mouth opens
+                tr.ty += st.head.x - 1.3 * breath - 1.2 * Math.abs(bob) - 0.8 * st.lips.open * st.singing;
                 tr.rot += st.tilt.x;
             }
             liveKeys[name] = keys;
@@ -295,5 +315,5 @@ var CatEngine = (function () {
         return { worlds: worlds, paths: paths, variantOpacity: vo, partOpacity: po, shapeOpacity: so };
     }
 
-    return { create: create, step: step, act: act, press: press, setExpression: setExpression };
+    return { create: create, step: step, act: act, press: press, setExpression: setExpression, voice: voice };
 })();

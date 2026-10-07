@@ -431,6 +431,7 @@ def build_manifest(rig, poses):
             "show": e.get("show", []),
             "motion": e.get("motion"),
             "breath": e.get("breath", 4),
+            "sing": bool(e.get("sing")),
         }
     return {
         "version": 1,
