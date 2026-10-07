@@ -142,9 +142,9 @@ cat or only on the cat of one window:
 **Busy:** while a command runs in a kitty window (anything but interactive programs: nvim, ssh, less,
 man, htop/btop, claude, tmux, … in any part of a pipeline, and shells/REPLs started bare), that
 window's cat is squished flat and `straining` until the command finishes, then boings back — with the
-command's reaction, if any. Every squish lasts at least 300 ms, so even a quick `ls` shows. The fish
+command's reaction, if any. A squish lasts exactly as long as the command (no minimum). The fish
 hook sends `busyPid <pid> <id>` before and `finishedPid <pid> <id> <event|none>` after each command; the
-per-command id makes the two racing calls safe (a `busy` after its `finished` only pulses).
+per-command id makes the two racing calls safe (a `busy` after its `finished` is ignored).
 
 One cat shows: its window's reaction, else an every-cat reaction, else `straining` while busy, else
 the pin, else the base mood.
