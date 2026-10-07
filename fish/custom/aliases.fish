@@ -12,4 +12,4 @@ alias .... 'cd ../../..'
 alias update 'sudo pacman -Syu && hyprpm update && hyprpm reload'
 alias 'back' 'cd -'
 alias ff fastfetch
-alias mre 'kitten ssh mre.fritz.box'
+alias mre 'ssh tom@mre'
