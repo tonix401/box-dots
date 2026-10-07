@@ -43,16 +43,6 @@ input_path = "~/.config/matugen/templates/arch.svg"
 output_path = "~/.cache/box-dots/svgs/arch.svg"
 post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/arch.svg ~/.config/fastfetch/arch.png &>/dev/null &"
 
-[templates.cat-svg]
-input_path = "~/.config/matugen/templates/cat.svg"
-output_path = "~/.cache/box-dots/svgs/cat.svg"
-post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/cat.svg ~/.config/fish/images/cat.png &>/dev/null &"
-
-[templates.fat-cat-svg]
-input_path = "~/.config/matugen/templates/fat-cat.svg"
-output_path = "~/.cache/box-dots/svgs/fat-cat.svg"
-post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/fat-cat.svg ~/.config/fish/images/fat-cat.png &>/dev/null &"
-
 [templates.penguin-svg]
 input_path = "~/.config/matugen/templates/penguin.svg"
 output_path = "~/.cache/box-dots/svgs/penguin.svg"

@@ -243,6 +243,8 @@ PanelWindow {
                     const p = Object.assign({}, root.pending);
                     delete p[id];
                     root.pending = p;
+                    if (completed)
+                        Pet.react("cheer");
                 }, () => {
                     const p = Object.assign({}, root.pending);
                     delete p[id];

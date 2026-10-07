@@ -190,6 +190,7 @@ PanelWindow {
                 root.events = root.events.concat([ev]);
                 root.recentEvents = root.recentEvents.concat([ev]);
                 root.setPending(key, undefined);
+                Pet.react("cheer");
             }, message => root.fail(key, message));
         }
         if (!sent)
