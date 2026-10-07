@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Called by matugen after setting the wallpaper.
-Writes the current-wallpaper files used by rofi and other tools.
+Called by the wallpaper menu (quickshell/menus/WallpaperMenu.qml) after setting the wallpaper.
+Writes the current-wallpaper files read by SDDM, hyprlock and the quickshell menus.
 
 Usage: update-current-wallpaper.py <image-path>
 """
@@ -19,7 +19,7 @@ def main() -> None:
         sys.exit("Usage: update-current-wallpaper.py <image-path>")
 
     src = Path(sys.argv[1])
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    (CACHE_DIR / "current").mkdir(parents=True, exist_ok=True)
 
     shutil.copy2(src, CACHE_DIR / "current/wallpaper.png")
 

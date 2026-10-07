@@ -11,6 +11,70 @@ let
     rev = "a54d20e433831eb9a5770e052c48736421ba7db5";
     hash = "sha256-L3QG1HvO2tdaAgYrOxaiqn/NXs9kECHEP78h2+8pZ6A=";
   }) { };
+
+  # Same look as the Arch box: the post-apocalyptic_hacker preset with its colors fixed (not
+  # matugen) and the background following the current wallpaper.
+  sddmTheme = pkgs.sddm-astronaut.override {
+    embeddedTheme = "post-apocalyptic_hacker";
+    themeConfig = {
+      ScreenWidth = "1920";
+      ScreenHeight = "1080";
+      Font = "JetBrainsMono Nerd Font";
+      FontSize = "15";
+      KeyboardSize = "0.4";
+      RoundCorners = "10";
+      HourFormat = "HH:mm";
+      DateFormat = "dddd d";
+      Background = "/home/tom/.cache/box-dots/current/wallpaper.png";
+      DimBackground = "0.0";
+      CropBackground = "true";
+      BackgroundHorizontalAlignment = "center";
+      BackgroundVerticalAlignment = "center";
+      HeaderTextColor = "#ffffff";
+      DateTextColor = "#ffffff";
+      TimeTextColor = "#ffffff";
+      FormBackgroundColor = "#000000";
+      BackgroundColor = "#000000";
+      DimBackgroundColor = "#000000";
+      LoginFieldBackgroundColor = "#000000";
+      PasswordFieldBackgroundColor = "#000000";
+      LoginFieldTextColor = "#ffffff";
+      PasswordFieldTextColor = "#ffffff";
+      UserIconColor = "#ffffff";
+      PasswordIconColor = "#ffffff";
+      PlaceholderTextColor = "#cccccc";
+      WarningColor = "#fc2e64";
+      LoginButtonTextColor = "#ffffff";
+      LoginButtonBackgroundColor = "#000000";
+      SystemButtonsIconsColor = "#ffffff";
+      SessionButtonTextColor = "#ffffff";
+      VirtualKeyboardButtonTextColor = "#ffffff";
+      DropdownTextColor = "#ffffff";
+      DropdownSelectedBackgroundColor = "#4d1927";
+      DropdownBackgroundColor = "#32141f";
+      HighlightTextColor = "#ffffff";
+      HighlightBackgroundColor = "#4d1927";
+      HighlightBorderColor = "#4d1927";
+      HoverUserIconColor = "#fc2e64";
+      HoverPasswordIconColor = "#fc2e64";
+      HoverSystemButtonsIconsColor = "#fc2e64";
+      HoverSessionButtonTextColor = "#fc2e64";
+      HoverVirtualKeyboardButtonTextColor = "#fc2e64";
+      HaveFormBackground = "false";
+      FormPosition = "center";
+      VirtualKeyboardPosition = "right";
+      HideVirtualKeyboard = "true";
+      HideSystemButtons = "false";
+      HideLoginButton = "false";
+      ForceLastUser = "true";
+      PasswordFocus = "true";
+      HideCompletePassword = "true";
+      AllowEmptyPassword = "false";
+      AllowUppercaseLettersInUsernames = "false";
+      BypassSystemButtonsChecks = "false";
+      RightToLeftLayout = "false";
+    };
+  };
 in
 {
   imports =
@@ -61,6 +125,8 @@ in
     isNormalUser = true;
     description = "tom";
     extraGroups = [ "networkmanager" "wheel" "i2c" ];
+    # Lets the sddm user reach the wallpaper in ~/.cache (traverse only, no listing)
+    homeMode = "711";
     shell = pkgs.fish;
   };
 
@@ -78,7 +144,18 @@ in
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
+    package = pkgs.kdePackages.sddm;
+    theme = "sddm-astronaut-theme";
+    extraPackages = [ sddmTheme ];
+    settings.General.InputMethod = "qtvirtualkeyboard";
   };
+  # The greeter's background is the wallpaper picked with SUPER+P (copied there by
+  # hypr/scripts/helpers/update-current-wallpaper.py), so the sddm user must be able to get to it.
+  systemd.tmpfiles.rules = [
+    "d /home/tom/.cache 0711 tom users -"
+    "d /home/tom/.cache/box-dots 0755 tom users -"
+    "d /home/tom/.cache/box-dots/current 0755 tom users -"
+  ];
   services.displayManager.defaultSession = "hyprland";
 
   programs.hyprland.enable = true;
@@ -122,6 +199,7 @@ in
   hardware.i2c.enable = true;
 
   environment.systemPackages = with pkgs; [
+    sddmTheme
     git
     chromium
     claude-code
