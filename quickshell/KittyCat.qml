@@ -98,6 +98,7 @@ Scope {
                     implicitWidth: root.size
                     expression: Pet.expressionFor(win.modelData.address)
                     squished: Pet.squishedFor(win.modelData.address)
+                    voice: Pet.voice
 
                     Connections {
                         target: Pet
