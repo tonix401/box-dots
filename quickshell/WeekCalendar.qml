@@ -15,7 +15,10 @@ PanelWindow {
 
     readonly property int firstHour: 7
     readonly property int lastHour: 22
-    readonly property int hourHeight: Theme.compact ? 25 : 52 // before Theme.widgetScale
+    // Before Theme.widgetScale. Outside compact, the hours take up to 55% of the screen's height,
+    // so the todo list and habit tracker below keep their room on shorter screens.
+    readonly property int screenHeight: screen?.height ?? Math.min(...Quickshell.screens.map(s => s.height))
+    readonly property int hourHeight: Theme.compact ? 32 : Math.min(52, Math.floor(screenHeight * 0.55 / (lastHour - firstHour)))
     readonly property int gutter: 48 // hour labels
     readonly property int pad: 8
 
@@ -221,7 +224,10 @@ PanelWindow {
         })
     property int fade: 0
     // On the screen; the panel is laid out 1 / Theme.widgetScale as large and scaled down.
-    readonly property int panelWidth: Theme.compact ? 780 : 1320
+    // At most half the screen, counted from its left edge; the todo list and habit tracker below
+    // share this width.
+    readonly property int screenWidth: screen?.width ?? Math.min(...Quickshell.screens.map(s => s.width))
+    readonly property int panelWidth: Math.min(Theme.compact ? 780 : 1320, Math.floor(screenWidth / 2) - room.left)
     readonly property int panelHeight: Math.ceil(panel.height * panel.scale)
 
     implicitWidth: room.left + panelWidth + room.right

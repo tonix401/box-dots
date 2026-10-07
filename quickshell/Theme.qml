@@ -15,13 +15,13 @@ Singleton {
     // Smaller bar and desktop widgets while only small screens are connected, like the laptop's
     // 1920x1080 panel at scale 1.5 (1280x720 logical).
     readonly property bool compact: Quickshell.screens.every(s => s.height < 900)
-    readonly property int fontPx: compact ? 11 : 15
-    readonly property int arrowPx: compact ? 18 : 22
-    readonly property int workspacePx: compact ? 10 : 13
-    readonly property int barHeight: compact ? 22 : 30
-    readonly property int barTop: compact ? 4 : 5 // gap between the screen edge and the bar
-    readonly property int segmentPad: compact ? 6 : 10 // inside a powerline block
-    readonly property int moduleGap: compact ? 8 : 16 // between the modules of one block
+    readonly property int fontPx: compact ? 13 : 15
+    readonly property int arrowPx: 22
+    readonly property int workspacePx: compact ? 12 : 13
+    readonly property int barHeight: compact ? 26 : 30
+    readonly property int barTop: 5 // gap between the screen edge and the bar
+    readonly property int segmentPad: compact ? 7 : 10 // inside a powerline block
+    readonly property int moduleGap: compact ? 10 : 16 // between the modules of one block
     readonly property int titleChars: compact ? 20 : 30 // window title and media in the bar
     readonly property real popoutScale: compact ? 0.8 : 1 // the info cards under the bar, as a whole
     readonly property real widgetScale: compact ? 0.8 : 1 // the desktop widgets' contents, as a whole

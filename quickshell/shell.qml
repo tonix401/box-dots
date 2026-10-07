@@ -49,7 +49,7 @@ ShellRoot {
         anchors.bottom: true
         anchors.left: true
         margins.top: calendar.implicitHeight
-        panelWidth: calendar.panelWidth - root.gap - habits.size
+        panelWidth: calendar.panelWidth - root.gap - habits.panelWidth
         room: ({
                 left: root.edge,
                 top: root.gap / 2,

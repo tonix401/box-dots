@@ -19,6 +19,14 @@ hl.monitor({
   scale    = "auto",
 })
 
+-- Laptop panel (1920x1080): auto picks 1.5, which makes everything too big; run it unscaled
+hl.monitor({
+  output   = "eDP-1",
+  mode     = "preferred",
+  position = "auto",
+  scale    = "1",
+})
+
 -----------------
 ----  INPUT  ----
 -----------------
@@ -27,7 +35,10 @@ hl.config({
   input = {
     kb_layout  = "us",
     kb_variant = "intl",
-    kb_options = "caps:none"
+    kb_options = "caps:none",
+    touchpad = {
+      natural_scroll = true,
+    },
   },
   general = {
     layout = "dwindle",

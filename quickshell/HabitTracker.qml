@@ -250,7 +250,8 @@ PanelWindow {
 
     // Placed by shell.qml (right of the todo list), which sets `room`: how far the window (and the
     // dark backdrop) reaches past each edge of the panel, the last `fade` px on the right fading out. The
-    // panel fills the window's height and is as wide as it is tall.
+    // panel fills the window's height and is as wide as it is tall, or wider when the day cells need
+    // the room to fit every habit's dot.
     property var room: ({
             left: 0,
             top: 0,
@@ -259,8 +260,13 @@ PanelWindow {
         })
     property int fade: 0
     readonly property int size: Math.max(0, height - room.top - room.bottom)
+    // Before Theme.widgetScale: how many lines of (today's larger) dots fit in a cell, so how wide a
+    // cell has to be for the rest of them.
+    readonly property int dotLines: Math.max(1, Math.floor((grid.cellHeight - 24 + dotGap) / (dot + 4 + dotGap)))
+    readonly property real cellMin: Math.ceil(habits.length / dotLines) * (dot + 4 + dotGap) - dotGap + 16
+    readonly property int panelWidth: Math.max(size, Math.ceil((7 * cellMin + 6 * gap + 2 * pad) * Theme.widgetScale))
 
-    implicitWidth: room.left + size + room.right
+    implicitWidth: room.left + panelWidth + room.right
     implicitHeight: 600
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
@@ -271,7 +277,7 @@ PanelWindow {
     mask: Region {
         x: panel.x
         y: panel.y
-        width: root.size
+        width: root.panelWidth
         height: root.size
     }
 
@@ -282,10 +288,10 @@ PanelWindow {
     Item {
         id: panel
 
-        // size is on the screen; the panel is laid out larger and scaled down.
+        // panelWidth and size are on the screen; the panel is laid out larger and scaled down.
         x: root.room.left
         y: root.room.top
-        width: root.size / scale
+        width: root.panelWidth / scale
         height: root.size / scale
         scale: Theme.widgetScale
         transformOrigin: Item.TopLeft

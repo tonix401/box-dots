@@ -71,6 +71,10 @@ PanelWindow {
                     fg: systemSeg.fg
                     Layout.leftMargin: Theme.moduleGap
                 }
+                Battery {
+                    fg: systemSeg.fg
+                    Layout.leftMargin: Theme.moduleGap
+                }
             }
             Arrow {
                 glyph: 0xe0b0
