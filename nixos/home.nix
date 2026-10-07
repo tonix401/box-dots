@@ -12,6 +12,7 @@ in
 
   xdg.configFile = lib.genAttrs [
     "btop"
+    "cat" # the kitty cat's rig, read by quickshell (components/Cat.qml, CatTester.qml)
     "fastfetch"
     "fcitx5"
     "fish"
