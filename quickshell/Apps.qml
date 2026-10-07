@@ -30,12 +30,22 @@ Singleton {
     readonly property var mostUsed: sorted.filter(e => (history[key(e)] ?? 0) > 0 && !pinned.includes(key(e)))
 
     function launch(entry) {
+        count(entry);
+        entry.execute();
+    }
+
+    // A desktop action ("New window", "Stop", ...) counts as a launch of its app.
+    function launchAction(entry, action) {
+        count(entry);
+        action.execute();
+    }
+
+    function count(entry) {
         const k = key(entry);
         const counts = Object.assign({}, history);
         counts[k] = (counts[k] ?? 0) + 1;
         const keys = historyOrder.includes(k) ? historyOrder : historyOrder.concat([k]);
         druncache.setText(keys.slice().sort((a, b) => counts[b] - counts[a]).map(id => `${counts[id]} ${id}`).join("\n") + "\n");
-        entry.execute();
     }
 
     function isPinned(entry) {

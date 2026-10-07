@@ -38,6 +38,44 @@ PanelWindow {
         Menus.close();
     }
 
+    // ── app menu (right-click, or → / Menu on a search result): the app's desktop actions, then pin ──
+    property var ctxEntry: null
+    property var ctxItems: [] // { name, icon, glyph, run }
+    property int ctxSelected: -1
+    property point ctxPos
+
+    // `item` and (x, y) say where to put the menu; `keyboard` preselects the first item.
+    function openCtx(entry, item, x, y, keyboard) {
+        const items = entry.actions.map(a => ({
+                    name: a.name,
+                    icon: a.icon,
+                    glyph: 0,
+                    run: () => {
+                        Apps.launchAction(entry, a);
+                        Menus.close();
+                    }
+                }));
+        const pinned = Apps.isPinned(entry);
+        items.push({
+            name: pinned ? "Unpin" : "Pin to Start",
+            icon: "",
+            glyph: pinned ? 0xf0404 : 0xf0403,
+            run: () => {
+                Apps.togglePin(entry);
+                root.closeCtx();
+            }
+        });
+        ctxItems = items;
+        ctxSelected = keyboard ? 0 : -1;
+        ctxPos = item.mapToItem(ctxLayer, x, y);
+        ctxEntry = entry;
+    }
+
+    function closeCtx() {
+        ctxEntry = null;
+        ctxItems = [];
+    }
+
     // ── helpers ──
     function ago(date) {
         const s = (Date.now() - date.getTime()) / 1000;
@@ -133,10 +171,33 @@ PanelWindow {
                         }
 
                         Keys.onPressed: event => {
+                            if (root.ctxEntry !== null) {
+                                const m = root.ctxItems.length;
+                                if (event.key === Qt.Key_Escape || event.key === Qt.Key_Left)
+                                    root.closeCtx();
+                                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    if (root.ctxSelected >= 0)
+                                        root.ctxItems[root.ctxSelected].run();
+                                } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab)
+                                    root.ctxSelected = (root.ctxSelected + 1) % m;
+                                else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab)
+                                    root.ctxSelected = root.ctxSelected <= 0 ? m - 1 : root.ctxSelected - 1;
+                                else {
+                                    root.closeCtx(); // typing goes on into the search
+                                    return;
+                                }
+                                event.accepted = true;
+                                return;
+                            }
                             const n = root.results.length;
                             if (event.key === Qt.Key_Escape)
                                 Menus.close();
-                            else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && n > 0)
+                            else if ((event.key === Qt.Key_Menu || event.key === Qt.Key_Right && cursorPosition === text.length) && n > 0) {
+                                const row = resultList.itemAtIndex(root.selected);
+                                if (!row)
+                                    return;
+                                root.openCtx(root.results[root.selected], row, 48, row.height - 4, true);
+                            } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && n > 0)
                                 root.launch(root.results[root.selected]);
                             else if ((event.key === Qt.Key_Down || event.key === Qt.Key_Tab) && n > 0)
                                 root.selected = (root.selected + 1) % n;
@@ -206,7 +267,7 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
-                        onClicked: event => event.button === Qt.RightButton ? Apps.togglePin(resultRow.modelData) : root.launch(resultRow.modelData)
+                        onClicked: event => event.button === Qt.RightButton ? root.openCtx(resultRow.modelData, hoverArea, event.x, event.y, false) : root.launch(resultRow.modelData)
                     }
                 }
 
@@ -236,7 +297,7 @@ PanelWindow {
 
                     SectionLabel {
                         text: Apps.pinnedEntries.length > 0 ? "Pinned" : "Most used"
-                        hint: "right-click to " + (Apps.pinnedEntries.length > 0 ? "unpin" : "pin")
+                        hint: "right-click for actions and pinning"
                     }
 
                     Grid {
@@ -537,6 +598,139 @@ PanelWindow {
         }
     }
 
+    // the app menu, over everything; a click anywhere else only closes it
+    Item {
+        id: ctxLayer
+
+        anchors.fill: parent
+        visible: root.ctxEntry !== null
+
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: root.closeCtx()
+        }
+
+        Rectangle {
+            id: ctxMenu
+
+            x: Math.max(8, Math.min(root.ctxPos.x, ctxLayer.width - width - 8))
+            y: root.ctxPos.y + height + 8 > ctxLayer.height ? root.ctxPos.y - height : root.ctxPos.y
+            width: 260
+            height: ctxColumn.implicitHeight + 12
+            radius: 12
+            color: Theme.surface_container
+            border.width: 1
+            border.color: Theme.outline_variant
+
+            MouseArea {
+                anchors.fill: parent // keep clicks between the rows from closing the menu
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+            }
+
+            Column {
+                id: ctxColumn
+
+                anchors.fill: parent
+                anchors.margins: 6
+                spacing: 2
+
+                // which app this is for
+                RowLayout {
+                    width: parent.width
+                    height: 36
+                    spacing: 10
+
+                    IconImage {
+                        Layout.leftMargin: 8
+                        implicitSize: 20
+                        source: root.ctxEntry ? Quickshell.iconPath(root.ctxEntry.icon, "application-x-executable") : ""
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.ctxEntry?.name ?? ""
+                        elide: Text.ElideRight
+                        color: Theme.on_surface_variant
+                        font.family: Theme.uiFont
+                        font.pixelSize: 13
+                        font.weight: Font.Medium
+                    }
+                }
+
+                Repeater {
+                    model: root.ctxItems
+
+                    Rectangle {
+                        id: ctxRow
+
+                        required property var modelData
+                        required property int index
+                        readonly property bool current: index === root.ctxSelected
+
+                        width: ctxColumn.width
+                        height: 36
+                        radius: 8
+                        color: current ? Theme.primary : "transparent"
+
+                        // a line above pin/unpin, when the app has actions
+                        Rectangle {
+                            visible: ctxRow.index > 0 && ctxRow.index === root.ctxItems.length - 1
+                            anchors.bottom: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.margins: 8
+                            anchors.bottomMargin: 0
+                            height: 1
+                            color: Theme.outline_variant
+                        }
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 10
+                            spacing: 10
+
+                            Item {
+                                implicitWidth: 20
+                                implicitHeight: 20
+
+                                IconImage {
+                                    anchors.fill: parent
+                                    visible: ctxRow.modelData.glyph === 0 && source != ""
+                                    source: ctxRow.modelData.icon ? Quickshell.iconPath(ctxRow.modelData.icon, true) : ""
+                                }
+                                Text {
+                                    anchors.centerIn: parent
+                                    visible: ctxRow.modelData.glyph !== 0
+                                    text: Theme.g(ctxRow.modelData.glyph)
+                                    color: ctxRow.current ? Theme.on_primary : Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 16
+                                }
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: ctxRow.modelData.name
+                                elide: Text.ElideRight
+                                color: ctxRow.current ? Theme.on_primary : Theme.on_surface
+                                font.family: Theme.uiFont
+                                font.pixelSize: 15
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: root.ctxSelected = ctxRow.index
+                            onClicked: ctxRow.modelData.run()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // ── data ──
     Poll {
         id: whoami
@@ -739,7 +933,7 @@ PanelWindow {
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             cursorShape: Qt.PointingHandCursor
-            onClicked: event => event.button === Qt.RightButton ? Apps.togglePin(tile.entry) : root.launch(tile.entry)
+            onClicked: event => event.button === Qt.RightButton ? root.openCtx(tile.entry, tileMouse, event.x, event.y, false) : root.launch(tile.entry)
         }
     }
 
