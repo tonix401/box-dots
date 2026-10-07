@@ -181,7 +181,7 @@ PanelWindow {
                 onClicked: Pet.act("jolt", 1)
             }
             Pill {
-                readonly property bool on: (Pet.busy[root.focused?.address ?? ""] ?? []).some(e => e.id === "tester")
+                readonly property bool on: (Pet.busy[root.focused?.address ?? ""] ?? []).includes("tester")
                 text: "busy: " + (root.focused?.lastIpcObject?.class ?? "focused window")
                 glyph: on ? 0xf0132 : 0xf0131
                 active: on

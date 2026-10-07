@@ -12,8 +12,8 @@ import Quickshell.Wayland
 // (`react(event, [address])`, `reactPid(event, pid)` for the window of a process): a command's result
 // startles or cheers only the terminal it ran in. While a command runs (anything but interactive
 // programs), the fish hook marks its window busy (`busyPid`), and that cat strains, squished flat,
-// until `finishedPid` — at least `minSquish` ms, so even a quick `ls` visibly squishes and boings. `pin(expression)` holds an expression instead of the
-// base mood until `unpin()`, still interrupted by reactions.
+// until `finishedPid`. `pin(expression)` holds an expression instead of the base mood until `unpin()`,
+// still interrupted by reactions.
 // Driven by the `cat` IPC target in shell.qml: the fish prompt reports failed and long commands,
 // HabitTracker and TodoList cheer on check-ins. CatTester (`qs ipc call cat
 // tester`) triggers all of it by hand, and can fake the context via `overrides`.
@@ -25,13 +25,11 @@ Singleton {
     // {expression, event, until (ms since epoch)}. A reaction for every cat replaces all of them.
     property var running: ({})
     readonly property string reactionEvent: Object.values(running).map(r => r.event).join(", ")
-    // Windows running a command: address -> [{id, since, until}] (one per fish command; splits in one
-    // kitty window share it). `until` is Infinity while it runs. `finished` remembers recent ids, so a
-    // `busy` arriving after its `finished` (both are separate qs processes racing) only plays a short
-    // squish instead of squishing for good.
+    // Windows running a command: address -> [id] (one per fish command; splits in one kitty window
+    // share it). `finished` remembers recent ids, so a `busy` arriving after its `finished` (both are
+    // separate qs processes racing) is ignored instead of squishing for good.
     property var busy: ({})
     property var finished: []
-    readonly property int minSquish: 300
     property bool squishAll: false // the tester's hold-to-squish
     property bool testerOpen: false
     property bool kittyShown: true // the small cats on kitty windows (KittyCat)
@@ -135,48 +133,34 @@ Singleton {
         return (focused.length > 0 ? focused : windows).map(t => t.address);
     }
 
-    // Mark (on) or unmark command `id` as running long in window `address`.
-    // Command `id` in window `address`: running until further notice (on), done (off: released once it
-    // has been squished `minSquish` ms), or squished just for `minSquish` ms (pulse).
-    function setBusy(address, id, on, pulse) {
-        const now = Date.now(), next = Object.assign({}, busy);
-        const old = (next[address] ?? []).find(e => e.id === id);
-        const rest = (next[address] ?? []).filter(e => e.id !== id);
-        if (on || pulse)
-            rest.push({
-                id: id,
-                since: old?.since ?? now,
-                until: pulse ? now + minSquish : Infinity
-            });
-        else if (old)
-            rest.push({
-                id: id,
-                since: old.since,
-                until: Math.max(now, old.since + minSquish)
-            });
-        const live = rest.filter(e => e.until > now);
-        if (live.length > 0)
-            next[address] = live;
+    // Mark (on) or unmark command `id` as running in window `address`.
+    function setBusy(address, id, on) {
+        const next = Object.assign({}, busy);
+        const rest = (next[address] ?? []).filter(e => e !== id);
+        if (on)
+            rest.push(id);
+        if (rest.length > 0)
+            next[address] = rest;
         else
             delete next[address];
         busy = next;
     }
 
-    // From the fish hook, 3 s into a command: squish the cat of its window until finishedPid(…, id, …).
+    // From the fish hook, as a command starts: squish the cat of its window until finishedPid(…, id, …).
     function busyPid(pid, id) {
-        const done = finished.includes(id);
         const addresses = windowsOf(pid);
-        for (const a of addresses)
-            setBusy(a, id, !done, done);
+        if (!finished.includes(id))
+            for (const a of addresses)
+                setBusy(a, id, true);
         return addresses.length > 0;
     }
 
-    // From the fish hook, after a command that ran long: let go (the cat boings back) and play
+    // From the fish hook, after a command: let go (the cat boings back) and play
     // `event`'s reaction ("none" for none).
     function finishedPid(pid, id, event) {
         finished = finished.concat([id]).slice(-50);
         for (const a in busy)
-            if (busy[a].some(e => e.id === id))
+            if (busy[a].includes(id))
                 setBusy(a, id, false);
         return event === "none" || reactPid(event, pid);
     }
@@ -207,25 +191,6 @@ Singleton {
         pinned = "";
     }
 
-    // Releases squishes whose minimum time has run out.
-    Timer {
-        interval: 50
-        repeat: true
-        running: Object.values(root.busy).some(l => l.some(e => e.until !== Infinity))
-        onTriggered: {
-            const now = Date.now(), next = {};
-            let changed = false;
-            for (const a in root.busy) {
-                const live = root.busy[a].filter(e => e.until > now);
-                changed = changed || live.length !== root.busy[a].length;
-                if (live.length > 0)
-                    next[a] = live;
-            }
-            if (changed)
-                root.busy = next;
-        }
-    }
-
     // Ends reactions as their time runs out.
     Timer {
         interval: 100
@@ -250,7 +215,7 @@ Singleton {
         overrides = {};
         squish(false);
         for (const a in busy)
-            if (busy[a].some(e => e.id === "tester"))
+            if (busy[a].includes("tester"))
                 setBusy(a, "tester", false);
     }
 
