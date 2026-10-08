@@ -51,6 +51,12 @@
     "startled": {
       "variants": { "body": "slim", "eyes": "x", "mouth": "open" },
       "motion": "jolt"
+    },
+    "cool": {
+      "variants": { "body": "slim", "eyes": "closed", "mouth": "smile" },
+      "sing": true,
+      "keys": { "ear-l.perk": 0.4, "ear-r.perk": 0.4 },
+      "show": ["shades"]
     }
   }
 }

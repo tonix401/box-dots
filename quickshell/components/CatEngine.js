@@ -20,7 +20,7 @@ var CatEngine = (function () {
     var ID = [1, 0, 0, 1, 0, 0];
     // Face tracking fakes a turning head by parallax: how far each part of the face slides with the
     // head's yaw and pitch (rig units at full turn = 8 · depth sideways, 5 · depth up/down).
-    var DEPTH = { "eye-l": 1, "eye-r": 1, mouth: 1.15, sing: 1.15, cheeks: 1.15, sweat: 0.8, "whiskers-l": 0.6, "whiskers-r": 0.6, bow: 0.4, "ear-l": -0.3, "ear-r": -0.3 };
+    var DEPTH = { "eye-l": 1, "eye-r": 1, shades: 1, mouth: 1.15, sing: 1.15, cheeks: 1.15, sweat: 0.8, "whiskers-l": 0.6, "whiskers-r": 0.6, bow: 0.4, "ear-l": -0.3, "ear-r": -0.3 };
     var YAWN = { open: 1.5, wide: 0.8, round: 0.3 }; // the sing mouth's keys at the height of a yawn
     var REST_POSE = { yaw: 0, pitch: 0, roll: 0, x: 0, y: 0, blinkL: 0, blinkR: 0, gazeX: 0, gazeY: 0, brow: 0, smile: 0, open: 0, wide: 0, round: 0 };
 

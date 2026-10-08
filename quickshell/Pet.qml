@@ -13,7 +13,8 @@ import Quickshell.Wayland
 // (`react(event, [address])`, `reactPid(event, pid)` for the window of a process): a command's result
 // startles or cheers only the terminal it ran in. While a command runs (anything but interactive
 // programs), the fish hook marks its window busy (`busyPid`), and that cat strains, squished flat,
-// until `finishedPid`. `pin(expression)` holds an expression instead of the base mood until `unpin()`,
+// until `finishedPid`. A remote session (ssh, mosh) is marked with `remotePid` instead: that cat turns red
+// and puts on sunglasses (`cool`) until `finishedPid`. `pin(expression)` holds an expression instead of the base mood until `unpin()`,
 // still interrupted by reactions.
 // Driven by the `cat` IPC target in shell.qml: the fish prompt reports failed and long commands,
 // HabitTracker and TodoList cheer on check-ins. CatTester (`qs ipc call cat
@@ -32,6 +33,7 @@ Singleton {
     // share it). `finished` remembers recent ids, so a `busy` arriving after its `finished` (both are
     // separate qs processes racing) is ignored instead of squishing for good.
     property var busy: ({})
+    property var remote: ({}) // the same for ssh/mosh sessions: address -> [id]
     property var finished: []
     property bool squishAll: false // the tester's hold-to-squish
     property bool testerOpen: false
@@ -57,11 +59,15 @@ Singleton {
     readonly property string expression: running["*"]?.expression || pinned || base
 
     function expressionFor(address) {
-        return running[address]?.expression || running["*"]?.expression || (isBusy(address) ? "straining" : "") || pinned || base;
+        return running[address]?.expression || running["*"]?.expression || (isRemote(address) ? "cool" : "") || (isBusy(address) ? "straining" : "") || pinned || base;
     }
 
     function isBusy(address) {
         return (busy[address]?.length ?? 0) > 0;
+    }
+
+    function isRemote(address) {
+        return (remote[address]?.length ?? 0) > 0;
     }
 
     function squishedFor(address) {
@@ -141,9 +147,10 @@ Singleton {
         return (focused.length > 0 ? focused : windows).map(t => t.address);
     }
 
-    // Mark (on) or unmark command `id` as running in window `address`.
-    function setBusy(address, id, on) {
-        const next = Object.assign({}, busy);
+    // Mark (on) or unmark command `id` as running in window `address`; in `remote` instead of `busy`
+    // for an ssh/mosh session.
+    function setBusy(address, id, on, isRemote) {
+        const next = Object.assign({}, isRemote ? remote : busy);
         const rest = (next[address] ?? []).filter(e => e !== id);
         if (on)
             rest.push(id);
@@ -151,7 +158,10 @@ Singleton {
             next[address] = rest;
         else
             delete next[address];
-        busy = next;
+        if (isRemote)
+            remote = next;
+        else
+            busy = next;
     }
 
     // From the fish hook, as a command starts: squish the cat of its window until finishedPid(…, id, …).
@@ -163,6 +173,16 @@ Singleton {
         return addresses.length > 0;
     }
 
+    // From the fish hook, as an ssh/mosh session starts: that window's cat is `cool` (red, sunglasses)
+    // instead of straining, until finishedPid(…, id, …).
+    function remotePid(pid, id) {
+        const addresses = windowsOf(pid);
+        if (!finished.includes(id))
+            for (const a of addresses)
+                setBusy(a, id, true, true);
+        return addresses.length > 0;
+    }
+
     // From the fish hook, after a command: let go (the cat boings back) and play
     // `event`'s reaction ("none" for none).
     function finishedPid(pid, id, event) {
@@ -170,6 +190,9 @@ Singleton {
         for (const a in busy)
             if (busy[a].includes(id))
                 setBusy(a, id, false);
+        for (const a in remote)
+            if (remote[a].includes(id))
+                setBusy(a, id, false, true);
         return event === "none" || reactPid(event, pid);
     }
 

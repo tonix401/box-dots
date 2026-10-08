@@ -176,6 +176,13 @@ Scope {
                     id: cat
                     implicitWidth: root.size
                     expression: Pet.expressionFor(win.modelData.address)
+                    // Red while it's `cool` (an ssh session in this window).
+                    color: expression === "cool" ? "#ff4d4d" : Theme.primary
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 220
+                        }
+                    }
                     squished: Pet.squishedFor(win.modelData.address)
                     voice: Pet.voice
 

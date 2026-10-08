@@ -61,6 +61,7 @@ After editing a source, run `./build.py`; the cats reload `rig.json` by themselv
 | `ear-l`, `ear-r` | head | ear base midpoint | hinge keys `twitch` (tip 14° out), `flat` (tip 50° out and down to 74 %), `perk` (tip 10° up, 108 %) |
 | `whiskers-l`, `whiskers-r` | head | where they meet the cheek | |
 | `eye-l`, `eye-r` | head | the eye's centre | `open`, `sparkle` (bigger, with highlights), `squint` (`> <`), `closed` (`‿ ‿`), `x` (`× ×`), `stars` (`✦ ✦`), `wide` (rings + pupils, unused). Two parts (since 2026-10-07) so a tracked face can wink; poses.json's `"eyes"` sets both |
+| `shades` | head | between the eyes | hidden by default; sunglasses over the eyes (solid lenses with cut-out glints) |
 | `cheeks` | head | | hidden by default; blush |
 | `sweat` | head | | hidden by default; a drop at the right temple |
 | `mouth` | head | mouth | `smile` (cat.svg), `cat` (`ω`), `none`, `open` |
@@ -106,8 +107,9 @@ matrix is `parent world · local`. `rot` is in degrees, clockwise on screen (y p
 | `impressed` | stars | open | slim | ears `perk` 1, cheeks | `jolt` on entry |
 | `straining` | squint | none | slim | sweat drop | `tremble` while held (whole cat ±0.5 at 13 Hz) |
 | `startled` | x | open | slim | | `jolt` on entry |
+| `cool` | closed (under the shades) | smile | slim | ears `perk` 0.4, shades; KittyCat draws it red (`#ff4d4d`) | |
 
-`"sing": true` (neutral, happy, purr, vibing) lets an expression sing along; the others keep their mouth.
+`"sing": true` (neutral, happy, purr, vibing, cool) lets an expression sing along; the others keep their mouth.
 
 `exports.cat` / `exports["fat-cat"]` are the poses of the two original drawings (`build.py --export`).
 
@@ -164,12 +166,17 @@ cat or only on the cat of one window:
 | `wake` | startled | 1 s | every cat | input after being idle |
 | `pet` | purr | 2 s | chosen in CatTester | CatTester only (the terminal cats are click-through) |
 
-**Busy:** while a command runs in a kitty window (anything but interactive programs: nvim, ssh, less,
-man, htop/btop, claude, tmux, … in any part of a pipeline, and shells/REPLs started bare), that
+**Busy:** while a command runs in a kitty window (anything but interactive programs: nvim, less, man,
+fzf, htop/btop, claude, tmux, … in any part of a pipeline, and shells/REPLs started bare), that
 window's cat is squished flat and `straining` until the command finishes, then boings back — with the
 command's reaction, if any. A squish lasts exactly as long as the command (no minimum). The fish
 hook sends `busyPid <pid> <id>` before and `finishedPid <pid> <id> <event|none>` after each command; the
 per-command id makes the two racing calls safe (a `busy` after its `finished` is ignored).
+Aliases are expanded first (`mre` is `ssh tom@mre`), so an alias counts as what it runs.
+
+**Remote:** an ssh or mosh session (`ssh`, `mosh`, `kitten ssh`, or an alias for one) doesn't squish the
+cat: the hook sends `remotePid <pid> <id>` instead of `busyPid`, and that window's cat is `cool`, red
+with sunglasses, until the same `finishedPid`.
 
 **Singing:** while audio plays, every cat sings along in the expressions that sing. `voice.py`
 records the default sink's monitor (only while a playback stream is uncorked, followed with
@@ -181,14 +188,14 @@ formant bands pick the vowel (high band strong against mid: "ee"; mid weak again
 mouth moves when the sound is heard. `qs ipc call cat sing` toggles it, `singOffset <ms>` shifts it
 (negative: earlier). `voice.py --debug` prints the features to stderr.
 
-One cat shows: its window's reaction, else an every-cat reaction, else `straining` while busy, else
+One cat shows: its window's reaction, else an every-cat reaction, else `cool` during an ssh session, else `straining` while busy, else
 the pin, else the base mood.
 A reaction for every cat replaces any per-window ones. The fish hook sends kitty's `$KITTY_PID`;
 each kitty window is its own process, so Quickshell finds the window by its Hyprland `pid` (if
 several share one, the focused one).
 
 `qs ipc call cat react <event>` (every cat), `qs ipc call cat reactPid <event> <pid>` (the window of
-that process), `busyPid <pid> <id>` / `finishedPid <pid> <id> <event|none>` (the squish around a command), `qs ipc call cat mood <expression>` (pins it in place of the base mood; reactions still
+that process), `busyPid <pid> <id>` / `remotePid <pid> <id>` / `finishedPid <pid> <id> <event|none>` (the squish, or the shades, around a command), `qs ipc call cat mood <expression>` (pins it in place of the base mood; reactions still
 play over it), `qs ipc call cat unpin`, `qs ipc call cat tester` or **SUPER + SHIFT + C** (the CatTester panel; its "only …"
 toggle aims reactions at the focused window), `qs ipc call cat kitty` (hide/show the cats), `qs ipc call cat sing` / `singOffset <ms>` (singing along).
 
@@ -285,7 +292,7 @@ webcam (via PipeWire), mic → kitty-cam.html: MediaPipe Face Landmarker → One
 - **Cat settings** (since 2026-10-08; localStorage `kitty-cam.settings`, "defaults" resets): three groups
   of plain choices (a row of buttons per choice) and on/off switches. No strength sliders: how strongly the
   cat follows you comes from the calibration (the user asked for choices, not sliders).
-  - Look: eyes (sparkly, round, wide, ✦, > <, ‿ ‿, × ×; only round, wide and sparkly can blink), mouth
+  - Look: eyes (sparkly, round, wide, ✦, > <, ‿ ‿, × ×, shades = the `shades` part over closed eyes; only round, wide and sparkly can blink), mouth
     when closed (talking = the `sing` mouth always; ω / smile / o / none: the engine's `st.restMouth`
     shows that mouth while the tracked lips are closed and the sing mouth while they move, with a little
     hysteresis), body (slim / chubby = `fat`), blush (when smiling / always / never), bow tie, whiskers

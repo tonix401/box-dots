@@ -107,27 +107,60 @@ end
 # has an id, so the "busy" and "finished" calls (separate qs processes) can't be mixed up when they
 # race: a "busy" arriving after its "finished" is ignored. Interactive programs (in any part of a
 # pipeline, past sudo/env/VAR=value) never squish it: they run the whole time you use them. Shells and
-# REPLs only count as interactive when started bare (`python`, not `python train.py`).
-set -g __cat_ignore nvim vim vi nano micro hx less more man ssh mosh htop btop top claude tmux zellij \
+# REPLs only count as interactive when started bare (`python`, not `python train.py`). An ssh or mosh
+# session doesn't squish it either: the cat turns red and puts on sunglasses until it ends. Aliases are
+# expanded first, so `mre` (ssh tom@mre) counts as ssh.
+set -g __cat_ignore nvim vim vi nano micro hx less more man fzf htop btop top claude tmux zellij \
     lazygit yazi ranger termusic watch exit
 set -g __cat_ignore_bare fish bash zsh sh python python3 ipython node
 set -g __cat_seq 0
 
-function __cat_ignored --description 'Is this command line interactive (the cat does not squish)?'
+function __cat_segments --description 'Each part of a command line: aliases expanded, sudo/env/VAR=value dropped'
+    # $argv[2]: how deep in aliases expanding to a pipeline we are (an alias using itself can't loop).
+    set -l depth 0
+    set -q argv[2]; and set depth $argv[2]
     for segment in (string split '|' -- $argv[1])
         set -l words (string split -n ' ' -- (string trim -- $segment))
-        while set -q words[1]
-            if contains -- $words[1] sudo doas env time command builtin exec
-                set -e words[1]
-            else if string match -qr -- '^-|=' $words[1] # their flags, VAR=value
-                set -e words[1]
-            else
-                break
+        for i in 1 2 3 4 5
+            while set -q words[1]
+                if contains -- $words[1] sudo doas env time command builtin exec
+                    set -e words[1]
+                else if string match -qr -- '^-|=' $words[1] # their flags, VAR=value
+                    set -e words[1]
+                else
+                    break
+                end
             end
+            set -q words[1]; and functions -q -- $words[1]; or break
+            # An alias's function is described as "alias NAME BODY" (fish 4; older: "alias NAME=BODY").
+            set -l body (string match -rg '^alias [^ =]+[ =](.*)$' -- (functions -Dv -- $words[1])[5]); or break
+            set -e words[1]
+            set words (string split -n ' ' -- $body) $words
         end
         set -q words[1]; or continue
+        set -l line (string join ' ' -- $words)
+        if string match -q '*|*' -- $line # an alias for a pipeline
+            test $depth -lt 3; and __cat_segments $line (math $depth + 1)
+        else
+            echo $line
+        end
+    end
+end
+
+function __cat_ignored --description 'Is any of these segments interactive (the cat does not squish)?'
+    for segment in $argv
+        set -l words (string split -n ' ' -- $segment)
         contains -- $words[1] $__cat_ignore; and return 0
         test (count $words) -eq 1; and contains -- $words[1] $__cat_ignore_bare; and return 0
+    end
+    return 1
+end
+
+function __cat_remote --description 'Is any of these segments an ssh/mosh session (the cat is cool)?'
+    for segment in $argv
+        set -l words (string split -n ' ' -- $segment)
+        contains -- $words[1] ssh mosh; and return 0
+        test "$words[1]" = kitten -a "$words[2]" = ssh; and return 0
     end
     return 1
 end
@@ -135,10 +168,16 @@ end
 function __cat_busy --on-event fish_preexec
     set -e __cat_id
     test -n "$KITTY_PID" -a -n "$argv[1]"; or return
-    __cat_ignored $argv[1]; and return
+    set -l segments (__cat_segments $argv[1])
+    set -l call busyPid
+    if __cat_remote $segments
+        set call remotePid
+    else if __cat_ignored $segments
+        return
+    end
     set __cat_seq (math $__cat_seq + 1)
     set -g __cat_id "$fish_pid-$__cat_seq"
-    setsid -f qs ipc call cat busyPid $KITTY_PID $__cat_id >/dev/null 2>&1
+    setsid -f qs ipc call cat $call $KITTY_PID $__cat_id >/dev/null 2>&1
 end
 
 function __cat_react --on-event fish_postexec
@@ -157,7 +196,7 @@ function __cat_react --on-event fish_postexec
     else if test $code -eq 0 -a "$CMD_DURATION" -gt 10000
         set event ok
     end
-    if test -n "$id" # it squished the cat: let go, with the reaction in the same call
+    if test -n "$id" # it squished the cat (or made it cool): let go, with the reaction in the same call
         setsid -f qs ipc call cat finishedPid $KITTY_PID $id $event >/dev/null 2>&1
     else if test $event != none
         setsid -f qs ipc call cat reactPid $event $KITTY_PID >/dev/null 2>&1

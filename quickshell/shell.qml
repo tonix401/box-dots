@@ -152,6 +152,10 @@ ShellRoot {
         function busyPid(pid: int, id: string): bool {
             return Pet.busyPid(pid, id);
         }
+        // An ssh/mosh session (`id`) in the window of `pid`: the cat is red with sunglasses until finishedPid.
+        function remotePid(pid: int, id: string): bool {
+            return Pet.remotePid(pid, id);
+        }
         function finishedPid(pid: int, id: string, event: string): bool {
             return Pet.finishedPid(pid, id, event);
         }
