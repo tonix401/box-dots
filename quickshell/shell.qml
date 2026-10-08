@@ -19,21 +19,38 @@ ShellRoot {
         }
     }
 
-    // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D). The week
-    // calendar sits top left under the bar, the todo list and the habit tracker side by side below
-    // it down to the screen's bottom. Their windows reach to the screen's edges and meet halfway
-    // across the gaps, so their backdrops make one dark band from top to bottom that fades out
-    // right of the column. All three also hide while OBS runs (Privacy), so they stay off stream, and
-    // while a tiled window is on the desktop (Desktop.covered).
+    // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D), while OBS runs
+    // (Privacy, so they stay off stream) and while a tiled window is on the desktop (Desktop.covered).
+    // The week calendar sits top left under the bar, the todo list and the habit tracker side by side
+    // below it down to the screen's bottom. Their windows reach to the screen's edges and meet halfway
+    // across the gaps, so their backdrops make one dark band from top to bottom that fades out right
+    // of the column.
+    //
+    // The whole layout is worked out here, from the screen's size and the calendar's content alone:
+    // each widget gets its panel's size and draws only from that, never from its own window's size.
+    // Hyprland confirms a window's size a moment after it is shown (until then it is a default), and
+    // a layout chained through those sizes resized twice on every show and once got stuck halfway.
     readonly property int edge: 24 // from the screen's left and bottom edges
     readonly property int gap: 16 // between the widgets and below the bar
     readonly property int fade: 160 // the band's fade right of the widgets
+    readonly property bool widgetsVisible: Desktop.widgetsShown && !Desktop.covered && !Privacy.active
+    readonly property int screenWidth: Quickshell.screens[0]?.width ?? 1920
+    readonly property int screenHeight: Quickshell.screens[0]?.height ?? 1080
+    // The column's width, shared by the calendar above and the todo list and habit tracker below.
+    readonly property int columnWidth: Math.max(640, Math.min(1320, screenWidth - 2 * edge - fade))
+    // The panels below the calendar: as tall as what is left of the screen; the habit tracker square
+    // where it can be, but never more than 40 % of the column or less than 280 px.
+    readonly property int lowerHeight: Math.max(0, screenHeight - calendar.implicitHeight - gap / 2 - edge)
+    readonly property int habitsWidth: Math.max(280, Math.min(lowerHeight, Math.round(columnWidth * 0.4)))
 
     WeekCalendar {
         id: calendar
-        visible: Desktop.widgetsShown && !Desktop.covered && !Privacy.active
+        visible: root.widgetsVisible
         anchors.top: true
         anchors.left: true
+        panelWidth: root.columnWidth
+        // The hours fill up to ~60 % of the screen, at most the full 52 px an hour.
+        hourHeight: Math.max(28, Math.min(52, Math.floor(root.screenHeight * 0.6 / (lastHour - firstHour))))
         room: ({
                 left: root.edge,
                 top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
@@ -45,12 +62,12 @@ ShellRoot {
 
     TodoList {
         id: todo
-        visible: Desktop.widgetsShown && !Desktop.covered && !Privacy.active
+        visible: root.widgetsVisible
         anchors.top: true
-        anchors.bottom: true
         anchors.left: true
         margins.top: calendar.implicitHeight
-        panelWidth: calendar.panelWidth - root.gap - habits.size
+        panelWidth: root.columnWidth - root.gap - root.habitsWidth
+        panelHeight: root.lowerHeight
         room: ({
                 left: root.edge,
                 top: root.gap / 2,
@@ -61,12 +78,13 @@ ShellRoot {
 
     HabitTracker {
         id: habits
-        visible: Desktop.widgetsShown && !Desktop.covered && !Privacy.active
+        visible: root.widgetsVisible
         anchors.top: true
-        anchors.bottom: true
         anchors.left: true
         margins.top: calendar.implicitHeight
         margins.left: todo.implicitWidth
+        panelWidth: root.habitsWidth
+        panelHeight: root.lowerHeight
         room: ({
                 left: root.gap / 2,
                 top: root.gap / 2,

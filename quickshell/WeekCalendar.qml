@@ -16,7 +16,7 @@ PanelWindow {
 
     readonly property int firstHour: 7
     readonly property int lastHour: 22
-    readonly property int hourHeight: 52
+    property int hourHeight: 52 // set by shell.qml to fit the screen
     readonly property int gutter: 48 // hour labels
     readonly property int pad: 8
 
@@ -237,8 +237,9 @@ PanelWindow {
         }
     }
 
-    // Placed by shell.qml (top left, under the bar), which sets `room`: how far the window (and the
-    // dark backdrop) reaches past each edge of the panel, the last `fade` px on the right fading out.
+    // Placed by shell.qml (top left, under the bar), which sets the panel's width and `room`: how far
+    // the window (and the dark backdrop) reaches past each edge of the panel, the last `fade` px on the
+    // right fading out. The panel is as tall as its content; nothing here reads the window's own size.
     property var room: ({
             left: 0,
             top: 0,
@@ -246,7 +247,7 @@ PanelWindow {
             bottom: 0
         })
     property int fade: 0
-    readonly property int panelWidth: 1320
+    property int panelWidth: 1320
     readonly property int panelHeight: panel.height
 
     implicitWidth: room.left + panelWidth + room.right

@@ -254,10 +254,11 @@ PanelWindow {
         }
     }
 
-    // Placed by shell.qml (below the calendar, left of the habit tracker), which sets the panel's
-    // width and `room`: how far the window (and the dark backdrop) reaches past each edge of the
-    // panel. The panel fills the window's height.
+    // Placed by shell.qml (below the calendar, left of the habit tracker), which sets the panel's size
+    // and `room`: how far the window (and the dark backdrop) reaches past each edge of the panel.
+    // Nothing here reads the window's own size (see shell.qml).
     property int panelWidth: 420
+    property int panelHeight: 400
     property var room: ({
             left: 0,
             top: 0,
@@ -267,7 +268,7 @@ PanelWindow {
     property int fade: 0
 
     implicitWidth: room.left + panelWidth + room.right
-    implicitHeight: 600
+    implicitHeight: room.top + panelHeight + room.bottom
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Bottom
@@ -290,7 +291,7 @@ PanelWindow {
         x: root.room.left
         y: root.room.top
         width: root.panelWidth
-        height: parent.height - root.room.top - root.room.bottom
+        height: root.panelHeight
 
         HoverHandler {
             id: hover
