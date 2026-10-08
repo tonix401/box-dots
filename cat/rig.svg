@@ -33,7 +33,7 @@
       <g data-variant="slim">
         <path class="line" d="m 27.138344,99.54953 c -8.643584,32.9389 7.177546,34.48347 22.319384,37.02989" />
         <path class="line" d="m 64.42186,137.59394 c 7.079001,0.47898 13.549214,0.19698 19.275833,-1.01452" />
-        <path class="line" d="M 99.295899,135.18446 C 115.56041,134.39982 129.11722,126.89187 125.54654,112.231 121.97586,97.570132 123.06018,101.16663 122.6298,94.984201" />
+        <path class="line" d="M 99.7557,136.5794 C 114.8975,133.883 130.7186,132.2484 122.0751,97.3974" />
         <path class="line" d="m 47.555507,123.77113 c -0.576058,24.92895 20.190748,23.72027 17.627242,3.55081" />
         <path class="line" d="m 83.697693,125.80017 c -2.324936,20.21984 17.289067,21.11657 16.23228,-1.52178" />
       </g>
@@ -78,41 +78,57 @@
         <path class="line" d="m 129.85824,63.914601 c 2.84962,0.146666 5.56168,2.222394 7.73569,4.05807" />
         <path class="line" d="m 131.38002,72.030743 c 1.97062,0.906914 3.64743,2.738572 4.94577,5.326215" />
       </g>
-      <g id="eyes" data-pivot="74.56 58.7">
+      <g id="eye-l" data-pivot="57.32 59.1">
         <g data-variant="open">
           <ellipse class="filled" cx="57.320236" cy="59.095646" rx="5.0725875" ry="5.7066612" />
-          <ellipse class="filled" cx="91.795074" cy="58.29578" rx="5.0725875" ry="5.7066612" />
         </g>
         <g data-variant="sparkle" display="none">
           <ellipse class="solid" cx="57.320236" cy="59.095646" rx="6.2" ry="6.9" />
           <ellipse class="hole" cx="55.4" cy="56.8" rx="1.75" ry="1.85" />
           <ellipse class="hole" cx="59.4" cy="61.5" rx="0.85" ry="0.9" />
+        </g>
+        <g data-variant="squint" display="none">
+          <path class="line-join" d="m 51.456007,54.953888 10.485548,7.555764 -10.022952,8.943556" />
+        </g>
+        <g data-variant="closed" display="none">
+          <path class="line" d="M 51.4,59.4 C 53.6,64.6 61,64.6 63.2,59.4" />
+        </g>
+        <g data-variant="stars" display="none">
+          <path class="filled" d="M 57.32,50.5 C 58.34,56.89 59.53,58.08 64.72,59.1 C 59.53,60.12 58.34,61.31 57.32,67.7 C 56.3,61.31 55.11,60.12 49.92,59.1 C 55.11,58.08 56.3,56.89 57.32,50.5 Z" />
+        </g>
+        <g data-variant="x" display="none">
+          <path class="line" d="M 53,54.8 L 61.6,63.4" />
+          <path class="line" d="M 61.6,54.8 L 53,63.4" />
+        </g>
+        <g data-variant="wide" display="none">
+          <ellipse class="line" cx="57.320236" cy="59.095646" rx="6.6" ry="7.4" />
+          <ellipse class="filled" cx="57.9" cy="59.6" rx="1.6" ry="1.9" />
+        </g>
+      </g>
+      <g id="eye-r" data-pivot="91.8 58.3">
+        <g data-variant="open">
+          <ellipse class="filled" cx="91.795074" cy="58.29578" rx="5.0725875" ry="5.7066612" />
+        </g>
+        <g data-variant="sparkle" display="none">
           <ellipse class="solid" cx="91.795074" cy="58.29578" rx="6.2" ry="6.9" />
           <ellipse class="hole" cx="89.9" cy="56" rx="1.75" ry="1.85" />
           <ellipse class="hole" cx="93.9" cy="60.7" rx="0.85" ry="0.9" />
         </g>
         <g data-variant="squint" display="none">
-          <path class="line-join" d="m 51.456007,54.953888 10.485548,7.555764 -10.022952,8.943556" />
           <path class="line-join" d="m 94.015003,55.416483 -10.948148,7.555764 9.560355,8.94356" />
         </g>
         <g data-variant="closed" display="none">
-          <path class="line" d="M 51.4,59.4 C 53.6,64.6 61,64.6 63.2,59.4" />
           <path class="line" d="M 85.9,58.6 C 88.1,63.8 95.5,63.8 97.7,58.6" />
         </g>
         <g data-variant="stars" display="none">
-          <path class="filled" d="M 57.32,50.5 C 58.34,56.89 59.53,58.08 64.72,59.1 C 59.53,60.12 58.34,61.31 57.32,67.7 C 56.3,61.31 55.11,60.12 49.92,59.1 C 55.11,58.08 56.3,56.89 57.32,50.5 Z" />
           <path class="filled" d="M 91.8,49.7 C 92.82,56.09 94.01,57.28 99.2,58.3 C 94.01,59.32 92.82,60.51 91.8,66.9 C 90.78,60.51 89.59,59.32 84.4,58.3 C 89.59,57.28 90.78,56.09 91.8,49.7 Z" />
         </g>
         <g data-variant="x" display="none">
-          <path class="line" d="M 53,54.8 L 61.6,63.4" />
-          <path class="line" d="M 61.6,54.8 L 53,63.4" />
           <path class="line" d="M 87.5,54 L 96.1,62.6" />
           <path class="line" d="M 96.1,54 L 87.5,62.6" />
         </g>
         <g data-variant="wide" display="none">
-          <ellipse class="line" cx="57.320236" cy="59.095646" rx="6.6" ry="7.4" />
           <ellipse class="line" cx="91.795074" cy="58.29578" rx="6.6" ry="7.4" />
-          <ellipse class="filled" cx="57.9" cy="59.6" rx="1.6" ry="1.9" />
           <ellipse class="filled" cx="91.2" cy="58.8" rx="1.6" ry="1.9" />
         </g>
       </g>

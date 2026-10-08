@@ -6,6 +6,7 @@
 //   var st = CatEngine.create(rig, "neutral");
 //   CatEngine.setExpression(st, "happy");   CatEngine.act(st, "hop", 2);   CatEngine.press(st, true);
 //   CatEngine.voice(st, [active, open, wide, round]);   // sing along (0..1 each; see voice.py)
+//   CatEngine.track(st, pose);              // follow a tracked face (kitty-cam.html); null: face lost
 //   var frame = CatEngine.step(st, dt);     // {worlds, paths, variantOpacity, partOpacity, shapeOpacity}
 //
 // frame.worlds[part] is an affine [a, b, c, d, e, f] (x' = a x + c y + e, y' = b x + d y + f) in rig
@@ -16,6 +17,11 @@ var CatEngine = (function () {
 
     var FEET = [75, 138]; // whole-cat motions squash and stretch about here
     var ID = [1, 0, 0, 1, 0, 0];
+    // Face tracking fakes a turning head by parallax: how far each part of the face slides with the
+    // head's yaw and pitch (rig units at full turn = 8 · depth sideways, 5 · depth up/down).
+    var DEPTH = { "eye-l": 1, "eye-r": 1, mouth: 1.15, sing: 1.15, cheeks: 1.15, sweat: 0.8, "whiskers-l": 0.6, "whiskers-r": 0.6, bow: 0.4, "ear-l": -0.3, "ear-r": -0.3 };
+    var YAWN = { open: 1.5, wide: 0.8, round: 0.3 }; // the sing mouth's keys at the height of a yawn
+    var REST_POSE = { yaw: 0, pitch: 0, roll: 0, x: 0, y: 0, blinkL: 0, blinkR: 0, gazeX: 0, gazeY: 0, brow: 0, smile: 0, open: 0, wide: 0, round: 0 };
 
     function or(v, d) {
         return v === undefined || v === null ? d : v;
@@ -28,6 +34,9 @@ var CatEngine = (function () {
     }
     function lerp(a, b, k) {
         return a + (b - a) * k;
+    }
+    function smooth(x) { // smoothstep on 0..1
+        return x * x * (3 - 2 * x);
     }
     // Moves v towards goal, settling in about `settle` seconds.
     function ease(v, goal, dt, settle) {
@@ -77,6 +86,7 @@ var CatEngine = (function () {
             nextBlink: 2, blinkStart: -10,
             nextTwitch: 6, twitchStart: -10, twitchSide: "l",
             nextTilt: rand(5, 12), tiltStart: -10, tiltDir: 1,
+            nextYawn: 0, yawnStart: -10, yawnGate: 0, // sleepy yawns; yawnGate fades one out if the cat stops being sleepy
             head: { x: 0, v: 0 }, // the head's lag behind the body (rig units, down is +)
             tilt: { x: 0, v: 0 }, // the head's tilt (degrees)
             squash: { x: 0, v: 0 }, // whole-cat squish: -0.2 is squashed flat, + is stretched
@@ -85,6 +95,11 @@ var CatEngine = (function () {
             voice: [0, 0, 0, 0], // [active, open, wide, round], as last given to voice()
             singing: 0, // 0..1: the sing mouth fading in over the expression's mouth
             lips: { open: 0, wide: 0, round: 0 }, // the sing mouth's shape keys, eased
+            pose: null, // the tracked face, as last given to track(); null while there is none
+            lastPose: REST_POSE, // kept while the tracking fades out after the face is lost
+            tracked: 0, // 0..1: how much the tracked face drives the cat
+            restMouth: false, // tracked: show the expression's own mouth while the lips are closed
+            trackBlink: true, trackHead: true, // false: the idle blinks / head tilts carry on while tracked
         };
     }
 
@@ -109,6 +124,17 @@ var CatEngine = (function () {
     // expressions that sing, `open`, `wide`, `round` (0..1) shape it.
     function voice(st, v) {
         st.voice = v;
+    }
+
+    // A tracked face (kitty-cam.html), already filtered and normalised, or null when it is lost:
+    //   yaw, pitch (-1..1: turned right / looking down at +1), roll (degrees, clockwise),
+    //   x, y (rig units the head leans by), blinkL, blinkR, smile, open, wide, round (0..1),
+    //   gazeX, gazeY (-1..1), brow (-1 frowning .. 1 raised).
+    // While tracked, the face replaces the idle blinks, twitches and tilts, and the sing mouth follows its lips.
+    function track(st, pose) {
+        st.pose = pose;
+        if (pose)
+            st.lastPose = pose;
     }
 
     // Held down: squish flat. Let go: boing back (the squash spring overshoots).
@@ -161,15 +187,19 @@ var CatEngine = (function () {
         var t = (st.t += dt);
         var e = rig.expressions[st.expression] || rig.expressions.neutral;
         var idle = st.idle;
+        st.tracked = snap ? (st.pose ? 1 : 0) : ease(st.tracked, st.pose ? 1 : 0, dt, 0.25);
+        var T = st.tracked, P = st.lastPose;
 
         // ── idle loop ──
-        var eyes = e.variants.eyes;
+        var eyes = e.variants["eye-l"];
         if (t >= st.nextBlink) {
             st.blinkStart = t;
             st.nextBlink = t + (Math.random() < 0.15 ? 0.3 : rand(3, 7));
         }
         var bp = (t - st.blinkStart) / (st.expression === "sleepy" ? 0.5 : 0.16);
-        var blink = idle && (eyes === "open" || eyes === "wide" || eyes === "sparkle") && bp < 1 ? (bp < 0.4 ? 1 - 0.9 * bp / 0.4 : 0.1 + 0.9 * (bp - 0.4) / 0.6) : 1;
+        var blinkable = eyes === "open" || eyes === "wide" || eyes === "sparkle";
+        var blink = idle && blinkable && bp < 1 ? (bp < 0.4 ? 1 - 0.9 * bp / 0.4 : 0.1 + 0.9 * (bp - 0.4) / 0.6) : 1;
+        blink = lerp(blink, 1, st.trackBlink ? T : 0); // a tracked face blinks for itself
 
         if (t >= st.nextTwitch) {
             st.twitchStart = t;
@@ -177,7 +207,7 @@ var CatEngine = (function () {
             st.nextTwitch = t + rand(8, 20);
         }
         var tp = (t - st.twitchStart) / 0.36;
-        var twitch = idle && st.expression !== "asleep" && tp < 1 ? Math.abs(Math.sin(2 * Math.PI * tp)) : 0;
+        var twitch = idle && st.expression !== "asleep" && tp < 1 ? Math.abs(Math.sin(2 * Math.PI * tp)) * (1 - T) : 0;
 
         // A curious head tilt now and then, held for a moment; the spring makes it overshoot and settle.
         if (t >= st.nextTilt) {
@@ -189,14 +219,39 @@ var CatEngine = (function () {
         var bob = e.motion === "bob" ? Math.sin(2 * Math.PI * t / 0.9) : 0;
         var tremble = e.motion === "tremble" ? 0.5 * Math.sin(2 * Math.PI * 13 * t) : 0;
 
+        // Sleepy: a big yawn now and then (2.6 s): eyes squeezed shut, mouth wide open, ears back, a stretch.
+        var sleepy = idle && st.expression === "sleepy";
+        if (!sleepy) {
+            if (st.nextYawn < t + 4) // the first yawn comes 4–10 s after the cat gets sleepy
+                st.nextYawn = t + rand(4, 10);
+        } else if (t >= st.nextYawn) {
+            st.yawnStart = t;
+            st.nextYawn = t + rand(20, 45);
+        }
+        st.yawnGate = snap ? (sleepy ? 1 : 0) : ease(st.yawnGate, sleepy ? 1 : 0, dt, 0.25);
+        var yp = (t - st.yawnStart) / 2.6, ys = 0;
+        if (yp < 0.3) // opening, slowly
+            ys = smooth(yp / 0.3);
+        else if (yp < 0.68) // held, stretching a little further
+            ys = 1 + 0.06 * Math.sin(Math.PI * (yp - 0.3) / 0.38);
+        else if (yp < 1) // closing
+            ys = 1 - smooth((yp - 0.68) / 0.32);
+        var yawn = ys * st.yawnGate * (1 - T);
+
         var breath = idle ? (1 - Math.cos(2 * Math.PI * t / (e.breath || 4))) / 2 : 0;
 
         // ── singing: the sing mouth takes over from the expression's mouth while there's a voice ──
-        var singGoal = e.sing && st.voice[0] > 0 ? 1 : 0;
+        // A tracked face talks through the sing mouth: always, or (restMouth) only while the lips move,
+        // with a little hysteresis so a mouth on the edge doesn't flicker between the two.
+        var lipsAt = st.singing > 0.5 ? 0.04 : 0.08;
+        var talking = !st.restMouth || P.open > lipsAt || P.round > 3 * lipsAt || P.wide > 4 * lipsAt;
+        var singGoal = Math.max(e.sing && st.voice[0] > 0 ? 1 : 0, st.pose && talking ? 1 : 0);
         st.singing = snap ? singGoal : ease(st.singing, singGoal, dt, 0.12);
         var lipNames = ["open", "wide", "round"];
-        for (var li = 0; li < 3; li++)
-            st.lips[lipNames[li]] = snap ? st.voice[li + 1] : ease(st.lips[lipNames[li]], st.voice[li + 1], dt, 0.05);
+        for (var li = 0; li < 3; li++) {
+            var lipGoal = lerp(st.voice[li + 1], P[lipNames[li]], T);
+            st.lips[lipNames[li]] = snap ? lipGoal : ease(st.lips[lipNames[li]], lipGoal, dt, 0.05);
+        }
 
         // ── whole-cat motion, and the springs it shakes ──
         var o = motionPose(st, t);
@@ -207,12 +262,13 @@ var CatEngine = (function () {
             // The head is heavy: when the body jumps up it lags down, and wobbles after landing.
             spring(st.head, 0, dt, 220, 11, clamp(-0.25 * ay, -3000, 3000));
             st.head.x = clamp(st.head.x, -6, 6);
-            spring(st.tilt, (tilting ? 7 * st.tiltDir : 0) + 4 * bob, dt, 140, 9, 0);
+            spring(st.tilt, (tilting ? 7 * st.tiltDir * (st.trackHead ? 1 - T : 1) : 0) + 4 * bob, dt, 140, 9, 0);
             spring(st.squash, st.pressed ? -0.2 : 0, dt, 320, 9, 0);
         }
         var sq = st.squash.x;
-        var all = { tx: tremble, ty: o.ty, sx: o.sx * (1 - 0.7 * sq), sy: o.sy * (1 + sq), rot: 0 };
+        var all = { tx: tremble, ty: o.ty, sx: o.sx * (1 - 0.7 * sq) * (1 - 0.025 * yawn), sy: o.sy * (1 + sq) * (1 + 0.05 * yawn), rot: 0 };
         var root = local(FEET, all);
+        var singShown = Math.max(st.singing, Math.min(1, 3 * yawn)); // a yawn opens the sing mouth too
 
         // ── pass 1: ease every part towards the expression, layer the above on top, find matrices ──
         var worlds = {}, vo = {}, po = {}, so = {}, liveKeys = {};
@@ -239,14 +295,35 @@ var CatEngine = (function () {
             }
             var shown = !part.hidden || e.show.indexOf(name) >= 0 ? 1 : 0;
             c.shown = snap ? shown : ease(c.shown, shown, dt, 0.22);
-            po[name] = name === "sing" ? st.singing : name === "mouth" ? c.shown * (1 - st.singing) : c.shown;
+            po[name] = name === "sing" ? singShown : name === "mouth" ? c.shown * (1 - singShown) : name === "cheeks" ? Math.max(c.shown, P.smile * T) : c.shown;
 
             var tr = { tx: c.tr.tx, ty: c.tr.ty, sx: c.tr.sx, sy: c.tr.sy, rot: c.tr.rot };
             var keys = {};
             for (key in c.keys)
                 keys[key] = c.keys[key] + or(st.extraKeys[name + "." + key], 0);
-            if (name === "eyes")
-                tr.sy *= blink;
+            if (name === "eye-l" || name === "eye-r") {
+                tr.sy *= blink * (1 - 0.8 * yawn);
+                if (T > 0) {
+                    var left = name === "eye-l", lid = left ? P.blinkL : P.blinkR;
+                    if (blinkable)
+                        tr.sy *= 1 - 0.9 * lid * T;
+                    tr.sx *= 1 - 0.25 * Math.max(0, left ? -P.yaw : P.yaw) * T; // the far eye narrows as the head turns
+                    tr.tx += 1.5 * P.gazeX * T;
+                    tr.ty += 1.5 * P.gazeY * T;
+                }
+            }
+            if (T > 0 && DEPTH[name]) {
+                tr.tx += 8 * DEPTH[name] * P.yaw * T;
+                tr.ty += 5 * DEPTH[name] * P.pitch * T;
+            }
+            if (T > 0 && (name === "ear-l" || name === "ear-r")) { // the ears are the eyebrows
+                if ("perk" in keys)
+                    keys.perk += Math.max(0, P.brow) * T;
+                if ("flat" in keys)
+                    keys.flat += Math.max(0, -P.brow) * T;
+            }
+            if ((name === "ear-l" || name === "ear-r") && "flat" in keys)
+                keys.flat += 0.5 * yawn;
             if (name === "ear-" + st.twitchSide && "twitch" in keys)
                 keys.twitch += twitch;
             if (name === "whiskers-" + st.twitchSide)
@@ -257,10 +334,13 @@ var CatEngine = (function () {
             }
             if (name === "sing")
                 for (key in st.lips)
-                    keys[key] += st.lips[key];
+                    keys[key] += lerp(st.lips[key], YAWN[key], Math.min(1, yawn));
             if (name === "head") { // lifted a little as the mouth opens
-                tr.ty += st.head.x - 1.3 * breath - 1.2 * Math.abs(bob) - 0.8 * st.lips.open * st.singing;
-                tr.rot += st.tilt.x;
+                tr.ty += st.head.x - 1.3 * breath - 1.2 * Math.abs(bob) - 0.8 * st.lips.open * st.singing - 2 * yawn;
+                tr.rot += st.tilt.x + P.roll * T;
+                tr.tx += P.x * T;
+                tr.ty += P.y * T;
+                tr.sx *= 1 - 0.05 * Math.abs(P.yaw) * T;
             }
             liveKeys[name] = keys;
             var m = local(part.pivot, tr);
@@ -315,5 +395,5 @@ var CatEngine = (function () {
         return { worlds: worlds, paths: paths, variantOpacity: vo, partOpacity: po, shapeOpacity: so };
     }
 
-    return { create: create, step: step, act: act, press: press, setExpression: setExpression, voice: voice };
+    return { create: create, step: step, act: act, press: press, setExpression: setExpression, voice: voice, track: track };
 })();
