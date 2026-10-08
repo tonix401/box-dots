@@ -5,7 +5,8 @@ import Quickshell
 import qs.components
 
 // Streamer mode: true while OBS is running, so the bar and menus mask the SSID, IP,
-// user@host and device names that would otherwise end up on stream.
+// user@host and device names that would otherwise end up on stream, and shell.qml hides the
+// desktop widgets.
 Singleton {
     readonly property bool active: obs.output === "1"
 

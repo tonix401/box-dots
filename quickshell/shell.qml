@@ -23,14 +23,14 @@ ShellRoot {
     // calendar sits top left under the bar, the todo list and the habit tracker side by side below
     // it down to the screen's bottom. Their windows reach to the screen's edges and meet halfway
     // across the gaps, so their backdrops make one dark band from top to bottom that fades out
-    // right of the column.
+    // right of the column. All three also hide while OBS runs (Privacy), so they stay off stream.
     readonly property int edge: 24 // from the screen's left and bottom edges
     readonly property int gap: 16 // between the widgets and below the bar
     readonly property int fade: 160 // the band's fade right of the widgets
 
     WeekCalendar {
         id: calendar
-        visible: Desktop.widgetsShown
+        visible: Desktop.widgetsShown && !Privacy.active
         anchors.top: true
         anchors.left: true
         room: ({
@@ -44,7 +44,7 @@ ShellRoot {
 
     TodoList {
         id: todo
-        visible: Desktop.widgetsShown
+        visible: Desktop.widgetsShown && !Privacy.active
         anchors.top: true
         anchors.bottom: true
         anchors.left: true
@@ -60,7 +60,7 @@ ShellRoot {
 
     HabitTracker {
         id: habits
-        visible: Desktop.widgetsShown
+        visible: Desktop.widgetsShown && !Privacy.active
         anchors.top: true
         anchors.bottom: true
         anchors.left: true
