@@ -10,16 +10,16 @@ mouth and body.
 | `poses.json` | **Source.** Expressions, plus the two exported terminal poses |
 | `engine.js` | **Source.** The animation engine: rig.json in, a frame of matrices/paths/opacities out. Plain ES2017 (no `?.`/`??`) so QML runs it too |
 | `build.py` | Validates the sources, writes everything below. `--check` validates only; `--still EXPR` prints a static SVG (reference renderer) |
+| `model3d.py` | The 3D head: inflates the outline into a solid and meshes it, for `build.py` (see "The 3D head"; needs numpy) |
 | `rig.json` | Generated manifest for renderers |
 | `preview.html` | Browser renderer + tuning panel (expressions, motions, shape-key sliders; hold the mouse on the cat to squish it). Carries its own copies of `rig.json` and `engine.js`; `?expr=startled&idle=0` |
 | `~/.config/quickshell/components/CatEngine.js` | Generated copy of `engine.js` for Cat.qml |
-| `kitty-cam.html` | Kitty Cam: the cat as a webcam, driven by your face and voice (see "Kitty Cam"). Carries its own copies of `rig.json` and `engine.js` like preview.html |
-| `kitty-cam.py` | Serves kitty-cam.html, opens it in its own Chromium, and writes the frames it draws to the "Kitty Cam" v4l2loopback camera |
+| `../kitty-cam/web/cat/` | Kitty Cam's copies of `rig.json` and `engine.js` (see "Kitty Cam") |
 | `voice.py` | The sing-along analyser Pet.qml runs: listens to the speakers while something plays, prints mouth shapes (see "Singing") |
 | `build.py --export cat\|fat-cat` | The two original drawings on demand, path data verbatim (`--color '#hex'`, else matugen's color tag). They used to be matugen templates rendered for the kitty greeting; since 2026-10-07 nothing renders them |
 
 Renderers: `~/.config/quickshell/components/Cat.qml` (used by `KittyCat.qml`, a cat in the top right
-corner of every kitty window, driven by `Pet.qml`), `preview.html` (SVG) and `kitty-cam.html` (Canvas 2D).
+corner of every kitty window, driven by `Pet.qml`), `preview.html` (SVG) and Kitty Cam's page (Canvas 2D).
 Both only draw what `engine.js` returns, so they animate identically.
 After editing a source, run `./build.py`; the cats reload `rig.json` by themselves.
 
@@ -47,6 +47,10 @@ After editing a source, run `./build.py`; the cats reload `rig.json` by themselv
   blends between its own part's world matrix and the bone's, with weight 1 at y ≤ y0, 0 at y ≥ y1 and a
   smoothstep between. The body is skinned to the head, so its top follows the head (tilts, bobs, lag)
   while the feet stay planted: the neck never comes apart.
+- `data-depth="d"` on the head makes it a **real 3D solid**, d deep (see "The 3D head"). Its parts say how
+  they sit on it: `data-lift="z"` raises a part z above the skin, `data-billboard="z"` keeps it flat and
+  facing the viewer, z in front of the skin anywhere under it (it only moves, never deforms),
+  `data-sweep="k"` sweeps it back by k per unit of length beyond the outline (whiskers).
 - `class`: `line` = miter joins, `line-join` / `ear` = round joins, `filled` = filled with the stroke
   color, `solid` = filled, no stroke, `blush` = fill at 35 % opacity, `hole` = cut out of the filled
   shape just before it (even-odd; the eye highlights).
@@ -66,7 +70,12 @@ After editing a source, run `./build.py`; the cats reload `rig.json` by themselv
 | `sweat` | head | | hidden by default; a drop at the right temple |
 | `mouth` | head | mouth | `smile` (cat.svg), `cat` (`ω`), `none`, `open` |
 | `sing` | head | mouth | hidden by default; the singing mouth, a closed smile with shape keys `open` ("ah"), `wide` ("ee"), `round` ("oo"). Shown instead of `mouth` while singing |
+
 | `zzz` | – | | hidden by default; three z's |
+
+On the 3D head, the mouth and the sing mouth are lifted 1.5 above the skin, the shades 3 (they follow the eyes
+round the face), the bow tie is a billboard 6 in front of the chin, and the whiskers sweep back 2 per unit of
+length beyond the outline; everything else lies on the skin.
 
 ## rig.json
 
@@ -78,11 +87,17 @@ After editing a source, run `./build.py`; the cats reload `rig.json` by themselv
   parts: { name: { parent, pivot: [x, y], hidden,
                    variants: { name: [ {paths: [{pts, closed}], stroke, fill, alpha, join, evenodd, d} ] },
                    keys: { name: [ [pts per subpath] per shape ] },         // matches the "default" variant
-                   skin: null | {bone, weights: {variant: [ [ [w per point] per subpath ] per shape ]}} } },
+                   skin: null | {bone, weights: {variant: [ [ [w per point] per subpath ] per shape ]}},
+                   solid: null | {lift, billboard?, sweep?},               // the head's parts, on the 3D head
+                   keyAffines: {key: [a, b, c, d, e, f]} } },              // hinge keys as matrices (ears)
   expressions: { name: { variants: {part: variant}, keys: {"part.key": w},
-                         transforms: {part: {tx, ty, sx, sy, rot}}, show: [part], motion, breath } } }
+                         transforms: {part: {tx, ty, sx, sy, rot}}, show: [part], motion, breath } },
+  model: null | { centre: [x, y], depth, outline: n,                // the 3D head (model3d.py)
+                  verts: [x, y, z, …], normals: [x, y, z, …], tris: [a, b, c, …], tags: [tag per vertex],
+                  height: {x0, y0, w, h, values} } }               // its depth per rig unit (−distance outside)
 ```
 
+A shape on a `data-chain` also carries `chain` (the head's outline: the 3D head draws it as its silhouette).
 `pts` is `[P0, C1, C2, P1, C1, C2, P2, …]`: every path is absolute cubic Béziers only (lines are
 converted), so blending is a plain point-wise lerp. A shape's first subpath is its outline, the
 rest are holes. `d` is the whole shape as an SVG string.
@@ -139,17 +154,53 @@ matrix is `parent world · local`. `rot` is in degrees, clockwise on screen (y p
      Underdamped, so letting go boings
 5. **Skinning**: the body's points blend between the body's and the head's world matrices by their weights.
 6. `zzz`: the z's fade in and out in turn on a 3.6 s cycle.
-7. **Face tracking** (`track(st, pose | null)`, used by kitty-cam.html; `st.restMouth`: see Kitty Cam → Cat settings): `tracked` eases 0 ↔ 1 (~0.25 s)
+7. **Face tracking** (`track(st, pose | null)`, used by Kitty Cam; `st.restMouth`: see Kitty Cam → Cat settings): `tracked` eases 0 ↔ 1 (~0.25 s)
    as a face is found or lost, and scales everything here. The face replaces the idle blinks, twitches
-   and tilts; breathing, motions and springs stay. Head: `rot += roll`, leans by `x`/`y`, narrows a
-   little with |yaw|. A turn is faked by parallax: the head's children slide by `8·depth·yaw`,
-   `5·depth·pitch` (eyes 1, mouth/sing/cheeks 1.15, sweat 0.8, whiskers 0.6, bow 0.4, ears −0.3), and the
-   far eye narrows. Each eye closes with its own lid (`sy × (1 − 0.9 blink)`, blinkable variants only) and
+   and tilts; breathing, motions and springs stay. Head: `rot += roll`, leans by `x`/`y`.
+   **The head turns in 3D** (see "The 3D head"): yaw ±1 is 30°, pitch ±1 20°. Each eye closes with its own lid (`sy × (1 − 0.9 blink)`, blinkable variants only) and
    shifts with the gaze (±1.5). The ears are the eyebrows (`brow` > 0 → `perk`, < 0 → `flat`). The sing
    mouth shows and follows the pose's `open`/`wide`/`round`; the cheeks blush at least by `smile`.
 8. **Singing** (`voice(st, [active, open, wide, round])`): in an expression with `sing`, while `active`,
    the `sing` mouth fades in over `mouth` (~0.12 s) and its keys follow `open`/`wide`/`round` (~0.05 s);
    the head lifts by up to 0.8 as the mouth opens.
+
+## The 3D head (model3d.py, engine.js)
+
+Unturned, the cat is the drawing, drawn as it is. When a tracked face turns or nods the head, the head is a real
+3D solid made from the drawing, and every line of it is drawn from that solid.
+
+**The solid** (`model3d.py`, run by `build.py`; needs numpy): the head's outline, ears included (the chain
+`outline`), closed across the neck, is inflated: the depth over each point is `√h`, where `h` solves the Poisson
+equation `Δh = −4` inside the outline with `h = 0` on it (on a 0.5-unit grid, by over-relaxation). That is an exact
+hemisphere over a disk and a round cross-section everywhere, so narrower parts come out thinner: the ears are soft
+lobes, like a plush toy's. It's scaled to `data-depth` at its deepest and mirrored, front and back. The mesh: the
+outline every 2 units, rings of points 0.4, 1.2 and 2.4 inside it (the surface is steepest there; points where a
+ring folds over at a sharp corner are dropped), a 3.5-unit grid inside, all triangulated (Delaunay) and kept inside
+the outline; the inside points get a front and a back copy, the outline is shared. Vertex normals are averaged from
+the faces. Tags: the ears' vertices (everything on an ear's side of the line where it meets the head) bend with the
+ears' shape keys, which are affine maps keeping that line in place, so the mesh bends seamlessly; a band along the
+neck draws no silhouette where it faces down. `height` is the depth on a 1-unit grid (minus the distance outside the
+outline) for the drawn parts. Everything turns about the solid's centroid.
+
+**Each turned frame** (`engine.js`, pass 2; ~2 ms in a browser):
+1. The mesh's vertices: the ears' bent by their keys, then turned (the nod first, about the head's own sideways
+   axis, then the turn about the neck's vertical one) and projected straight on.
+2. Depth: the faces turned towards the viewer are filed by 3-unit cells of the screen; a point's visibility is
+   decided against the exact depth of the faces over it (within 0.5).
+3. Silhouette: where the vertex normals' dot with the view direction changes sign along an edge, linked across
+   each triangle; the solid is closed, so these are loops. Each point is tested a unit outside itself (along its
+   outward normal), so its own fold can't hide it but anything in front still does. Along the neck it's skipped
+   where it faces down (the body goes on there). Visible stretches shorter than 3.5 are dropped; the rest are
+   resampled every 1.5, smoothed and drawn as the head's first shape (the others, and the ears' outer curves,
+   are empty). The longest loop, closed, is `frame.outline`, for a renderer's fill.
+4. The head's parts: every curve sampled (10 points a segment), each sample given the depth of where it is at
+   rest (`height`, plus its `lift`; a billboard's own depth; past the outline, `sweep` back), turned, and kept
+   where it's visible. A filled or closed shape (eyes, the inner ear) shows whole if at least 60 % is visible,
+   else not at all; open lines show their visible stretches. A billboard only moves with its pivot.
+5. The neck (the body's skin bone) follows the solid's rim: the head's matrix times the turned plane of depth 0.
+
+All of it is in the head's space (`worlds[part]` = the head's matrix), so roll, lean and the springs apply on top.
+At yaw = pitch = 0 none of it runs, and the frames are exactly the drawing's (the terminal cats never turn).
 
 ## Behaviour (Quickshell: Pet.qml)
 
@@ -199,126 +250,10 @@ that process), `busyPid <pid> <id>` / `remotePid <pid> <id>` / `finishedPid <pid
 play over it), `qs ipc call cat unpin`, `qs ipc call cat tester` or **SUPER + SHIFT + C** (the CatTester panel; its "only …"
 toggle aims reactions at the focused window), `qs ipc call cat kitty` (hide/show the cats), `qs ipc call cat sing` / `singOffset <ms>` (singing along).
 
-## Kitty Cam (kitty-cam.py, kitty-cam.html)
+## Kitty Cam
 
-The cat as a webcam for video calls: pick **Kitty Cam** as the camera in Meet, Zoom, Discord, …
-
-```
-webcam (via PipeWire), mic → kitty-cam.html: MediaPipe Face Landmarker → One Euro filters → CatEngine.track → canvas
-            → worker: RGBA → YUV 4:2:0 → POST /frame (30 fps) → kitty-cam.py → write() → /dev/video10 "Kitty Cam"
-```
-
-- **Run** `./kitty-cam.py` (`--headless`: no window; `--no-browser`: only serve http://127.0.0.1:8737/;
-  `--no-camera --port 8738`: a second instance for testing that leaves the camera alone).
-  `curl 127.0.0.1:8737/status` shows the page's own figures (tracking fps, detection ms, camera size, face, calibration).
-  It opens the page in its own Chromium profile (`~/.cache/kitty-cam/chromium`) with background
-  throttling off and autoplay allowed (the camera/mic prompt comes once; the profile remembers it;
-  `--headless` grants them by flag). The loop runs on a timer, not
-  `requestAnimationFrame`, so the cat keeps moving while the call's window covers this one. Closing
-  the window stops it. MediaPipe (`@mediapipe/tasks-vision`, pinned in kitty-cam.py) and the
-  `face_landmarker.task` model are downloaded once to `~/.cache/kitty-cam/vendor/`.
-- **Setup, once:** `sudo pacman -S --needed v4l2loopback-dkms`;
-  `/etc/modprobe.d/v4l2loopback.conf`: `options v4l2loopback devices=3 video_nr=9,10,11 card_label="OBS Virtual Camera,Kitty Cam,Shared Webcam" exclusive_caps=1,1,1`
-  (`exclusive_caps=1`: Chrome/WebRTC only list a loopback that looks like a capture device; the labels go in
-  one quoted list, as `"a","b"` keeps the quotes in the names; OBS's virtual camera takes the first loopback
-  that accepts output, so its device has to come before Kitty Cam's);
-  `/etc/modules-load.d/v4l2loopback.conf`: `v4l2loopback`. Without the device the page still runs.
-- **The webcam is shared:** the page reads it through PipeWire (`--enable-features=WebRtcPipeWireCamera`,
-  merged with `~/.config/chromium-flags.conf`'s, as Chromium keeps only the last such flag), so it never holds
-  `/dev/video0` itself. OBS reads the webcam with its PipeWire source; V4L2-only apps (Discord) pick
-  "Shared Webcam", which `~/.local/bin/shared-webcam` (user service `shared-webcam`) fills from PipeWire
-  while something streams it. WirePlumber leaves the loopback devices alone
-  (`~/.config/wireplumber/wireplumber.conf.d/50-v4l2loopback.conf`).
-- **Frames** leave the page already in the camera's format, YUV 4:2:0 (`YU12`, BT.601 limited range),
-  converted in a Worker (so face detection never delays them) and POSTed raw (1.38 MB each). kitty-cam.py
-  sets the device's format once (`VIDIOC_S_FMT`; while a reader such as OBS streams, it checks with
-  `VIDIOC_G_FMT` that the format is already ours) and `write()`s each frame as it is. This replaced
-  JPEG + ffmpeg on 2026-10-08: ffmpeg's image2pipe held every frame ~104 ms (measured in isolation;
-  `-threads 1` / `low_delay` didn't help).
-- **Delay, measured 2026-10-08:** drawn → helper ~17 ms; drawn → OBS preview ~64 ms (32–77), with OBS's
-  V4L2 source at its default "Use buffering" on (turning it off should take more off; not measured). 30 fps,
-  also with the window hidden. **Measuring it:** `?stamp=1` draws the page's clock as a barcode at the top
-  left (red end marks, 32 black/white 24 px cells); decode it from the device, or from one screenshot that
-  shows both the page and OBS's preview. kitty-cam.py's `/status` has `drawn_to_helper_ms`. This
-  v4l2loopback (0.15) lets only one reader stream at a time, so the device can't be read while OBS has it.
-- **Fill** (Look → fill, colour picker and palette swatches beside it; default matugen's `primary_container`): fills the
-  cat's silhouette behind its lines, so a busy background never shows through it (e.g. once OBS keys the
-  background colour out). The silhouette is rebuilt every frame from the live outline pieces (head
-  cheeks and crown, both ears' outer paths, the body's sides, legs and bottom, slim or fat), taken from
-  the engine's frame (shape keys, skinning and matrices applied), so it follows every tilt, squash and
-  ear flick.
-- **Camera input** is 1280×720 (MediaPipe works on a crop around the face, so more pixels there help). The
-  loop polls for new camera frames at 60 Hz and draws/sends at 30: polling at 30 Hz could miss frames.
-  This webcam delivered ~21 fps in room light (2026-10-08) and has no exposure controls; more light on
-  the face is the way to more frames.
-- **Devices:** the page's Input card picks the camera and the microphone; the choice is remembered
-  (localStorage `kitty-cam.camera` / `kitty-cam.microphone`; Chromium keeps device ids stable per site), and a
-  remembered device that's gone falls back to the default. The lists follow devices being plugged in. Switching
-  cameras suggests recalibrating, as the head's neutral position moves with the camera.
-- **The page never tracks Kitty Cam itself**: it's left out of the camera list, and if the default camera is
-  Kitty Cam, the first other camera is used.
-- **Measures**, all unmirrored and on the subject's left/right (MediaPipe's `…Left` blendshapes are the
-  subject's left: verified 2026-10-08 by painting one eye of a test portrait shut). Besides the 52
-  blendshapes and the head matrix, the page measures the landmarks directly, scaled by the distance
-  between the outer eye corners (33, 263), so they hold at any distance: `gap` between the inner lips
-  (13, 14), mouth `width` (61, 291), each eye's aspect ratio (`earR` 33/160/158/133/153/144, `earL`
-  362/385/387/263/373/380), and `irisX`, the irises (468, 473) between their eye corners.
-- **Mapping** (mirrored by default, so the cat moves like your reflection):
-  - head: yaw/pitch over your own comfortable turn (calibrated; default 25° sideways, 15° up, 18°
-    down) is a full turn, roll in degrees, lean from the translation (cm × 0.7 → rig units)
-  - lids: ½ blink blendshape + ½ eye ratio, each minus what a smile's squint adds (`leak`), then
-    **blink sync**: lids within ~0.25 of each other close together, so blinks never come out as half winks
-  - gaze: sideways from the irises (held while the lids are closed), up/down from the `eyeLook*` blendshapes
-  - mouth: `open` from the lip gap; `wide` / `round` from the stretch and smile / funnel and pucker
-    blendshapes, and, once calibrated, from the width against your resting mouth ("ee" wider, "oo"
-    narrower; an "ah" also narrows it, so that counts less while open)
-  - ears: brows up (`browInnerUp`, `browOuterUp*`) minus the frown (`browDown*` minus the smile's leak)
-  - every value is `(v − rest) / (far end − rest)`, then a One Euro filter run per camera frame (head
-    and lean with a high beta, so fast moves aren't smoothed into lag)
-- **Calibrate** (since 2026-10-08): one button per movement, recorded whenever you're ready and redone
-  any time: neutral face (also `C`), mouth wide open, big smile, "eee", "ooo", brows up, frown, eyes
-  closed, head left / right / up / down. A click gives a 1.2 s count-in, then records ~1.5 s, then beeps
-  (your cue to relax, or to open your eyes). Each recording (the frames' measures and the blendshapes the
-  mapping uses, rounded) is kept in localStorage (`kitty-cam.calibration-steps`), and the calibration is
-  worked out again from all of them: the neutral face gives the resting values and the head's zero (it's
-  needed before anything else counts); each other movement gives the far end of its range (a percentile,
-  and only if the movement clearly happened, otherwise the default stays), the head turns give your
-  range, and the smile also gives its leak into lids and brows. (This replaced a ~30 s automatic run
-  whose prompts changed too fast.)
-  Uncalibrated, leaning is measured from where the head has been over the last ~4 s.
-- **Mic**: loudness over an adaptive noise floor (`talk`); `open = max(open, 0.7 talk)`. With no face
-  in view the cat still talks from the mic alone (through `voice`). Switch "Mic lip sync" off (Cat settings
-  → Mouth) if the mic hears the call's audio (no headphones).
-- **Cat settings** (since 2026-10-08; localStorage `kitty-cam.settings`, "defaults" resets): three groups
-  of plain choices (a row of buttons per choice) and on/off switches. No strength sliders: how strongly the
-  cat follows you comes from the calibration (the user asked for choices, not sliders).
-  - Look: eyes (sparkly, round, wide, ✦, > <, ‿ ‿, × ×, shades = the `shades` part over closed eyes; only round, wide and sparkly can blink), mouth
-    when closed (talking = the `sing` mouth always; ω / smile / o / none: the engine's `st.restMouth`
-    shows that mouth while the tracked lips are closed and the sing mouth while they move, with a little
-    hysteresis), body (slim / chubby = `fat`), blush (when smiling / always / never), bow tie, whiskers
-  - Tracking: head, blinks, gaze, mouth, ears follow brows, mic lip sync. A switched-off part gets zeros
-    from the face; for the head and the blinks the engine's own idle tilts and blinks carry on instead
-    (`st.trackHead`, `st.trackBlink`)
-  - Behaviour: mirror (was a button in the Input card), blink together (blink sync), idle animation (the
-    engine's `st.idle`: breathing, and the blinks, twitches and tilts while no face is tracked)
-
-  The look always wins: the page writes it into every expression of its own copy of rig.json's
-  expressions (which the engine reads live), so a mood keeps only its extras (motions, ear keys, the
-  zzz, the sweat drop, sleepy's half-closed eyes).
-- **Moods** (the rig's expressions, keys `1`–`9`, `0` neutral) are **presets**: clicking one sets the look
-  to the mood's own (eyes, mouth, body, blush; neutral's mouth is "talking"), shown in the settings to
-  change from there, and plays the mood for its extras. The mood is remembered. **Actions:** hop (`Space`)
-  and squish (hold the button or `S`; the squash spring boings back on release).
-- **Foldable cards:** Input, Calibration and Colours (the set-up-once ones) are `<details>`; which are open
-  is remembered (`kitty-cam.open`). Calibration starts open until a neutral face is recorded.
-- **Keys** (window focused): `1`–`9` moods, `0` neutral, `Space` hop, hold `S` squish, `C` record the
-  neutral face.
-- **Colours** (foldable card): lines, fill and background each have a free colour picker. Lines and fill also get
-  swatches of matugen's palette (`/theme` → `palette`: primary, secondary, tertiary, their containers
-  and on-containers, inverse primary, surface container highest, on surface, outline, error, from
-  quickshell's colors.json). The defaults are `primary` lines, `surface` background, `primary_container` fill;
-  "theme" goes back to them.
-- Devtools: `kittyCam.raw` is the last face as MediaPipe saw it, `kittyCam.st.pose` what the cat got.
+The cat as a webcam for video calls lives in its own folder, `../kitty-cam` (see its README.md). It bundles
+its own copy of the cat: `build.py` publishes `rig.json` and `engine.js` into `../kitty-cam/web/cat/`.
 
 ## Adding things
 

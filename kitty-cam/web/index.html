@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitty Cam</title>
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+<!--
+  The cat as a webcam (README.md). Served by kitty-cam, which also opens it: MediaPipe's Face Landmarker
+  tracks the face in the real camera, the mic keeps the mouth moving while you talk, cat/engine.js animates
+  the cat, and every frame drawn on the canvas goes to kitty-cam (POST /frame), which writes it to the
+  "Kitty Cam" v4l2loopback camera. Only the canvas reaches the call; the controls around it don't.
+-->
+<script src="cat/engine.js"></script>
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<main>
+  <div class="main-col">
+    <header><h1>Kitty Cam</h1><p>What the call sees: only this picture leaves the page.</p></header>
+    <div class="stage">
+      <canvas id="out" width="1280" height="720" aria-label="The cat, as the call sees it"></canvas>
+      <p id="hint" role="status" aria-live="polite"></p>
+    </div>
+    <div class="statusbar">
+      <span class="pill"><span class="dot"></span><span class="label">Tracking</span><span id="s-track">starting…</span></span>
+      <span class="pill"><span class="dot"></span><span class="label">Kitty Cam</span><span id="s-out">–</span></span>
+      <span class="pill"><span class="label">Mic</span><meter id="s-mic" min="0" max="1" value="0"></meter></span>
+    </div>
+    <section class="card">
+      <h2>Moods</h2>
+      <div class="chips" id="exprs"></div>
+      <h3>Actions</h3>
+      <div class="chips">
+        <button id="act-hop">hop</button>
+        <button id="act-squish" title="hold to squish, let go to boing">squish</button>
+      </div>
+      <p class="keys"><kbd>1</kbd>–<kbd>9</kbd> mood · <kbd>0</kbd> neutral · <kbd>Space</kbd> hop · hold <kbd>S</kbd> squish · <kbd>C</kbd> record the neutral face (while this window is focused)</p>
+    </section>
+    <section class="card">
+      <h2>Cat settings <button id="settings-reset">defaults</button></h2>
+      <div class="settings-grid" id="settings"></div>
+    </section>
+  </div>
+
+  <div class="side-col">
+    <details class="card" data-key="input">
+      <summary><h2>Input <span class="chev" aria-hidden="true"></span></h2></summary>
+      <div class="field"><label for="sel-cam">Camera</label><select id="sel-cam"></select></div>
+      <p class="note bad" id="s-cam"></p>
+      <div class="field"><label for="sel-mic">Microphone</label><select id="sel-mic"></select></div>
+      <p class="note bad" id="s-mic-name"></p>
+      <div class="chips">
+        <button id="preview">camera preview</button>
+      </div>
+      <div class="preview" id="preview-box">
+        <video id="cam" playsinline muted></video>
+        <canvas id="cam-overlay" aria-hidden="true"></canvas>
+      </div>
+    </details>
+
+    <details class="card" data-key="calibration">
+      <summary><h2>Calibration <small id="calib-count"></small><span class="chev" aria-hidden="true"></span></h2></summary>
+      <p class="note">Record each movement in your own time. Neutral face first: the others are measured against it.</p>
+      <div class="calib" id="calib"></div>
+      <div class="calib-foot"><button id="uncalibrate">Reset all</button></div>
+    </details>
+
+    <details class="card" data-key="colours">
+      <summary><h2>Colours <span class="chev" aria-hidden="true"></span></h2></summary>
+      <div class="color">
+        <div class="color-head"><label for="c-cat">Lines</label><input type="color" id="c-cat"></div>
+        <div class="swatches" id="sw-cat"></div>
+      </div>
+      <div class="color">
+        <div class="color-head"><label for="c-fill">Fill</label><input type="color" id="c-fill"><button id="fill" class="push">fill</button></div>
+        <div class="swatches" id="sw-fill"></div>
+      </div>
+      <div class="color">
+        <div class="color-head"><label for="c-bg">Background</label><input type="color" id="c-bg"></div>
+      </div>
+      <div class="calib-foot"><button id="c-reset">theme colours</button></div>
+    </details>
+  </div>
+</main>
+</body>
+</html>

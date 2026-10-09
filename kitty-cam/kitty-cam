@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""Kitty Cam's entry point (kitty-cam --help). Runs from wherever this folder is."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from kittycam.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    main()

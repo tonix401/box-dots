@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build the cat avatar from rig.svg and poses.json (see SPEC.md).
+"""Build the cat avatar from rig.svg and poses.json (see SPEC.md). Needs numpy (the 3D head, model3d.py).
 
     build.py                     write rig.json and the copies of it and of engine.js (preview.html,
-                                 kitty-cam.html, Quickshell's CatEngine.js)
+                                 Quickshell's CatEngine.js, Kitty Cam's web/cat/)
     build.py --check             only validate the rig and poses
     build.py --export NAME       print one of the original drawings (poses.json "exports": cat, fat-cat)
                                  as SVG, e.g. build.py --export cat --color '#86d1e8' > cat.svg
@@ -23,10 +23,14 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import model3d
+
 HERE = Path(__file__).resolve().parent
 NS = "{http://www.w3.org/2000/svg}"
 COLOR_TAG = "{{colors.primary.dark.hex}}"
 QML_ENGINE = Path.home() / ".config/quickshell/components/CatEngine.js"
+KITTY_CAM = HERE.parent / "kitty-cam/web/cat"  # Kitty Cam (../kitty-cam) bundles its own copy of the cat
+SOLID_ATTRS = ("depth", "lift", "billboard", "sweep")  # the 3D head's attributes (SPEC.md)
 KAPPA = 0.5522847498  # control-point distance for a quarter ellipse
 MARGIN = 4  # around the drawing in rig.json's canvas, beyond half the stroke width
 ALIASES = {"eyes": ("eye-l", "eye-r")}  # poses.json shorthand for parts that always change together
@@ -177,11 +181,9 @@ def local_matrix(pivot, t):
     return mul(m, (1, 0, 0, 1, -px, -py))
 
 
-def hinge_key(shapes, rot, scale):
-    """A flap swung about its base: the first path's endpoints stay put, its tip (the curve point
-    farthest from the line between them) turns `rot` degrees about their midpoint and moves to
-    `scale` of its distance, and the one affine map doing that to those three points moves every
-    path. Shapes in the same form as shapes_of returns (only "paths" and "pts" are used)."""
+def flap_base(shapes):
+    """A flap's (an ear's) base and tip: the first path's endpoints, where it meets the head, and the
+    curve point farthest from the line between them."""
     first = shapes[0]["pts"]
     a, b = first[0], first[-1]
     bx, by = b[0] - a[0], b[1] - a[1]
@@ -197,6 +199,16 @@ def hinge_key(shapes, rot, scale):
             dist = abs(bx * (q[1] - a[1]) - by * (q[0] - a[0])) / base_len
             if dist > best:
                 tip, best = q, dist
+    return a, b, tip
+
+
+def hinge_key(shapes, rot, scale):
+    """A flap swung about its base: the first path's endpoints stay put, its tip (flap_base) turns
+    `rot` degrees about their midpoint and moves to `scale` of its distance, and the one affine map
+    doing that to those three points moves every path. Shapes in the same form as shapes_of returns
+    (only "paths" and "pts" are used)."""
+    a, b, tip = flap_base(shapes)
+    bx, by = b[0] - a[0], b[1] - a[1]
     mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
     r = math.radians(rot)
     dx, dy = tip[0] - mx, tip[1] - my
@@ -208,9 +220,12 @@ def hinge_key(shapes, rot, scale):
     inv = (e2[1] / det, -by / det, -e2[0] / det, bx / det)  # [e1 e2]^-1 as (a, b, c, d), column-major like mul()
     L = mul((bx, by, f2[0], f2[1], 0, 0), (inv[0], inv[1], inv[2], inv[3], 0, 0))
     move = lambda p: (a[0] + L[0] * (p[0] - a[0]) + L[2] * (p[1] - a[1]), a[1] + L[1] * (p[0] - a[0]) + L[3] * (p[1] - a[1]))
-    return [{"pts": [move(p) for p in s["paths"][0][0]],
-             "paths": [([move(p) for p in pts], closed) for pts, closed in s["paths"]],
-             "closed": s["closed"]} for s in shapes]
+    shapes = [{"pts": [move(p) for p in s["paths"][0][0]],
+               "paths": [([move(p) for p in pts], closed) for pts, closed in s["paths"]],
+               "closed": s["closed"]} for s in shapes]
+    # The same map as a matrix [a, b, c, d, e, f] (x' = a x + c y + e): the 3D head bends the ear with it.
+    affine = [L[0], L[1], L[2], L[3], a[0] - L[0] * a[0] - L[2] * a[1], a[1] - L[1] * a[0] - L[3] * a[1]]
+    return shapes, affine
 
 
 # ── reading the rig ───────────────────────────────────────────────────────
@@ -277,6 +292,8 @@ def read_rig(path):
             "variants": {},
             "keys": {},
             "skin": None,
+            "key_affines": {},
+            "solid": {a: float(g.get("data-" + a)) for a in SOLID_ATTRS if g.get("data-" + a) is not None},
             "el": g,
         }
         if g.get("data-skin"):
@@ -308,7 +325,7 @@ def read_rig(path):
         for key, (rot, scale) in hinges.items():
             if len(part["variants"]) != 1 or not direct:
                 raise RigError(f"{name}.{key}: hinge keys need a part with paths and no variants")
-            part["keys"][key] = hinge_key(direct, rot, scale)
+            part["keys"][key], part["key_affines"][key] = hinge_key(direct, rot, scale)
         for key, shapes in part["keys"].items():
             if len(part["variants"]) != 1:
                 raise RigError(f"{name}: shape keys only on parts without variants")
@@ -335,6 +352,13 @@ def read_rig(path):
                 raise RigError(f"{p['name']}: skin to an existing part, on a top-level part without shape keys")
             if any(q["parent"] == p["name"] for q in parts):
                 raise RigError(f"{p['name']}: a skinned part can't have child parts")
+    # The 3D head: data-depth on the head, the rest on its own parts.
+    for p in parts:
+        for attr in p["solid"]:
+            if attr == "depth" and p["name"] != "head":
+                raise RigError(f"{p['name']}: only the head has a data-depth")
+            if attr != "depth" and p["parent"] != "head":
+                raise RigError(f"{p['name']}: data-{attr} is for the head's own parts")
     return {
         "viewBox": [float(v) for v in root.get("viewBox").split()],
         "origin": (float(m.group(1)), float(m.group(2))),
@@ -403,7 +427,8 @@ def build_manifest(rig, poses):
     def shape_json(s):
         return {"paths": [{"pts": r(pts), "closed": closed} for pts, closed in s["paths"]],
                 "stroke": s["stroke"], "fill": s["fill"], "alpha": s["alpha"], "join": s["join"],
-                "evenodd": s.get("evenodd", False), "d": " ".join(to_d(pts, c) for pts, c in s["paths"])}
+                "evenodd": s.get("evenodd", False), "d": " ".join(to_d(pts, c) for pts, c in s["paths"]),
+                **({"chain": s["chain"]} if s["chain"] else {})}
 
     def skin_weights(part):
         y0, y1 = part["skin"]["y"]
@@ -413,6 +438,26 @@ def build_manifest(rig, poses):
             return round(u * u * (3 - 2 * u), 4)  # smoothstep: 1 at y0 and above, 0 at y1 and below
         return {v: [[[w(y) for _, y in pts] for pts, _ in s["paths"]] for s in shapes]
                 for v, shapes in part["variants"].items()}
+
+    # The 3D head (model3d.py): the outline (head and ears, in chain order) inflated to data-depth.
+    head = next((p for p in rig["parts"] if p["name"] == "head"), None)
+    field = boundary = model = None
+    if head and "depth" in head["solid"]:
+        outline = sorted(((p, sh) for p in rig["parts"] for sh in p["variants"].get("default", []) if sh["chain"] == "outline"),
+                         key=lambda t: t[1]["chain_index"])
+        field, boundary, model = model3d.build_head(
+            [(p["name"], sh["pts"]) for p, sh in outline], "neck", head["solid"]["depth"])
+
+    def solid_json(part):
+        """How a head part sits on the 3D head: lifted above the skin, a billboard (its whole depth: in front of the
+        skin anywhere under it, plus its value), or sweeping back beyond the outline (whiskers)."""
+        out = {"lift": part["solid"].get("lift", 0.0)}
+        if "billboard" in part["solid"]:
+            out["billboard"] = round(part["solid"]["billboard"] + max(
+                field.at(x, y) for shapes in part["variants"].values() for sh in shapes for pts, _ in sh["paths"] for x, y in pts), 3)
+        if "sweep" in part["solid"]:
+            out["sweep"] = part["solid"]["sweep"]
+        return out
 
     bounds = [math.inf, math.inf, -math.inf, -math.inf]
     for part in rig["parts"]:
@@ -432,6 +477,8 @@ def build_manifest(rig, poses):
             "variants": {v: [shape_json(s) for s in shapes] for v, shapes in p["variants"].items()},
             "keys": {k: [[r(pts) for pts, _ in s["paths"]] for s in shapes] for k, shapes in p["keys"].items()},
             "skin": {"bone": p["skin"]["bone"], "weights": skin_weights(p)} if p["skin"] else None,
+            "solid": solid_json(p) if field and p["parent"] == "head" else None,
+            "keyAffines": {k: [round(v, 6) for v in m] for k, m in p["key_affines"].items()},
         }
     expressions = {}
     for name, e in poses["expressions"].items():
@@ -455,6 +502,7 @@ def build_manifest(rig, poses):
         "order": [p["name"] for p in rig["parts"]],
         "parts": parts,
         "expressions": expressions,
+        "model": model,
     }
 
 
@@ -599,15 +647,21 @@ def main():
     rig_json = json.dumps(manifest, separators=(",", ":"))
     (HERE / "rig.json").write_text(rig_json + "\n")
     engine = (HERE / "engine.js").read_text()
-    for page in ("preview.html", "kitty-cam.html"):  # they carry their own copies (preview.html works from file://)
-        html = (HERE / page).read_text()
-        for marker, content in (("RIG", rig_json), ("ENGINE", "\n" + engine)):
-            html, n = re.subn(r"/\*%s\*/.*?/\*END\*/" % marker, lambda _: f"/*{marker}*/{content}/*END*/", html, flags=re.S)
-            if n != 1:
-                sys.exit(f"build.py: {page} lost its /*{marker}*/…/*END*/ markers")
-        (HERE / page).write_text(html)
+    page = "preview.html"  # carries its own copies: it works from file://
+    html = (HERE / page).read_text()
+    for marker, content in (("RIG", rig_json), ("ENGINE", "\n" + engine)):
+        html, n = re.subn(r"/\*%s\*/.*?/\*END\*/" % marker, lambda _: f"/*{marker}*/{content}/*END*/", html, flags=re.S)
+        if n != 1:
+            sys.exit(f"build.py: {page} lost its /*{marker}*/…/*END*/ markers")
+    (HERE / page).write_text(html)
     QML_ENGINE.write_text("// Generated by ~/.config/cat/build.py from ~/.config/cat/engine.js; edit that, not this.\n" + engine)
-    print("wrote rig.json, preview.html, kitty-cam.html, CatEngine.js")
+    wrote = ["rig.json", "preview.html", "CatEngine.js"]
+    if KITTY_CAM.parent.is_dir():
+        KITTY_CAM.mkdir(exist_ok=True)
+        (KITTY_CAM / "rig.json").write_text(rig_json + "\n")
+        (KITTY_CAM / "engine.js").write_text("// Published by ~/.config/cat/build.py from ~/.config/cat/engine.js; edit that, not this.\n" + engine)
+        wrote.append("kitty-cam/web/cat/")
+    print("wrote " + ", ".join(wrote))
 
 
 if __name__ == "__main__":

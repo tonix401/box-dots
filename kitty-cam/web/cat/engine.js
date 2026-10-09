@@ -1,3 +1,4 @@
+// Published by ~/.config/cat/build.py from ~/.config/cat/engine.js; edit that, not this.
 // The cat rig's animation engine (SPEC.md, "Animation"): rig.json in, one frame of part matrices,
 // paths and opacities out. build.py inlines it into preview.html and copies it to Kitty Cam and Quickshell's
 // components/CatEngine.js, so both renderers play the same cat; edit it here.
