@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Prints one line of JSON describing the current network state (iwd + sysfs).
-WIFI=wlan1
+# The USB Wi-Fi dongle comes up as wlan0 or wlan1 depending on enumeration order.
+WIFI=$(basename /sys/class/net/wl* | head -n1)
 ETH=eno1
 
 strip() { sed 's/\x1b\[[0-9;]*m//g'; }

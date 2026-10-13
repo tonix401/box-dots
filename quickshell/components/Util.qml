@@ -17,7 +17,8 @@ Singleton {
 
     // Powers the wifi device (iwd, the same one scripts/network.sh reads) on or off.
     function wifiPowerCommand(on) {
-        return `iwctl device wlan1 set-property Powered ${on ? "on" : "off"}`;
+        // The USB dongle comes up as wlan0 or wlan1 depending on enumeration order.
+        return `iwctl device "$(basename /sys/class/net/wl* | head -n1)" set-property Powered ${on ? "on" : "off"}`;
     }
 
     function run(cmd) {
