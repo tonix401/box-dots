@@ -20,7 +20,6 @@ wtype \
 grimblast \
 hyprpicker \
 hyprlock \
-swaync \
 fcitx5 fcitx5-mozc fcitx5-chinese-addons \
 rofimoji (only for its emoji data) \
 playerctl \
@@ -47,6 +46,9 @@ hyprpm reload
     calendar, connections)
   - `menus/`: launcher, clipboard, emoji, nerd font, keybinds, power and wallpaper menus
   - `WeekCalendar.qml`, `TodoList.qml`, `HabitTracker.qml`: desktop widgets backed by dcal
+  - `Notifs.qml`, `NotificationPopups.qml`, `NotificationCenter.qml`: the notification daemon,
+    its popups and the notification center (click the bell in the bar; right click toggles do not
+    disturb)
 - `matugen/`: templates for every generated color file
 - `hypr/scripts/`: screenshot script and the Python helpers the menus call
 
@@ -55,7 +57,7 @@ hyprpm reload
 Wallpapers in `~/Pictures/Wallpapers` are resized and thumbnailed into `~/.cache/box-dots`
 and shown in the wallpaper picker (SUPER + P). Picking one sets it with awww and runs
 `matugen`, which regenerates the colors for Hyprland, Quickshell, kitty, fish, starship,
-btop, swaync, hyprlock, fastfetch and the fcitx5 theme. Quickshell picks up the new
+btop, hyprlock, fastfetch and the fcitx5 theme. Quickshell picks up the new
 palette by itself.
 
 ### Menus

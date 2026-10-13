@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Io
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import qs
@@ -12,17 +11,13 @@ Row {
     id: root
 
     property color fg
-    property string alt: "none"
+    readonly property string alt: (Notifs.dnd ? "dnd-" : "") + (Notifs.list.length > 0 ? "notification" : "none")
 
     readonly property var icons: ({
             "notification": 0xf116b,
             "none": 0xf03d6,
             "dnd-notification": 0xf00a0,
-            "dnd-none": 0xf0a93,
-            "inhibited-notification": 0xf009b,
-            "inhibited-none": 0xf0a91,
-            "dnd-inhibited-notification": 0xf009b,
-            "dnd-inhibited-none": 0xf0a91
+            "dnd-none": 0xf0a93
         })
 
     height: Theme.barHeight
@@ -107,19 +102,7 @@ Row {
     Module {
         fg: root.fg
         text: Theme.g(root.icons[root.alt] ?? 0xf03d6) + " "
-        onClicked: Util.run("swaync-client -t -sw")
-        onRightClicked: Util.run("swaync-client -d -sw")
-    }
-
-    Process {
-        command: ["swaync-client", "-swb"]
-        running: true
-        stdout: SplitParser {
-            onRead: line => {
-                try {
-                    root.alt = JSON.parse(line).alt;
-                } catch (e) {}
-            }
-        }
+        onClicked: Notifs.toggleCenter()
+        onRightClicked: Notifs.setDnd(!Notifs.dnd)
     }
 }

@@ -16,6 +16,7 @@ Singleton {
     readonly property int arrowPx: 22
     readonly property int workspacePx: 13
     readonly property int barHeight: 30
+    readonly property real popoutScale: 1 // the info cards under the bar, as a whole (nix_laptop shrinks it)
     readonly property int barTop: 5 // gap between the screen edge and the bar
 
     property var palette: ({})
