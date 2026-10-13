@@ -19,6 +19,7 @@
 !quickshell
 !cat
 !kitty-cam
+!xdg-terminals.list
 
 # generated files
 __pycache__/

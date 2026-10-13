@@ -29,15 +29,17 @@ Singleton {
     readonly property var pinnedEntries: pinned.map(id => DesktopEntries.applications.values.find(e => key(e) === id)).filter(e => e)
     readonly property var mostUsed: sorted.filter(e => (history[key(e)] ?? 0) > 0 && !pinned.includes(key(e)))
 
+    // Through uwsm so each app gets its own systemd scope instead of living in qs's
+    // (see ~/.config/hypr/exec.lua). uwsm reads the desktop file itself: Exec, field codes, Path.
     function launch(entry) {
         count(entry);
-        entry.execute();
+        Quickshell.execDetached(["uwsm", "app", "--", key(entry)]);
     }
 
     // A desktop action ("New window", "Stop", ...) counts as a launch of its app.
     function launchAction(entry, action) {
         count(entry);
-        action.execute();
+        Quickshell.execDetached(["uwsm", "app", "--", key(entry) + ":" + action.id]);
     }
 
     function count(entry) {

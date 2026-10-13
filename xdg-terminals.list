@@ -1,0 +1,3 @@
+# Preferred terminal for xdg-terminal-exec, which uwsm uses to launch Terminal=true
+# desktop entries (btop, nvim, ...) from the Quickshell launcher.
+kitty.desktop

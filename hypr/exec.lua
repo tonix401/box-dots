@@ -4,18 +4,23 @@
 
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 
+-- The session runs under uwsm, so some things are not started here:
+--   env export          uwsm pushes the login env to systemd + D-Bus before Hyprland starts
+--   portals             D-Bus-activated units (xdg-desktop-portal{,-hyprland,-gtk}.service)
+--   cliphist            cliphist.service
+--   hyprpolkitagent     hyprpolkitagent.service, wanted by graphical-session.target
+--   fcitx5              XDG autostart (app-org.fcitx.Fcitx5@autostart.service)
+-- Long-running apps go through `uwsm app --` so each gets its own systemd scope
+-- (own cgroup, journal tag) instead of living inside Hyprland's unit. It keeps the PID,
+-- so the workspace option below still applies.
+
+local function app(cmd, opts) hl.exec_cmd("uwsm app -- " .. cmd, opts) end
+
 hl.on("hyprland.start", function()
-  hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
-  hl.exec_cmd("/usr/lib/xdg-desktop-portal-hyprland")
-  hl.exec_cmd("/usr/lib/xdg-desktop-portal-gtk")
-  hl.exec_cmd("/usr/lib/xdg-desktop-portal --replace")
-  hl.exec_cmd("awww-daemon")
-  hl.exec_cmd("qs") -- bar + menus, ~/.config/quickshell
-  hl.exec_cmd("xsettingsd")
-  hl.exec_cmd("wl-paste --watch cliphist store")
-  hl.exec_cmd("systemctl --user start hyprpolkitagent")
-  hl.exec_cmd("fcitx5 -d")
-  hl.exec_cmd("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
-  hl.exec_cmd("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
+  app("awww-daemon")
+  app("qs") -- bar + menus, ~/.config/quickshell
+  app("xsettingsd")
+  app("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
+  app("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
   hl.exec_cmd("hyprpm reload")
 end)

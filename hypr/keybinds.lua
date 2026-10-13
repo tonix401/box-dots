@@ -1,4 +1,6 @@
 local function exec(cmd) return hl.dsp.exec_cmd(cmd) end
+-- Apps get their own systemd scope via uwsm (see exec.lua); one-shot commands stay on exec.
+local function app(cmd) return hl.dsp.exec_cmd("uwsm app -- " .. cmd) end
 
 -- ── Window ────────────────────────────────────────────────────────────────────
 
@@ -58,10 +60,10 @@ hl.bind("XF86AudioPlay",  exec("playerctl play-pause"), { locked = true, desc = 
 hl.bind("XF86AudioPause", exec("playerctl play-pause"), { locked = true, desc = "Play / pause" })
 
 -- ── Apps ──────────────────────────────────────────────────────────────────────
-hl.bind("SUPER + Return",  exec("kitty"),                { desc = "Open terminal" })
-hl.bind("SUPER + E",       exec("nemo"),                 { desc = "Open file manager" })
-hl.bind("SUPER + W",       exec("chromium"),             { desc = "Open browser" })
-hl.bind("SUPER + ALT + W", exec("chromium --incognito"), { desc = "Open browser (incognito)" })
+hl.bind("SUPER + Return",  app("kitty"),                { desc = "Open terminal" })
+hl.bind("SUPER + E",       app("nemo"),                 { desc = "Open file manager" })
+hl.bind("SUPER + W",       app("chromium"),             { desc = "Open browser" })
+hl.bind("SUPER + ALT + W", app("chromium --incognito"), { desc = "Open browser (incognito)" })
 
 -- ── Menus (Quickshell, ~/.config/quickshell/menus) ────────────────────────────
 hl.bind("SUPER + K",      exec("qs ipc call menu toggle keybinds"),  { desc = "Keybind reference" })
