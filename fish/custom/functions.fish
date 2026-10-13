@@ -160,7 +160,8 @@ function __cat_remote --description 'Is any of these segments an ssh/mosh sessio
     for segment in $argv
         set -l words (string split -n ' ' -- $segment)
         contains -- $words[1] ssh mosh; and return 0
-        test "$words[1]" = kitten -a "$words[2]" = ssh; and return 0
+        # Not `test A = kitten -a B = ssh`: a typed word like `-S` parses as a test operator.
+        test "$words[1] $words[2]" = 'kitten ssh'; and return 0
     end
     return 1
 end
