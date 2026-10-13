@@ -21,17 +21,21 @@ export function listen(stream) {
 }
 
 // How much you're talking, 0..1, once per drawn frame.
-export function micLevel(dt) {
-  if (!mic.analyser) return 0;
-  mic.analyser.getFloatTimeDomainData(mic.buf);
+export const micLevel = dt => levelOf(mic, dt);
+
+// How loud an analyser's audio is, 0..1, over its noise floor (`m`: {analyser, buf, floor, talk}). The mic's
+// floor adapts to the room; a fixed one (the soundboard's: its files have no room noise) stays put.
+export function levelOf(m, dt, adaptive = true) {
+  if (!m.analyser) return 0;
+  m.analyser.getFloatTimeDomainData(m.buf);
   let sum = 0;
-  for (const v of mic.buf) sum += v * v;
-  const db = 10 * Math.log10(sum / mic.buf.length + 1e-10);
+  for (const v of m.buf) sum += v * v;
+  const db = 10 * Math.log10(sum / m.buf.length + 1e-10);
   // The floor follows quiet stretches down at once and creeps up slowly through speech.
-  mic.floor = db < mic.floor ? db : mic.floor + (db - mic.floor) * Math.min(1, dt / 20);
-  const goal = smooth((db - mic.floor - 6) / 20);
-  mic.talk += (goal - mic.talk) * Math.min(1, dt / (goal > mic.talk ? 0.03 : 0.09)); // quick to open, slower to close
-  return mic.talk;
+  if (adaptive) m.floor = db < m.floor ? db : m.floor + (db - m.floor) * Math.min(1, dt / 20);
+  const goal = smooth((db - m.floor - 6) / 20);
+  m.talk += (goal - m.talk) * Math.min(1, dt / (goal > m.talk ? 0.03 : 0.09)); // quick to open, slower to close
+  return m.talk;
 }
 
 // "Done": a short beep, your cue to relax (or open your eyes again).

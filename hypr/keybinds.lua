@@ -74,6 +74,12 @@ hl.bind("SUPER + COMMA",  exec("qs ipc call menu toggle nerdfont"),  { desc = "N
 hl.bind("SUPER + P",      exec("qs ipc call menu toggle wallpaper"), { desc = "Wallpaper picker" })
 hl.bind("SUPER + D",      exec("qs ipc call widgets toggle"),        { desc = "Toggle desktop widgets" })
 hl.bind("SUPER + SHIFT + C", exec("qs ipc call cat tester"),         { desc = "Cat tester (the terminal cats' moods and reactions)" })
+
+-- Kitty Cam's soundboard (~/.config/kitty-cam): pads 1–9 into the call, 0 stops them
+for i = 1, 9 do
+    hl.bind("CTRL + SUPER + " .. i, exec("~/.config/kitty-cam/kitty-cam --play " .. i), { desc = "Kitty Cam: play sound " .. i })
+end
+hl.bind("CTRL + SUPER + 0", exec("~/.config/kitty-cam/kitty-cam --play stop"), { desc = "Kitty Cam: stop the sounds" })
 hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
 
 -- ── Input Method ──────────────────────────────────────────────────────────────

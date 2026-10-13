@@ -9,8 +9,9 @@
 <!--
   The cat as a webcam (README.md). Served by kitty-cam, which also opens it: MediaPipe's Face Landmarker
   tracks the face in the real camera, the mic keeps the mouth moving while you talk, cat/engine.js animates
-  the cat, and every frame drawn on the canvas goes to kitty-cam (POST /frame), which writes it to the
-  "Kitty Cam" v4l2loopback camera. Only the canvas reaches the call; the controls around it don't.
+  the cat, and every frame drawn on the canvas goes to kitty-cam (POST /frame), which hands it to the
+  "Kitty Cam" PipeWire camera. Only the canvas reaches the call; the controls around it don't. The soundboard
+  plays into "Kitty Cam Sounds", which kitty-cam mixes with your mic into "Kitty Cam Mic".
 -->
 <script src="cat/engine.js"></script>
 <script type="module" src="js/main.js"></script>
@@ -37,6 +38,17 @@
         <button id="act-squish" title="hold to squish, let go to boing">squish</button>
       </div>
       <p class="keys"><kbd>1</kbd>–<kbd>9</kbd> mood · <kbd>0</kbd> neutral · <kbd>Space</kbd> hop · hold <kbd>S</kbd> squish · <kbd>C</kbd> record the neutral face (while this window is focused)</p>
+    </section>
+    <section class="card" id="soundboard">
+      <h2>Soundboard <small id="sb-note"></small><span class="h2-tools"><button id="sb-single" title="on: starting a sound stops the one that's playing">one at a time</button><button id="sb-hear" title="play the sounds on your own output too">hear them</button></span></h2>
+      <div class="pads" id="pads"></div>
+      <p class="note" id="sb-empty">Drop audio files here, or put them into kitty-cam's <code>sounds/</code> folder. In the call, pick <b>Kitty Cam Mic</b> as the mic: your voice plus these.</p>
+      <div class="chips sb-foot">
+        <button id="sb-add">add sounds…</button><input type="file" id="sb-file" accept="audio/*" multiple hidden>
+        <button id="sb-stop">stop all</button>
+      </div>
+      <dialog id="pad-dialog" aria-label="Sound settings"></dialog>
+      <p class="keys"><kbd>Shift</kbd>+<kbd>1</kbd>–<kbd>9</kbd> play · <kbd>Esc</kbd> stop · right-click a pad to stop it · drag pads to reorder them · the gear: its settings · from anywhere: <kbd>Ctrl</kbd>+<kbd>Super</kbd>+<kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> stops (<code>kitty-cam --play N</code>)</p>
     </section>
     <section class="card">
       <h2>Cat settings <button id="settings-reset">defaults</button></h2>

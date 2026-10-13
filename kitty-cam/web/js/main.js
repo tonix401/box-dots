@@ -13,6 +13,7 @@ import { cal } from "./ranges.js";
 import { canvas, draw } from "./render.js";
 import { output, send } from "./sender.js";
 import { applySettings, opts, renderSettings, settings } from "./settings.js";
+import { initSounds, playSlot, soundLevel, stopAll } from "./sounds.js";
 import { initTracker, landmarker } from "./tracker.js";
 import { $, store } from "./util.js";
 
@@ -51,12 +52,16 @@ function initFolds() {
   }
 }
 
-// Keys while this window is focused: 1–9 moods, 0 neutral, Space hop, hold S squish, C neutral face.
+// Keys while this window is focused: 1–9 moods, 0 neutral, Space hop, hold S squish, C neutral face,
+// Shift+1–9 sounds, Esc stops them.
 function initKeys() {
   addEventListener("keydown", e => {
     if (e.ctrlKey || e.altKey || e.metaKey || e.target.tagName === "INPUT") return;
+    if (document.querySelector("dialog[open]")) return; // a sound's settings popup: its own keys (Esc closes it)
     if (e.target.tagName === "BUTTON" && (e.key === " " || e.key === "Enter")) return; // the button's own
-    if (e.key >= "1" && e.key <= "9" && names[+e.key - 1]) setMood(names[+e.key - 1]);
+    if (e.shiftKey && /^Digit[1-9]$/.test(e.code)) { if (!e.repeat) playSlot(+e.code.slice(5) - 1); }
+    else if (e.key === "Escape") stopAll();
+    else if (e.key >= "1" && e.key <= "9" && names[+e.key - 1]) setMood(names[+e.key - 1]);
     else if (e.key === "0") setMood("neutral");
     else if (e.key === " ") { CatEngine.act(st, "hop", 1); e.preventDefault(); }
     else if ((e.key === "s" || e.key === "S") && !e.repeat) CatEngine.press(st, true);
@@ -118,13 +123,15 @@ function tick() {
   const dt = Math.min((now - last) / 1000, 0.1);
   last = now;
   if (calibration.isRecording()) calibration.tick(now);
-  const talk = micLevel(dt);
-  $("s-mic").value = talk;
+  const voice = micLevel(dt);
+  $("s-mic").value = voice;
+  // The cat mouths along to the soundboard too (even with the mic's lip sync off, which is about the mic).
+  const talk = Math.max(settings.mic ? voice : 0, soundLevel(dt));
   const tracked = now - lastSeen < 300; // brief misses keep the last pose
   if (!tracked) CatEngine.track(st, null);
-  if (settings.mic && talk > 0.05) {
+  if (talk > 0.05) {
     if (tracked && st.pose) st.pose.open = Math.max(st.pose.open, 0.7 * talk);
-    else CatEngine.voice(st, [1, 0.8 * talk, 0, 0]); // no face: talk with the mic alone
+    else CatEngine.voice(st, [1, 0.8 * talk, 0, 0]); // no face: talk with the mic / the sounds alone
   } else CatEngine.voice(st, [0, 0, 0, 0]);
   draw(CatEngine.step(st, dt));
   send(canvas, lastStats);
@@ -140,6 +147,7 @@ const debug = window.kittyCam = { st, opts, mic, settings, get cal() { return ca
 initColours();
 initMoods();
 initActions();
+initSounds();
 initToggle("fill");
 initToggle("preview");
 initFolds();

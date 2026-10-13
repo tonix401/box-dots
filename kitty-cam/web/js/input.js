@@ -1,6 +1,6 @@
 // The Input card: which camera and microphone to use. The choice is remembered (Chromium keeps device ids
-// stable per site); a remembered device that's gone falls back to the default. Kitty Cam's own camera is
-// never offered or tracked.
+// stable per site); a remembered device that's gone falls back to the default. Kitty Cam's own camera and mic
+// are never offered or used. The mic picked here is also the one kitty-cam puts into Kitty Cam Mic (POST /mic).
 import { listen } from "./mic.js";
 import { cal } from "./ranges.js";
 import { $, failed, store } from "./util.js";
@@ -22,6 +22,7 @@ async function openCamera(id = store.get("camera", null)) {
     stream = await get(cams[0].deviceId);
   }
   camStream = video.srcObject = stream;
+  stream.getVideoTracks()[0].onended = () => keepCamera(); // lost (unplugged, PipeWire restarted); stop() doesn't fire it
   await video.play();
   $("s-cam").textContent = ""; // the select shows which camera; this note is for problems only
   refreshDevices();
@@ -32,10 +33,30 @@ async function openMic(id = store.get("microphone", null)) {
   const get = deviceId => navigator.mediaDevices.getUserMedia({ audio: deviceId ? { ...want, deviceId: { exact: deviceId } } : want });
   if (micStream) micStream.getTracks().forEach(t => t.stop());
   micStream = id ? await get(id).catch(() => get(null)) : await get(null);
+  if (isKittyCam(micStream.getAudioTracks()[0].label)) { // the soundboard would hear itself
+    micStream.getTracks().forEach(t => t.stop());
+    const mics = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "audioinput" && d.deviceId !== "default" && !isKittyCam(d.label));
+    if (!mics.length) throw new Error("no microphone besides Kitty Cam Mic");
+    micStream = await get(mics[0].deviceId);
+  }
   listen(micStream);
+  fetch("mic", { method: "POST", body: JSON.stringify({ label: micStream.getAudioTracks()[0].label }) }).catch(() => {});
   $("s-mic-name").textContent = "";
   refreshDevices();
 }
+
+// The camera, kept trying: if it can't be opened (seen 2026-10-13: "Requested device not found" in the window
+// while the webcam itself was fine; a restart fixed it), try again every few seconds and whenever devices change.
+let camRetry = 0;
+function keepCamera() {
+  clearTimeout(camRetry);
+  openCamera().catch(e => {
+    failed("camera failed", "s-cam")(e);
+    $("s-cam").textContent += " (trying again…)";
+    camRetry = setTimeout(keepCamera, 5000);
+  });
+}
+const cameraLive = () => camStream && camStream.getVideoTracks().some(t => t.readyState === "live");
 
 async function refreshDevices() {
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -45,7 +66,7 @@ async function refreshDevices() {
     sel.replaceChildren(...list.map((d, i) => new Option(d.label || `${kind === "videoinput" ? "Camera" : "Microphone"} ${i + 1}`, d.deviceId, false, d.deviceId === current)));
   };
   fill($("sel-cam"), "videoinput", camStream, isKittyCam);
-  fill($("sel-mic"), "audioinput", micStream, () => false);
+  fill($("sel-mic"), "audioinput", micStream, isKittyCam);
 }
 
 export function initInput() {
@@ -57,7 +78,7 @@ export function initInput() {
     }).catch(failed("camera failed", "s-cam"));
   };
   $("sel-mic").onchange = e => { store.set("microphone", e.target.value); openMic(e.target.value).catch(failed("mic failed", "s-mic-name")); };
-  navigator.mediaDevices.addEventListener("devicechange", () => refreshDevices());
-  openCamera().catch(failed("camera failed", "s-cam"));
+  navigator.mediaDevices.addEventListener("devicechange", () => { refreshDevices(); if (!cameraLive()) keepCamera(); });
+  keepCamera();
   openMic().catch(failed("mic failed", "s-mic-name"));
 }

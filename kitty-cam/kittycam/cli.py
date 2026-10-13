@@ -6,21 +6,26 @@
                                  the controls stay reachable at http://127.0.0.1:8737/
     kitty-cam --no-browser       only serve; open the page yourself
     kitty-cam --stop             stop the running instance
+    kitty-cam --play PAD         play a soundboard pad (its slot 1, 2, … or its name) in the running instance;
+                                 --play stop stops every sound (for key bindings: works with the window unfocused)
     kitty-cam --no-camera --port 8738 --no-browser
                                  a second instance for testing, leaving the camera to the first
 
-In the call, pick "Kitty Cam" as the camera.
+In the call, pick "Kitty Cam" as the camera and "Kitty Cam Mic" as the mic (your mic plus the soundboard).
 """
 import argparse
+import json
 import os
 import signal
 import subprocess
 import sys
 import threading
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
-from . import browser
+from . import audio, browser, sounds
 from .assets import fetch_vendor
 from .camera import LABEL, SETUP, Camera, available
 from .log import log
@@ -57,12 +62,25 @@ def stop(port):
     sys.exit(f"kitty-cam: {pid} is still running")
 
 
+def play(port, pad):
+    """Hand `pad` to the running instance's page (POST /play, see server.py)."""
+    req = urllib.request.Request(f"http://127.0.0.1:{port}/play", data=json.dumps({"pad": pad}).encode(),
+                                 headers={"X-Kitty-Cam": "play", "Content-Type": "application/json"})
+    try:
+        urllib.request.urlopen(req, timeout=3)
+    except urllib.error.HTTPError as e:
+        sys.exit(f"kitty-cam: {e.read().decode(errors='replace') or e.reason}")
+    except OSError:
+        sys.exit("kitty-cam: not running")
+
+
 def parse_args():
     ap = argparse.ArgumentParser(prog="kitty-cam", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--headless", action="store_true", help="run Chromium without a window")
     mode.add_argument("--no-browser", action="store_true", help="only serve the page")
     mode.add_argument("--stop", action="store_true", help="stop the running instance")
+    mode.add_argument("--play", metavar="PAD", help="play a soundboard pad (slot or name; 'stop' stops all)")
     ap.add_argument("--port", type=int, default=PORT, help=f"port to serve on (default {PORT})")
     ap.add_argument("--no-camera", action="store_true", help=f"don't write to the {LABEL} camera")
     ap.add_argument("--theme", type=Path, default=os.environ.get("KITTY_CAM_THEME") or None,
@@ -74,8 +92,11 @@ def main():
     args = parse_args()
     if args.stop:
         return stop(args.port)
+    if args.play:
+        return play(args.port, args.play)
 
     fetch_vendor()
+    sounds.DIR.mkdir(parents=True, exist_ok=True)  # the soundboard's folder, to drop files into
     enabled = not args.no_camera and available()
     if args.no_camera:
         log("not writing to the camera (--no-camera)")
@@ -84,11 +105,18 @@ def main():
     else:
         log(SETUP)
     camera = Camera(enabled)
+    with_mic = not args.no_camera and audio.available()
+    if with_mic:
+        log(f"mic: \"{audio.MIC_LABEL}\" in PipeWire (your mic + the soundboard)")
+    elif not args.no_camera:
+        log(audio.SETUP)
+    mic = audio.Mic(with_mic)
 
     try:
-        server = make_server(args.port, camera, args.theme)
+        server = make_server(args.port, camera, mic, args.theme)
     except OSError as e:
         sys.exit(f"kitty-cam: can't listen on port {args.port} ({e.strerror}); is it running already?")
+    mic.start()  # once the port is ours: a second instance must not make a second mic
     pid_file(args.port).parent.mkdir(parents=True, exist_ok=True)
     pid_file(args.port).write_text(str(os.getpid()))
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -120,4 +148,5 @@ def main():
             window.kill()
     server.shutdown()
     camera.close()
+    mic.close()
     pid_file(args.port).unlink(missing_ok=True)

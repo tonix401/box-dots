@@ -1,15 +1,20 @@
 // Drawing the cat on the canvas: exactly what the call sees. Only the engine's frame decides what's drawn,
 // so the cat here moves like the one in Quickshell and in the rig's preview.
 import { RIG } from "./cat.js";
-import { hiddenParts, opts } from "./settings.js";
+import { hiddenParts, opts, settings } from "./settings.js";
 import { $ } from "./util.js";
 
 export const canvas = $("out");
 const ctx = canvas.getContext("2d");
 const W = canvas.width, H = canvas.height;
 const [rx, ry, rw, rh] = RIG.canvas;
-const S = H * 0.88 / rh; // rig units → pixels; the cat fills most of the height, centred
-const ox = (W - rw * S) / 2, oy = (H - rh * S) / 2 + H * 0.02;
+// Rig units → pixels: at 100% the cat fills most of the height, centred; Size zooms about the picture's centre.
+let S, ox, oy;
+function place() {
+  S = H * 0.88 / rh * settings.size / 100;
+  ox = (W - rw * S) / 2;
+  oy = (H - rh * S) / 2 + H * 0.02 * settings.size / 100;
+}
 const pathCache = new Map();
 const path2d = d => { let p = pathCache.get(d); if (!p) { p = new Path2D(d); if (pathCache.size < 4000) pathCache.set(d, p); } return p; };
 
@@ -94,6 +99,7 @@ function drawStamp() {
 
 // One frame from CatEngine.step().
 export function draw(f) {
+  place();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
   ctx.fillStyle = colors.background;

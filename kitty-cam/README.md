@@ -2,7 +2,8 @@
 
 The cat avatar as a webcam for video calls: pick **Kitty Cam** as the camera in Meet, Zoom, Discord, … and the
 cat follows your face (MediaPipe) and your voice. Everything it needs is in this folder, so the folder can live
-anywhere and be copied as it is. The camera is a PipeWire camera, so any number of apps can show it at once.
+anywhere and be copied as it is. The camera is a PipeWire camera, so any number of apps can show it at once. A soundboard plays into the call
+through "Kitty Cam Mic" (your mic plus the sounds), and its sounds can bring moods, motions and cat settings along.
 
 ## Use
 
@@ -11,6 +12,7 @@ anywhere and be copied as it is. The camera is a PipeWire camera, so any number 
 ./kitty-cam --headless          the same without a window (controls at http://127.0.0.1:8737/)
 ./kitty-cam --no-browser        only serve; open http://127.0.0.1:8737/ in a Chromium-based browser
 ./kitty-cam --stop              stop the running instance
+./kitty-cam --play N|NAME|stop  play soundboard pad N (or by name) in the running instance; stop stops them all
 ./kitty-cam --theme FILE        take the colours from a Material-You palette JSON (matugen's shape:
                                 {"primary": "#…", "surface": "#…", "primary_container": "#…", …}); also $KITTY_CAM_THEME
 ./kitty-cam --no-camera --port 8738 --no-browser
@@ -35,6 +37,8 @@ On the box this lives on, the launcher is installed with
 | `kittycam/cli.py` | Command line, start/stop (pid file in `$XDG_RUNTIME_DIR`), the main loop |
 | `kittycam/server.py` | The local HTTP server: the page, `/vendor/`, `/theme`, `/status`, `POST /frame` |
 | `kittycam/camera.py` | The PipeWire camera: a gst-launch pipeline fed the frames on its stdin |
+| `kittycam/audio.py` | The PipeWire mic "Kitty Cam Mic": your mic plus the soundboard (two pw-loopbacks) |
+| `kittycam/sounds.py` | The soundboard's folder (`sounds/`, `sounds.json`) and the events the CLI sends the page |
 | `kittycam/browser.py` | The page's own Chromium window or headless Chromium |
 | `kittycam/assets.py` | MediaPipe, downloaded once into the cache (pinned version) |
 | `kittycam/theme.py` | `--theme`: a palette file → the page's colours and swatches |
@@ -48,6 +52,8 @@ On the box this lives on, the launcher is installed with
 | `web/js/calibration.js` | The Calibration card and working the calibration out |
 | `web/js/overlay.js` | What tracking measured, drawn over the camera preview |
 | `web/js/sender.js`, `encoder-worker.js` | Frames to the server, converted to YUV 4:2:0 in a worker |
+| `web/js/sounds.js` | The Soundboard card: playing into the call and to you, the pads' effects on the cat, editing them |
+| `sounds/` | The soundboard's audio files (not in git) and `sounds.json`, the pads' order, names and effects |
 | `web/cat/rig.json`, `engine.js` | The cat itself. **Generated:** published here by the cat's build (`../cat/build.py`, see `../cat/SPEC.md`); edit the rig there |
 
 ## How it works
@@ -100,7 +106,7 @@ webcam (via PipeWire), mic → the page (web/): MediaPipe Face Landmarker → On
   the face is the way to more frames.
 - **Devices:** the page's Input card picks the camera and the microphone; the choice is remembered
   (localStorage `kitty-cam.camera` / `kitty-cam.microphone`; Chromium keeps device ids stable per site), and a
-  remembered device that's gone falls back to the default. The lists follow devices being plugged in. Switching
+  remembered device that's gone falls back to the default. A camera that can't be opened or is lost is tried again every 5 s and whenever devices change (since 2026-10-13). The lists follow devices being plugged in. Switching
   cameras suggests recalibrating, as the head's neutral position moves with the camera.
 - **The page never tracks Kitty Cam itself**: it's left out of the camera list, and if the default camera is
   Kitty Cam, the first other camera is used.
@@ -142,7 +148,7 @@ webcam (via PipeWire), mic → the page (web/): MediaPipe Face Landmarker → On
   - Look: eyes (sparkly, round, wide, ✦, > <, ‿ ‿, × ×, shades = the `shades` part over closed eyes; only round, wide and sparkly can blink), mouth
     when closed (talking = the `sing` mouth always; ω / smile / o / none: the engine's `st.restMouth`
     shows that mouth while the tracked lips are closed and the sing mouth while they move, with a little
-    hysteresis), body (slim / chubby = `fat`), blush (when smiling / always / never), bow tie, whiskers
+    hysteresis), body (slim / chubby = `fat`), size (a slider, 25–300 %, zoom about the picture's centre; double-click for 100 %; the one slider, asked for on 2026-10-09), blush (when smiling / always / never), bow tie, whiskers
   - Tracking: head, blinks, gaze, mouth, ears follow brows, mic lip sync. A switched-off part gets zeros
     from the face; for the head and the blinks the engine's own idle tilts and blinks carry on instead
     (`st.trackHead`, `st.trackBlink`)
@@ -159,7 +165,7 @@ webcam (via PipeWire), mic → the page (web/): MediaPipe Face Landmarker → On
 - **Foldable cards:** Input, Calibration and Colours (the set-up-once ones) are `<details>`; which are open
   is remembered (`kitty-cam.open`). Calibration starts open until a neutral face is recorded.
 - **Keys** (window focused): `1`–`9` moods, `0` neutral, `Space` hop, hold `S` squish, `C` record the
-  neutral face.
+  neutral face, `Shift+1`–`9` sounds, `Esc` stops them.
 - **Colours** (foldable card): lines, fill and background each have a free colour picker. Lines and fill also get
   swatches of matugen's palette (`/theme` → `palette`: primary, secondary, tertiary, their containers
   and on-containers, inverse primary, surface container highest, on surface, outline, error, from
@@ -176,4 +182,30 @@ webcam (via PipeWire), mic → the page (web/): MediaPipe Face Landmarker → On
   an arrow from the nose the way the head points, with its raw angles. In the corner away from the face: the
   pose the cat gets from all that, after calibration and smoothing (`pose · calibrated` or `· defaults`), as
   bars; signed ones are marked in the middle.
+- **Soundboard** (since 2026-10-13): a card of pads, one per audio file in `sounds/` (drop files on the card, "add
+  sounds…", or copy them in; any format Chromium plays). In the call, pick **Kitty Cam Mic** as the mic: kitty-cam
+  publishes it next to the camera (`kittycam/audio.py`, two `pw-loopback`s that live as long as kitty-cam): the sink
+  "Kitty Cam Sounds" comes out of the source "Kitty Cam Mic", and the real mic (the one picked in Input, matched by
+  its label against PipeWire's source descriptions, else the default source) is looped into the same sink, so
+  PipeWire adds your voice to the sounds without delaying it. The page plays each sound twice: into Kitty Cam Sounds
+  (an `AudioContext` with `sinkId`, found by its label) for the call, and on the default output for you ("hear them";
+  off: only the call hears them). The page never listens to Kitty Cam Mic itself, nor offers it in Input.
+  - **Effects** (⚙ in a pad's corner opens its settings in a popup; kept in `sounds/sounds.json` as you change them): a mood (with its look, as clicking it would), a motion
+    (hop, jolt, or squish while it plays), and any Cat settings (e.g. shades, chubby, size 150 %). Afterwards they're
+    **undone** (or kept, if the pad says so): only what still holds the pad's value goes back, so a setting you change
+    while it plays stays as you set it. Overlapping sounds undo together when the last one ends. Undone effects never
+    reach localStorage. **The cat mouths along** (per pad, on by default) to how loud the sound is, through the
+    same path as the mic (and even with "Mic lip sync" off, which is only about the mic).
+  - **Playing:** click a pad (again: from the start), right-click it to stop it. "one at a time" (off by default,
+    remembered in localStorage `kitty-cam.sounds.single`): a new sound stops the others, whose effects end first. Also `Shift+1`–`9`, `Esc` stops all.
+    From anywhere: `kitty-cam --play N` (slot or name; `stop`), bound to `Ctrl+Super+1`–`9` / `0` in
+    `~/.config/hypr/keybinds.lua`. The CLI POSTs `/play`, and the page hears it over `/events` (Server-Sent Events).
+    `/play` is the one request the server takes from outside the page: with no `Origin` and an `X-Kitty-Cam: play`
+    header, which no web page can send to it (a custom header cross-origin needs a CORS preflight, never granted).
+  - **Reorder** by dragging a pad onto another (left half: before it, right half: after it); the order is the slots
+    `Shift+1`–`9` / `--play N` use. The popup also renames, reorders (↑ ↓) and removes a pad (remove, click twice: deletes its file). While it's open,
+    the page's keys are off (Esc closes it). The audio files are git-ignored, `sounds.json` isn't.
+  - Verified 2026-10-13 (headless Chromium 153): a pad played via `--play` reaches `pw-record --target kitty_cam_mic`
+    (~31 dB over the quiet mic), the effects apply and undo, squish holds for the sound, and a `kill -9`'d instance's
+    loopbacks are cleaned up by the next start. Not yet tried in a real call.
 - Devtools: `kittyCam.raw` is the last face as MediaPipe saw it, `kittyCam.pose` what the cat got from it.

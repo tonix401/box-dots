@@ -4,13 +4,15 @@
 import { RIG, st } from "./cat.js";
 import { $, store } from "./util.js";
 
-const SETTINGS = [
+export const SETTINGS = [
   ["Look", [
     { id: "eyes", label: "Eyes", options: { sparkle: "sparkly", open: "round", wide: "wide", stars: "✦", squint: "> <", closed: "‿ ‿", x: "× ×", shades: "shades" }, def: "sparkle",
       title: "only round, wide and sparkly eyes can blink (shades: sunglasses over closed eyes)" },
     { id: "mouth", label: "Mouth when closed", options: { talk: "talking", cat: "ω", smile: "smile", open: "o", none: "none" }, def: "talk",
       title: "what shows while your lips are closed; the talking mouth takes over when you open them" },
     { id: "body", label: "Body", options: { slim: "slim", fat: "chubby" }, def: "slim" },
+    { id: "size", label: "Size", range: [25, 300, 5], def: 100,
+      title: "zoom about the picture's centre (100%: the cat fills most of the height); double-click for 100%" },
     { id: "cheeks", label: "Blush", options: { auto: "when smiling", always: "always", never: "never" }, def: "auto" },
     { id: "bow", label: "Bow tie", toggle: true, def: true },
     { id: "whiskers", label: "Whiskers", toggle: true, def: true },
@@ -29,7 +31,7 @@ const SETTINGS = [
     { id: "idle", label: "Idle animation", toggle: true, def: true, title: "breathing, and blinks, twitches and head tilts while no face is tracked" },
   ]],
 ];
-const SETTING_DEFS = Object.fromEntries(SETTINGS.flatMap(([, items]) => items.map(i => [i.id, i])));
+export const SETTING_DEFS = Object.fromEntries(SETTINGS.flatMap(([, items]) => items.map(i => [i.id, i])));
 
 export const settings = Object.fromEntries(Object.values(SETTING_DEFS).map(i => [i.id, i.def]));
 Object.assign(settings, Object.fromEntries(Object.entries(store.get("settings", {})).filter(([k]) => k in SETTING_DEFS)));
@@ -65,10 +67,11 @@ export function applySettings() {
   $("cam").classList.toggle("unmirrored", !settings.mirror);
 }
 
-// Change several settings at once (a mood's preset), or all back to their defaults.
-export function setSettings(values) {
+// Change several settings at once (a mood's preset, a sound's effects), or all back to their defaults.
+// save false: only for now (a sound's effects, undone when it ends), so they aren't remembered.
+export function setSettings(values, save = true) {
   Object.assign(settings, values);
-  store.set("settings", settings);
+  if (save) store.set("settings", settings);
   applySettings();
   renderSettings();
 }
@@ -86,6 +89,24 @@ export function renderSettings() {
       const label = document.createElement("span");
       label.className = "setting-label";
       label.textContent = i.label;
+      if (i.range) {
+        row.classList.add("range");
+        const [min, max, step] = i.range;
+        const slider = Object.assign(document.createElement("input"), { type: "range", min, max, step, value: settings[i.id] });
+        slider.setAttribute("aria-label", `${group}: ${i.label}`);
+        const value = document.createElement("output");
+        const set = v => {
+          settings[i.id] = v;
+          slider.value = v;
+          value.textContent = `${v}%`;
+          store.set("settings", settings);
+        };
+        slider.oninput = () => set(+slider.value);
+        slider.ondblclick = () => set(i.def);
+        value.textContent = `${settings[i.id]}%`;
+        row.append(label, slider, value);
+        return row;
+      }
       const chips = document.createElement("div");
       chips.className = "chips";
       chips.setAttribute("role", "group");
