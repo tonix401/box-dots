@@ -102,7 +102,7 @@ Row {
     Module {
         fg: root.fg
         text: Theme.g(root.icons[root.alt] ?? 0xf03d6) + " "
-        onClicked: Notifs.toggleCenter()
+        onClicked: Sidebar.toggle()
         onRightClicked: Notifs.setDnd(!Notifs.dnd)
     }
 }

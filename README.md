@@ -42,13 +42,14 @@ hyprpm reload
 - `hypr/`: Hyprland config in Lua (`hyprland.lua` entry point, `exec.lua` autostart,
   `keybinds.lua`, `look.lua`, `windowrules.lua`, `env.lua`)
 - `quickshell/`: everything on screen besides windows, run as `qs` (hot-reloads on save)
-  - `Bar.qml` + `modules/`: the powerline bar, some blocks open hover popups (audio, media,
-    calendar, connections)
+  - `Bar.qml` + `modules/`: the powerline bar
+  - `SidePanel.qml`: the drawer on the right (push the pointer against the right screen edge, or
+    click the bell, media block or clock to pin it): calendar, media, connections, sound and the
+    notification history; `qs ipc call sidebar toggle`
   - `menus/`: launcher, clipboard, emoji, nerd font, keybinds, power and wallpaper menus
   - `WeekCalendar.qml`, `TodoList.qml`, `HabitTracker.qml`: desktop widgets backed by dcal
-  - `Notifs.qml`, `NotificationPopups.qml`, `NotificationCenter.qml`: the notification daemon,
-    its popups and the notification center (click the bell in the bar; right click toggles do not
-    disturb)
+  - `Notifs.qml`, `NotificationPopups.qml`: the notification daemon and its toasts (they expand on
+    hover; right click on the bell toggles do not disturb)
 - `matugen/`: templates for every generated color file
 - `hypr/scripts/`: screenshot script and the Python helpers the menus call
 

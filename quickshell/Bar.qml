@@ -85,7 +85,7 @@ PanelWindow {
                 Mpris {
                     id: mpris
                     fg: mprisSeg.fg
-                    onClicked: mediaPopout.pinned = !mediaPopout.pinned
+                    onClicked: Sidebar.toggle()
                 }
             }
             Arrow {
@@ -162,10 +162,8 @@ PanelWindow {
                     fg: connSeg.fg
                 }
                 Network {
-                    id: networkMod
                     fg: connSeg.fg
                     Layout.leftMargin: 16
-                    detailed: connPopout.open
                 }
                 Tailscale {
                     fg: connSeg.fg
@@ -200,7 +198,7 @@ PanelWindow {
                 fg: Theme.on_primary
                 Clock {
                     fg: clockSeg.fg
-                    onClicked: calendarPopout.pinned = !calendarPopout.pinned
+                    onClicked: Sidebar.toggle()
                 }
             }
             Arrow {
@@ -208,25 +206,5 @@ PanelWindow {
                 fg: Theme.primary
             }
         }
-    }
-
-    // Declared after the bar so their hover areas lie on top of their segments.
-    MediaPopout {
-        id: mediaPopout
-        segment: mprisSeg
-        player: mpris.player
-    }
-    ConnPopout {
-        id: connPopout
-        segment: connSeg
-        network: networkMod
-    }
-    AudioPopout {
-        id: audioPopout
-        segment: audioSeg
-    }
-    CalendarPopout {
-        id: calendarPopout
-        segment: clockSeg
     }
 }

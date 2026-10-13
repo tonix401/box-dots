@@ -16,7 +16,6 @@ Singleton {
     readonly property int arrowPx: 22
     readonly property int workspacePx: 13
     readonly property int barHeight: 30
-    readonly property real popoutScale: 1 // the info cards under the bar, as a whole (nix_laptop shrinks it)
     readonly property int barTop: 5 // gap between the screen edge and the bar
 
     property var palette: ({})
@@ -45,6 +44,7 @@ Singleton {
     readonly property color outline: c("outline")
     readonly property color outline_variant: c("outline_variant")
     readonly property color surface_container_lowest: c("surface_container_lowest")
+    readonly property color surface_container_low: c("surface_container_low")
     readonly property color surface_container: c("surface_container")
     readonly property color surface_container_high: c("surface_container_high")
     readonly property color surface_container_highest: c("surface_container_highest")

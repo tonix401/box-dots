@@ -5,12 +5,12 @@ import Quickshell.Wayland
 import qs
 import qs.components
 
-// New notifications, stacked top right under the bar on the focused screen. Hovering them stops
-// their timeouts; they stay listed in the center after they go.
+// New notifications as toasts, stacked top right under the bar on the focused screen. Hovering them
+// stops their timeouts; they stay listed in the sidebar after they go, and step aside while it's open.
 PanelWindow {
     id: root
 
-    readonly property int cardWidth: Math.round(380 * Theme.popoutScale)
+    readonly property int toastWidth: 360
 
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? null
     anchors {
@@ -21,14 +21,16 @@ PanelWindow {
         top: 8
         right: 8
     }
-    implicitWidth: cardWidth
-    implicitHeight: Math.max(1, column.implicitHeight)
-    visible: Notifs.popups.length > 0 && !Notifs.centerOpen
+    implicitWidth: toastWidth
+    // A fixed height: resizing the surface while a toast grows on hover makes Hyprland send a pointer
+    // leave, which collapsed it again. The mask keeps the empty part click-through.
+    implicitHeight: 800
+    visible: Notifs.popups.length > 0 && !Sidebar.open
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell-notifications"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-    // Only the cards take clicks.
+    // Only the toasts take clicks.
     mask: Region {
         item: column
     }
@@ -40,22 +42,19 @@ PanelWindow {
     Column {
         id: column
 
-        width: root.cardWidth
-        spacing: 8
+        width: root.toastWidth
+        spacing: 6
 
         Repeater {
             model: ScriptModel {
                 values: Notifs.popups
             }
 
-            NotificationCard {
+            NotificationToast {
                 required property var modelData
 
-                width: root.cardWidth
+                width: root.toastWidth
                 notification: modelData
-                popup: true
-                border.width: 1
-                border.color: critical ? Theme.error : Theme.outline_variant
             }
         }
     }

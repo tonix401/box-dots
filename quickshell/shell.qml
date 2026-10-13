@@ -96,13 +96,9 @@ ShellRoot {
 
     KittyCat {}
 
-    // Notification popups; the center is created when opened (bell in the bar).
+    // Notification toasts, and the right-hand drawer (screen edge, or the bell / media block / clock).
     NotificationPopups {}
-
-    LazyLoader {
-        active: Notifs.centerOpen
-        NotificationCenter {}
-    }
+    SidePanel {}
 
     // Software dimming below the backlight minimum: a click-through black layer over everything.
     Variants {
@@ -207,15 +203,31 @@ ShellRoot {
         }
     }
 
-    // Notification center and do not disturb: `qs ipc call notifications toggle` / `dnd` / `clear`.
+    // The drawer: `qs ipc call sidebar toggle` / `open` / `close`.
+    IpcHandler {
+        target: "sidebar"
+
+        function toggle(): void {
+            Sidebar.toggle();
+        }
+        function open(): void {
+            Sidebar.pinned = true;
+        }
+        function close(): void {
+            Sidebar.close();
+        }
+    }
+
+    // Notifications (listed in the drawer) and do not disturb: `qs ipc call notifications toggle` /
+    // `close` (the drawer), `dnd` / `clear`.
     IpcHandler {
         target: "notifications"
 
         function toggle(): void {
-            Notifs.toggleCenter();
+            Sidebar.toggle();
         }
         function close(): void {
-            Notifs.centerOpen = false;
+            Sidebar.close();
         }
         function dnd(): void {
             Notifs.setDnd(!Notifs.dnd);
