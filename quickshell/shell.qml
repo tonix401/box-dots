@@ -192,7 +192,7 @@ ShellRoot {
             Pet.testerOpen = !Pet.testerOpen;
         }
         function kitty(): void {
-            Pet.kittyShown = !Pet.kittyShown;
+            Settings.set("kittyCats", !Settings.kittyCats);
         }
         function sing(): bool {
             Pet.singAlong = !Pet.singAlong;
@@ -200,6 +200,19 @@ ShellRoot {
         }
         function singOffset(ms: int): void {
             Pet.singOffset = ms;
+        }
+    }
+
+    // Shell extras that can be switched off (Settings, also in the sidebar): `qs ipc call settings
+    // toggle kittyCats|barGif` flips one and returns its new value.
+    IpcHandler {
+        target: "settings"
+
+        function toggle(key: string): bool {
+            if (typeof Settings[key] !== "boolean")
+                return false;
+            Settings.set(key, !Settings[key]);
+            return Settings[key];
         }
     }
 

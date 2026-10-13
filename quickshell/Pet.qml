@@ -37,7 +37,7 @@ Singleton {
     property var finished: []
     property bool squishAll: false // the tester's hold-to-squish
     property bool testerOpen: false
-    property bool kittyShown: true // the small cats on kitty windows (KittyCat)
+    readonly property bool kittyShown: Settings.kittyCats // the small cats on kitty windows (KittyCat)
 
     property bool singAlong: true
     property int singOffset: 0 // ms on top of the speakers' latency; negative moves the mouths earlier
@@ -250,7 +250,9 @@ Singleton {
                 setBusy(a, "tester", false);
     }
 
-    onSingAlongChanged: voiceProc.running = singAlong
+    // Only the kitty cats sing, so voice.py (and its pw-record) stops while they're off.
+    readonly property bool voiceWanted: singAlong && kittyShown
+    onVoiceWantedChanged: voiceProc.running = voiceWanted
     onSingOffsetChanged: if (voiceProc.running) {
         voiceRestarting = true;
         voiceProc.running = false;
@@ -260,7 +262,7 @@ Singleton {
     Process {
         id: voiceProc
         command: ["python3", Quickshell.env("HOME") + "/.config/cat/voice.py", "--offset", String(root.singOffset)]
-        running: true
+        running: root.voiceWanted
         stdout: SplitParser {
             onRead: line => {
                 const v = line.split(" ").map(Number);
@@ -271,7 +273,7 @@ Singleton {
         // Restarted for a new offset, or it died (pactl gone, say): try again in a while.
         onExited: {
             root.voice = [0, 0, 0, 0];
-            if (root.singAlong)
+            if (root.voiceWanted)
                 voiceRetry.start();
         }
     }
@@ -281,7 +283,7 @@ Singleton {
         interval: root.voiceRestarting ? 100 : 10000
         onTriggered: {
             root.voiceRestarting = false;
-            voiceProc.running = root.singAlong;
+            voiceProc.running = root.voiceWanted;
         }
     }
 

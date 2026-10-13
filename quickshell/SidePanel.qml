@@ -146,6 +146,27 @@ Scope {
                         }
                     }
 
+                    // shell extras that cost CPU while shown (Settings.qml)
+                    Island {
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Toggle {
+                                glyph: 0xf011b // cat
+                                label: Settings.kittyCats ? "Kitty cats on" : "Kitty cats off"
+                                active: Settings.kittyCats
+                                onClicked: Settings.set("kittyCats", !Settings.kittyCats)
+                            }
+                            Toggle {
+                                glyph: 0xf0d78 // gif box
+                                label: Settings.barGif ? "Bar GIF on" : "Bar GIF off"
+                                active: Settings.barGif
+                                onClicked: Settings.set("barGif", !Settings.barGif)
+                            }
+                        }
+                    }
+
                     // notifications: takes the rest of the height, the list scrolls
                     Island {
                         Layout.fillHeight: true

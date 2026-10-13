@@ -70,9 +70,19 @@ Item {
         }
     }
 
-    FrameAnimation {
+    // 12 fps, not every frame: each step rewrites the rig's paths and redraws them; per frame (~60 Hz)
+    // that kept qs at ~36% CPU, at 12 fps it's ~14%.
+    Timer {
+        property double last: 0
+        interval: 1000 / 12
+        repeat: true
         running: root.visible && root.engine !== null
-        onTriggered: root.frame = Engine.CatEngine.step(root.engine, Math.min(frameTime, 0.1))
+        onRunningChanged: last = 0
+        onTriggered: {
+            const now = Date.now();
+            root.frame = Engine.CatEngine.step(root.engine, Math.min(last ? (now - last) / 1000 : interval / 1000, 0.1));
+            last = now;
+        }
     }
 
     // The rig's coordinates, scaled into this item.
