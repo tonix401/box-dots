@@ -87,7 +87,7 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = "nixbox"; # Define your hostname.
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -148,6 +148,9 @@ in
     theme = "sddm-astronaut-theme";
     extraPackages = [ sddmTheme ];
     settings.General.InputMethod = "qtvirtualkeyboard";
+    # Always start the default session (hyprland-uwsm): a remembered session would win over it, and
+    # one plain-Hyprland login keeps the session services (dcal, cliphist, polkit agent) down for good.
+    settings.Users.RememberLastSession = false;
   };
   # The greeter's background is the wallpaper picked with SUPER+P (copied there by
   # hypr/scripts/helpers/update-current-wallpaper.py), so the sddm user must be able to get to it.
