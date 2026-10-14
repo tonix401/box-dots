@@ -113,5 +113,15 @@ in
     fortune
     cowsay
     lolcat
+
+    # apps
+    anki
+    mousepad
+    vscode
+    signal-desktop
+    transmission_4-gtk
+    obsidian
+    vlc
+    mpv
   ];
 }

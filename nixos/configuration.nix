@@ -124,7 +124,7 @@ in
   users.users.tom = {
     isNormalUser = true;
     description = "tom";
-    extraGroups = [ "networkmanager" "wheel" "i2c" ];
+    extraGroups = [ "networkmanager" "wheel" "i2c" "docker" ];
     # Lets the sddm user reach the wallpaper in ~/.cache (traverse only, no listing)
     homeMode = "711";
     shell = pkgs.fish;
@@ -198,11 +198,18 @@ in
   # Monitor brightness over DDC/CI (ddcutil in quickshell)
   hardware.i2c.enable = true;
 
+  # Docker daemon; being in the docker group lets tom use it without sudo
+  virtualisation.docker.enable = true;
+
+  # Installs LocalSend and opens its port (53317) in the firewall
+  programs.localsend.enable = true;
+
   environment.systemPackages = with pkgs; [
     sddmTheme
     git
     chromium
     claude-code
+    docker-compose
   ];
 
   fonts.packages = with pkgs; [
