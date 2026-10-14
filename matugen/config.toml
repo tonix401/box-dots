@@ -38,10 +38,10 @@ input_path = "~/.config/matugen/templates/colors.fish"
 output_path = "~/.config/fish/colors.fish"
 post_hook = "fish -c 'set -U theme_changed (random)' &>/dev/null &"
 
-[templates.arch-svg]
-input_path = "~/.config/matugen/templates/arch.svg"
-output_path = "~/.cache/box-dots/svgs/arch.svg"
-post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/arch.svg ~/.config/fastfetch/arch.png &>/dev/null &"
+[templates.nix-svg]
+input_path = "~/.config/matugen/templates/nix.svg"
+output_path = "~/.cache/box-dots/svgs/nix.svg"
+post_hook = "~/.config/matugen/scripts/svg-to-png.py ~/.cache/box-dots/svgs/nix.svg ~/.config/fastfetch/nix.png &>/dev/null &"
 
 [templates.penguin-svg]
 input_path = "~/.config/matugen/templates/penguin.svg"
