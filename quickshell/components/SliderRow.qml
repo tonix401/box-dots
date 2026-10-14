@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import qs
 
-// icon + draggable track + percentage (volume, brightness). Past 1, a tick marks 100%.
+// icon + draggable track + percentage (volume, brightness). Past 1, a tick marks 100%. An optional
+// live `level` (audio peak) pulses inside the filled part.
 RowLayout {
     id: slider
 
@@ -11,6 +12,7 @@ RowLayout {
     property real maximum: 1
     readonly property real fraction: Math.max(0, Math.min(1, value / maximum))
     property string label: Math.round(value * 100) + "%"
+    property real level: -1 // live signal level 0..1 drawn inside the volume part; -1 = none
     signal moved(real value)
     signal iconClicked
 
@@ -35,15 +37,24 @@ RowLayout {
         id: sliderTrack
 
         Layout.fillWidth: true
-        Layout.preferredHeight: 8
-        radius: 4
+        Layout.preferredHeight: slider.level >= 0 ? 10 : 8
+        radius: height / 2
         color: Theme.surface_container_highest
 
+        // With a live `level`, the volume part is dimmed and the level pulses inside it.
         Rectangle {
             width: Math.max(height, parent.width * slider.fraction)
             height: parent.height
-            radius: 4
-            color: Theme.primary
+            radius: parent.radius
+            color: slider.level >= 0 ? Qt.alpha(Theme.primary, 0.35) : Theme.primary
+
+            Rectangle {
+                visible: slider.level >= 0
+                width: parent.width * Math.min(1, slider.level)
+                height: parent.height
+                radius: parent.radius
+                color: Theme.primary
+            }
         }
 
         // 100% mark when the track goes further

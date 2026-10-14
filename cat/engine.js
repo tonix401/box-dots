@@ -1,11 +1,12 @@
 // The cat rig's animation engine (SPEC.md, "Animation"): rig.json in, one frame of part matrices,
-// paths and opacities out. build.py inlines it into preview.html and copies it to Quickshell's
+// paths and opacities out. build.py inlines it into preview.html and copies it to Kitty Cam and Quickshell's
 // components/CatEngine.js, so both renderers play the same cat; edit it here.
 // Plain ES2017 without ?. and ??, so the QML JavaScript engine takes it as well as browsers.
 //
 //   var st = CatEngine.create(rig, "neutral");
 //   CatEngine.setExpression(st, "happy");   CatEngine.act(st, "hop", 2);   CatEngine.press(st, true);
 //   CatEngine.voice(st, [active, open, wide, round]);   // sing along (0..1 each; see voice.py)
+//   CatEngine.track(st, pose);              // follow a tracked face (Kitty Cam); null: face lost
 //   var frame = CatEngine.step(st, dt);     // {worlds, paths, variantOpacity, partOpacity, shapeOpacity}
 //
 // frame.worlds[part] is an affine [a, b, c, d, e, f] (x' = a x + c y + e, y' = b x + d y + f) in rig
@@ -16,6 +17,10 @@ var CatEngine = (function () {
 
     var FEET = [75, 138]; // whole-cat motions squash and stretch about here
     var ID = [1, 0, 0, 1, 0, 0];
+    // A tracked face turns the head in 3D: degrees at a full turn (pose yaw / pitch = ±1).
+    var TURN = { yaw: 30, pitch: 20 };
+    var YAWN = { open: 1.5, wide: 0.8, round: 0.3 }; // the sing mouth's keys at the height of a yawn
+    var REST_POSE = { yaw: 0, pitch: 0, roll: 0, x: 0, y: 0, blinkL: 0, blinkR: 0, gazeX: 0, gazeY: 0, brow: 0, smile: 0, open: 0, wide: 0, round: 0 };
 
     function or(v, d) {
         return v === undefined || v === null ? d : v;
@@ -28,6 +33,9 @@ var CatEngine = (function () {
     }
     function lerp(a, b, k) {
         return a + (b - a) * k;
+    }
+    function smooth(x) { // smoothstep on 0..1
+        return x * x * (3 - 2 * x);
     }
     // Moves v towards goal, settling in about `settle` seconds.
     function ease(v, goal, dt, settle) {
@@ -64,6 +72,402 @@ var CatEngine = (function () {
         }
     }
 
+    // ── point by point ──
+
+    // A part's paths with its points moved: blended by its shape keys (`keyNames`, weights `keys`), then
+    // through `map(p, variant, shape, subpath, point)` if given. Variants that don't show are skipped,
+    // except the default of a keyed part (keys always apply to it).
+    function movedPaths(part, keyNames, keys, map, vo, name) {
+        var out = {};
+        for (var v in part.variants) {
+            if (map && vo[name + "/" + v] <= 0.01)
+                continue;
+            var keyed = keyNames.length > 0 && v === "default";
+            if (!map && !keyed)
+                continue;
+            out[v] = part.variants[v].map(function (s, i) {
+                return pathOf(s.paths.map(function (sub, j) {
+                    return [sub.pts.map(function (p, q) {
+                        var x = p[0], y = p[1];
+                        if (keyed)
+                            for (var kk = 0; kk < keyNames.length; kk++) {
+                                var w = keys[keyNames[kk]], kp = part.keys[keyNames[kk]][i][j][q];
+                                x += w * (kp[0] - p[0]);
+                                y += w * (kp[1] - p[1]);
+                            }
+                        return map ? map([x, y], v, i, j, q) : [x, y];
+                    }), sub.closed];
+                }));
+            });
+        }
+        return out;
+    }
+
+    // Skinning: each point between the part's own matrix and its bone's, by its weight (world space).
+    function skinMap(part, mb, mh) {
+        return function (p, v, i, j, q) {
+            var a = apply(mb, p), b = apply(mh, p), w = part.skin.weights[v][i][j][q];
+            return [lerp(a[0], b[0], w), lerp(a[1], b[1], w)];
+        };
+    }
+
+    // ── the 3D head (rig.model, built by model3d.py; SPEC.md "The 3D head") ──
+    // Unturned, the drawing is drawn as it is. Turned, the head is a real solid: its mesh is turned, its
+    // silhouette is the outline, a depth map of it hides whatever it covers, and every point of the head's
+    // parts is placed by its own depth (rig.parts[name].z) and turned with it.
+    var SAMPLES = 10; // points per Bézier segment when a curve is drawn again through the turn
+    var CELL = 3; // the depth map's buckets, rig units
+    var EPS_LINE = 0.5, EPS_EDGE = 0.5; // how far behind the surface a part's point / a silhouette point may lie and still show
+    var NUDGE = 1; // how far outside itself a silhouette point is tested
+    var MIN_RUN = 3.5; // shorter visible bits of a line aren't drawn (scraps of something mostly hidden)
+    var MOSTLY = 0.6; // a filled or closed shape shows whole when at least this much of it is in front, else not at all
+
+    // The head's turn this frame, or null when it isn't turned: the rotation about the solid's centre (the nod
+    // first, about the head's own sideways axis, then the turn about the neck's vertical one), and the view
+    // direction in head space. Signs: +yaw moves the face to the screen's right, +pitch down (looking down).
+    function headTurn(rig, P, T) {
+        var yaw = P.yaw * T * TURN.yaw * Math.PI / 180, pitch = P.pitch * T * TURN.pitch * Math.PI / 180;
+        if (!rig.model || (Math.abs(yaw) < 1e-4 && Math.abs(pitch) < 1e-4))
+            return null;
+        var cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+        return { cx: rig.model.centre[0], cy: rig.model.centre[1], cosY: cy, sinY: sy, cosP: cp, sinP: sp, view: [-sy, -cy * sp, cy * cp] };
+    }
+
+    // A direction in head space turned: [x, y, z].
+    function rotate(turn, x, y, z) {
+        var y1 = y * turn.cosP + z * turn.sinP, z1 = -y * turn.sinP + z * turn.cosP;
+        return [x * turn.cosY + z1 * turn.sinY, y1, -x * turn.sinY + z1 * turn.cosY];
+    }
+
+    // (x, y, z) in head space (z towards the viewer) turned: [x, y, depth].
+    function project(turn, x, y, z) {
+        var X = x - turn.cx, Y = y - turn.cy;
+        var y1 = Y * turn.cosP + z * turn.sinP, z1 = -Y * turn.sinP + z * turn.cosP;
+        return [turn.cx + X * turn.cosY + z1 * turn.sinY, turn.cy + y1, -X * turn.sinY + z1 * turn.cosY];
+    }
+
+    // What the turned solid looks like this frame: its vertices turned (ears bent by their shape keys first),
+    // its depth map, and its silhouette.
+    function solidFrame(rig, turn, locals, liveKeys) {
+        var model = rig.model, V = model.verts, n = V.length / 3, tags = model.tags;
+        var px = new Float64Array(n), py = new Float64Array(n), pz = new Float64Array(n);
+        var bends = {};
+        ["ear-l", "ear-r"].forEach(function (name) {
+            var part = rig.parts[name];
+            if (part)
+                bends[name] = keyedAffine(part, liveKeys[name], locals[name]);
+        });
+        for (var i = 0; i < n; i++) {
+            var x = V[3 * i], y = V[3 * i + 1], b = bends[tags[i]];
+            if (b) {
+                var q = apply(b, [x, y]);
+                x = q[0];
+                y = q[1];
+            }
+            var r = project(turn, x, y, V[3 * i + 2]);
+            px[i] = r[0];
+            py[i] = r[1];
+            pz[i] = r[2];
+        }
+        var depth = depthMap(model.tris, px, py, pz);
+        return { px: px, py: py, pz: pz, depth: depth, edge: silhouette(model, turn, px, py, pz, depth) };
+    }
+
+    // A keyed part's shape keys as one affine map (they're hinge keys: affine each, so their blend is too),
+    // then its own matrix.
+    function keyedAffine(part, keys, m) {
+        var a = [1, 0, 0, 1, 0, 0];
+        for (var k in part.keyAffines) {
+            var w = keys[k] || 0, A = part.keyAffines[k];
+            for (var j = 0; j < 6; j++)
+                a[j] += w * (A[j] - ID[j]);
+        }
+        return mul(m, a);
+    }
+
+    // The turned solid's rim (depth 0, its outline) as a matrix about its centre: the neck joins the head there.
+    function neckMatrix(turn) {
+        var a = turn.cosY, b = 0, c = -turn.sinP * turn.sinY, d = turn.cosP;
+        return [a, b, c, d, turn.cx - a * turn.cx - c * turn.cy, turn.cy - b * turn.cx - d * turn.cy];
+    }
+
+    // The solid's faces turned towards the viewer, filed by the CELLs of the turned head they cover, so the
+    // depth at a point can be found exactly from the few faces over it.
+    function depthMap(tris, px, py, pz) {
+        var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (var i = 0; i < px.length; i++) {
+            x0 = Math.min(x0, px[i]); x1 = Math.max(x1, px[i]);
+            y0 = Math.min(y0, py[i]); y1 = Math.max(y1, py[i]);
+        }
+        var w = Math.floor((x1 - x0) / CELL) + 1, h = Math.floor((y1 - y0) / CELL) + 1, cells = [];
+        for (i = 0; i < w * h; i++)
+            cells.push([]);
+        for (var t = 0; t < tris.length; t += 3) {
+            var a = tris[t], b = tris[t + 1], c = tris[t + 2];
+            if ((px[b] - px[a]) * (py[c] - py[a]) - (py[b] - py[a]) * (px[c] - px[a]) <= 0)
+                continue; // turned away
+            var gx0 = Math.floor((Math.min(px[a], px[b], px[c]) - x0) / CELL), gx1 = Math.floor((Math.max(px[a], px[b], px[c]) - x0) / CELL);
+            var gy0 = Math.floor((Math.min(py[a], py[b], py[c]) - y0) / CELL), gy1 = Math.floor((Math.max(py[a], py[b], py[c]) - y0) / CELL);
+            for (var gy = gy0; gy <= gy1; gy++)
+                for (var gx = gx0; gx <= gx1; gx++)
+                    cells[gy * w + gx].push(t);
+        }
+        return { x0: x0, y0: y0, w: w, h: h, cells: cells, tris: tris, px: px, py: py, pz: pz };
+    }
+
+    // Is the turned point (x, y) at depth d in front of every face of the solid over it (give or take eps)?
+    function visible(map, x, y, d, eps) {
+        var gx = Math.floor((x - map.x0) / CELL), gy = Math.floor((y - map.y0) / CELL);
+        if (gx < 0 || gy < 0 || gx >= map.w || gy >= map.h)
+            return true;
+        var list = map.cells[gy * map.w + gx], tris = map.tris, px = map.px, py = map.py, pz = map.pz;
+        for (var i = 0; i < list.length; i++) {
+            var t = list[i], a = tris[t], b = tris[t + 1], c = tris[t + 2];
+            var area = (px[b] - px[a]) * (py[c] - py[a]) - (py[b] - py[a]) * (px[c] - px[a]);
+            var l1 = ((px[b] - x) * (py[c] - y) - (py[b] - y) * (px[c] - x)) / area;
+            var l2 = ((px[c] - x) * (py[a] - y) - (py[c] - y) * (px[a] - x)) / area;
+            var l3 = 1 - l1 - l2;
+            if (l1 >= -1e-6 && l2 >= -1e-6 && l3 >= -1e-6 && l1 * pz[a] + l2 * pz[b] + l3 * pz[c] > d + eps)
+                return false;
+        }
+        return true;
+    }
+
+    // The solid's silhouette: where its surface turns from facing the viewer to facing away (the vertex
+    // normals' dot with the view direction changes sign along an edge), chained into lines. Returns
+    // {lines: [[{x, y, d, neck}]], loop: the longest closed line (for a fill)}.
+    function silhouette(model, turn, px, py, pz, map) {
+        var N = model.normals, tris = model.tris, tags = model.tags, view = turn.view, n = px.length;
+        var g = new Float64Array(n);
+        for (var i = 0; i < n; i++) {
+            g[i] = N[3 * i] * view[0] + N[3 * i + 1] * view[1] + N[3 * i + 2] * view[2];
+            if (g[i] === 0)
+                g[i] = 1e-9;
+        }
+        // Crossing points, one per edge where the sign changes (keyed by the edge), linked across each triangle.
+        var points = new Map(), links = new Map();
+        function cross(a, b) {
+            var key = a < b ? a * n + b : b * n + a;
+            if (!points.has(key)) {
+                var t = g[a] / (g[a] - g[b]);
+                // Its outward direction on screen: the normal there (lying across the view), turned.
+                var nx = N[3 * a] + t * (N[3 * b] - N[3 * a]), ny = N[3 * a + 1] + t * (N[3 * b + 1] - N[3 * a + 1]);
+                var nz = N[3 * a + 2] + t * (N[3 * b + 2] - N[3 * a + 2]), out = rotate(turn, nx, ny, nz), ln = Math.sqrt(out[0] * out[0] + out[1] * out[1]) || 1;
+                points.set(key, { x: px[a] + t * (px[b] - px[a]), y: py[a] + t * (py[b] - py[a]), d: pz[a] + t * (pz[b] - pz[a]),
+                                  ox: out[0] / ln, oy: out[1] / ln, neck: tags[a] === "neck" || tags[b] === "neck" });
+                links.set(key, []);
+            }
+            return key;
+        }
+        for (var t = 0; t < tris.length; t += 3) {
+            var v = [tris[t], tris[t + 1], tris[t + 2]], found = [];
+            for (var e = 0; e < 3; e++) {
+                var a = v[e], b = v[(e + 1) % 3];
+                if ((g[a] > 0) !== (g[b] > 0))
+                    found.push(cross(a, b));
+            }
+            if (found.length === 2) {
+                links.get(found[0]).push(found[1]);
+                links.get(found[1]).push(found[0]);
+            }
+        }
+        // The solid is closed, so every crossing has two neighbours and the lines are loops: walk each round.
+        var done = new Set(), lines = [], loop = null, loopArea = 0;
+        links.forEach(function (_, start) {
+            if (done.has(start))
+                return;
+            var line = [], prev = -1, k = start;
+            while (k !== -1 && !done.has(k)) {
+                done.add(k);
+                line.push(points.get(k));
+                var nb = links.get(k), next = -1;
+                for (var j = 0; j < nb.length; j++)
+                    if (nb[j] !== prev && !done.has(nb[j])) {
+                        next = nb[j];
+                        break;
+                    }
+                prev = k;
+                k = next;
+            }
+            if (line.length < 3)
+                return;
+            lines.push(line);
+            var area = 0;
+            for (var q = 0; q < line.length; q++) {
+                var p0 = line[q], p1 = line[(q + 1) % line.length];
+                area += p0.x * p1.y - p1.x * p0.y;
+            }
+            if (Math.abs(area) > loopArea) {
+                loopArea = Math.abs(area);
+                loop = line;
+            }
+        });
+        return { lines: lines, loop: loop };
+    }
+
+    // The silhouette as path data: the visible stretches of every line, except along the neck (the body
+    // goes on from there).
+    function silhouettePath(solid) {
+        var runs = [];
+        solid.edge.lines.forEach(function (line) {
+            var run = [], all = line.concat([line[0]]);
+            all.forEach(function (p) {
+                // Tested a little outside itself: its own fold can't cover it there, anything in front of it still does.
+                // Along the neck, the head's underside (facing down) goes on into the body: no line there.
+                if (!(p.neck && p.oy > 0.6) && visible(solid.depth, p.x + NUDGE * p.ox, p.y + NUDGE * p.oy, p.d, EPS_EDGE))
+                    run.push([p.x, p.y]);
+                else {
+                    keepRun(runs, run);
+                    run = [];
+                }
+            });
+            keepRun(runs, run);
+        });
+        return pathOf(runs.map(function (r) { return [smoothThrough(relax(r, 2)), false]; }));
+    }
+
+    // A line evened out: resampled every EDGE_STEP units, then each point moved halfway to its neighbours' middle
+    // `passes` times (ends stay). Irons out the steps a silhouette makes hopping between the mesh's triangles.
+    var EDGE_STEP = 1.5;
+    function relax(pts, passes) {
+        var out = [pts[0]], left = 0;
+        for (var i = 1; i < pts.length; i++) {
+            var a = pts[i - 1], b = pts[i], len = Math.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]));
+            for (var d = EDGE_STEP - left; d < len; d += EDGE_STEP)
+                out.push([a[0] + (b[0] - a[0]) * d / len, a[1] + (b[1] - a[1]) * d / len]);
+            left = (left + len) % EDGE_STEP;
+        }
+        if (out.length < 2 || out[out.length - 1] !== pts[pts.length - 1])
+            out.push(pts[pts.length - 1]);
+        for (var p = 0; p < passes; p++) {
+            var next = [out[0]];
+            for (i = 1; i + 1 < out.length; i++)
+                next.push([(out[i - 1][0] + 2 * out[i][0] + out[i + 1][0]) / 4, (out[i - 1][1] + 2 * out[i][1] + out[i + 1][1]) / 4]);
+            next.push(out[out.length - 1]);
+            out = next;
+        }
+        return out;
+    }
+
+    function keepRun(runs, run) {
+        var len = 0;
+        for (var i = 1; i < run.length; i++)
+            len += Math.sqrt((run[i][0] - run[i - 1][0]) * (run[i][0] - run[i - 1][0]) + (run[i][1] - run[i - 1][1]) * (run[i][1] - run[i - 1][1]));
+        if (run.length > 1 && len >= MIN_RUN)
+            runs.push(run);
+    }
+
+    // The resting head's depth at (x, y) (head space): the solid's depth inside its outline, minus the distance
+    // to it outside (rig.model.height, 1-unit cells, bilinear).
+    function heightAt(hm, x, y) {
+        var gx = x - hm.x0, gy = y - hm.y0, i = Math.floor(gx), j = Math.floor(gy);
+        if (i < 0 || j < 0 || i + 1 >= hm.w || j + 1 >= hm.h)
+            return -12;
+        var u = gx - i, v = gy - j, V = hm.values, k = j * hm.w + i;
+        return (1 - u) * (1 - v) * V[k] + u * (1 - v) * V[k + 1] + (1 - u) * v * V[k + hm.w] + u * v * V[k + hm.w + 1];
+    }
+
+    // How deep a head part's point is, from where it is at rest (so a blinking eye or a twitching ear keeps the
+    // depth of the patch it belongs to): on the skin, lifted; a billboard all at its own depth; beyond the outline,
+    // a whisker sweeps back and anything else stays at the outline's depth.
+    function depthOf(solid, hm, x, y) {
+        if (solid.billboard !== undefined)
+            return solid.billboard;
+        var h = heightAt(hm, x, y);
+        if (h >= 0)
+            return h + solid.lift;
+        return solid.sweep !== undefined ? solid.sweep * h : solid.lift;
+    }
+
+    // One of the head's parts through the turn: each shape's curves sampled, every sample given its depth and
+    // turned, and kept where the solid doesn't cover it. A filled or closed shape (an eye, the inner ear) shows
+    // whole or not at all (MOSTLY in front, or not); an open line only where it's visible. A billboard keeps its shape and only moves with its
+    // pivot. Ear outlines are the silhouette's job. Head space.
+    function solidPaths(rig, part, name, keyNames, keys, m, turn, solid, vo) {
+        var out = {}, hm = rig.model.height;
+        for (var v in part.variants) {
+            if (vo[name + "/" + v] <= 0.01)
+                continue;
+            var keyed = keyNames.length > 0 && v === "default";
+            out[v] = part.variants[v].map(function (s, i) {
+                if (s.chain === "outline" || !part.solid)
+                    return "";
+                var subs = s.paths.map(function (sub, j) {
+                    var moved = sub.pts.map(function (p, q) {
+                        var x = p[0], y = p[1];
+                        if (keyed)
+                            for (var kk = 0; kk < keyNames.length; kk++) {
+                                var w = keys[keyNames[kk]], kp = part.keys[keyNames[kk]][i][j][q];
+                                x += w * (kp[0] - p[0]);
+                                y += w * (kp[1] - p[1]);
+                            }
+                        return apply(m, [x, y]);
+                    });
+                    var rest = sample2(sub.pts);
+                    return {
+                        closed: sub.closed,
+                        pts: sample2(moved).map(function (p, k) { return [p[0], p[1], depthOf(part.solid, hm, rest[k][0], rest[k][1])]; })
+                    };
+                });
+                var shown = [], total = 0, seen = 0, pivot = part.solid.billboard !== undefined ? apply(m, part.pivot) : null;
+                var anchor = pivot ? project(turn, pivot[0], pivot[1], part.solid.billboard) : null;
+                subs.forEach(function (sub) {
+                    shown.push(sub.pts.map(function (p) {
+                        var r = anchor ? [anchor[0] + p[0] - pivot[0], anchor[1] + p[1] - pivot[1], anchor[2]] : project(turn, p[0], p[1], p[2]);
+                        var vis = visible(solid.depth, r[0], r[1], r[2], EPS_LINE);
+                        total++;
+                        if (vis)
+                            seen++;
+                        return { x: r[0], y: r[1], vis: vis };
+                    }));
+                });
+                if (s.fill || subs.every(function (sub) { return sub.closed; })) // whole or nothing
+                    return seen < MOSTLY * total ? "" : pathOf(shown.map(function (pts, j) {
+                        return [smoothThrough(pts.map(function (p) { return [p.x, p.y]; }), subs[j].closed), subs[j].closed];
+                    }));
+                var runs = [];
+                shown.forEach(function (pts, j) {
+                    var all = subs[j].closed ? pts.concat([pts[0]]) : pts, run = [];
+                    all.forEach(function (p) {
+                        if (p.vis)
+                            run.push([p.x, p.y]);
+                        else {
+                            keepRun(runs, run);
+                            run = [];
+                        }
+                    });
+                    keepRun(runs, run);
+                });
+                return pathOf(runs.map(function (r) { return [smoothThrough(r), false]; }));
+            });
+        }
+        return out;
+    }
+
+    // Points along a path of cubic Béziers ([P0, C1, C2, P1, …]), SAMPLES per segment.
+    function sample2(pts) {
+        var out = [pts[0]];
+        for (var j = 1; j + 2 < pts.length; j += 3)
+            for (var k = 1; k <= SAMPLES; k++) {
+                var t = k / SAMPLES, u = 1 - t, a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
+                out.push([a * pts[j - 1][0] + b * pts[j][0] + c * pts[j + 1][0] + d * pts[j + 2][0],
+                          a * pts[j - 1][1] + b * pts[j][1] + c * pts[j + 1][1] + d * pts[j + 2][1]]);
+            }
+        return out;
+    }
+
+    // A smooth path through points (Catmull-Rom), as cubic Béziers in the rig's [P0, C1, C2, P1, …] form;
+    // `closed`: round the end back to the start.
+    function smoothThrough(pts, closed) {
+        var n = pts.length, out = [pts[0]];
+        var at = function (i) { return closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))]; };
+        for (var i = 0; i < (closed ? n : n - 1); i++) {
+            var a = at(i - 1), b = at(i), c = at(i + 1), d = at(i + 2);
+            out.push([b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6], [c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6], c);
+        }
+        return out;
+    }
+
     function create(rig, expression) {
         return {
             rig: rig,
@@ -77,6 +481,7 @@ var CatEngine = (function () {
             nextBlink: 2, blinkStart: -10,
             nextTwitch: 6, twitchStart: -10, twitchSide: "l",
             nextTilt: rand(5, 12), tiltStart: -10, tiltDir: 1,
+            nextYawn: 0, yawnStart: -10, yawnGate: 0, // sleepy yawns; yawnGate fades one out if the cat stops being sleepy
             head: { x: 0, v: 0 }, // the head's lag behind the body (rig units, down is +)
             tilt: { x: 0, v: 0 }, // the head's tilt (degrees)
             squash: { x: 0, v: 0 }, // whole-cat squish: -0.2 is squashed flat, + is stretched
@@ -85,6 +490,11 @@ var CatEngine = (function () {
             voice: [0, 0, 0, 0], // [active, open, wide, round], as last given to voice()
             singing: 0, // 0..1: the sing mouth fading in over the expression's mouth
             lips: { open: 0, wide: 0, round: 0 }, // the sing mouth's shape keys, eased
+            pose: null, // the tracked face, as last given to track(); null while there is none
+            lastPose: REST_POSE, // kept while the tracking fades out after the face is lost
+            tracked: 0, // 0..1: how much the tracked face drives the cat
+            restMouth: false, // tracked: show the expression's own mouth while the lips are closed
+            trackBlink: true, trackHead: true, // false: the idle blinks / head tilts carry on while tracked
         };
     }
 
@@ -109,6 +519,17 @@ var CatEngine = (function () {
     // expressions that sing, `open`, `wide`, `round` (0..1) shape it.
     function voice(st, v) {
         st.voice = v;
+    }
+
+    // A tracked face (Kitty Cam), already filtered and normalised, or null when it is lost:
+    //   yaw, pitch (-1..1: turned right / looking down at +1), roll (degrees, clockwise),
+    //   x, y (rig units the head leans by), blinkL, blinkR, smile, open, wide, round (0..1),
+    //   gazeX, gazeY (-1..1), brow (-1 frowning .. 1 raised).
+    // While tracked, the face replaces the idle blinks, twitches and tilts, and the sing mouth follows its lips.
+    function track(st, pose) {
+        st.pose = pose;
+        if (pose)
+            st.lastPose = pose;
     }
 
     // Held down: squish flat. Let go: boing back (the squash spring overshoots).
@@ -161,15 +582,19 @@ var CatEngine = (function () {
         var t = (st.t += dt);
         var e = rig.expressions[st.expression] || rig.expressions.neutral;
         var idle = st.idle;
+        st.tracked = snap ? (st.pose ? 1 : 0) : ease(st.tracked, st.pose ? 1 : 0, dt, 0.25);
+        var T = st.tracked, P = st.lastPose;
 
         // ── idle loop ──
-        var eyes = e.variants.eyes;
+        var eyes = e.variants["eye-l"];
         if (t >= st.nextBlink) {
             st.blinkStart = t;
             st.nextBlink = t + (Math.random() < 0.15 ? 0.3 : rand(3, 7));
         }
         var bp = (t - st.blinkStart) / (st.expression === "sleepy" ? 0.5 : 0.16);
-        var blink = idle && (eyes === "open" || eyes === "wide" || eyes === "sparkle") && bp < 1 ? (bp < 0.4 ? 1 - 0.9 * bp / 0.4 : 0.1 + 0.9 * (bp - 0.4) / 0.6) : 1;
+        var blinkable = eyes === "open" || eyes === "wide" || eyes === "sparkle";
+        var blink = idle && blinkable && bp < 1 ? (bp < 0.4 ? 1 - 0.9 * bp / 0.4 : 0.1 + 0.9 * (bp - 0.4) / 0.6) : 1;
+        blink = lerp(blink, 1, st.trackBlink ? T : 0); // a tracked face blinks for itself
 
         if (t >= st.nextTwitch) {
             st.twitchStart = t;
@@ -177,7 +602,7 @@ var CatEngine = (function () {
             st.nextTwitch = t + rand(8, 20);
         }
         var tp = (t - st.twitchStart) / 0.36;
-        var twitch = idle && st.expression !== "asleep" && tp < 1 ? Math.abs(Math.sin(2 * Math.PI * tp)) : 0;
+        var twitch = idle && st.expression !== "asleep" && tp < 1 ? Math.abs(Math.sin(2 * Math.PI * tp)) * (1 - T) : 0;
 
         // A curious head tilt now and then, held for a moment; the spring makes it overshoot and settle.
         if (t >= st.nextTilt) {
@@ -189,14 +614,39 @@ var CatEngine = (function () {
         var bob = e.motion === "bob" ? Math.sin(2 * Math.PI * t / 0.9) : 0;
         var tremble = e.motion === "tremble" ? 0.5 * Math.sin(2 * Math.PI * 13 * t) : 0;
 
+        // Sleepy: a big yawn now and then (2.6 s): eyes squeezed shut, mouth wide open, ears back, a stretch.
+        var sleepy = idle && st.expression === "sleepy";
+        if (!sleepy) {
+            if (st.nextYawn < t + 4) // the first yawn comes 4–10 s after the cat gets sleepy
+                st.nextYawn = t + rand(4, 10);
+        } else if (t >= st.nextYawn) {
+            st.yawnStart = t;
+            st.nextYawn = t + rand(20, 45);
+        }
+        st.yawnGate = snap ? (sleepy ? 1 : 0) : ease(st.yawnGate, sleepy ? 1 : 0, dt, 0.25);
+        var yp = (t - st.yawnStart) / 2.6, ys = 0;
+        if (yp < 0.3) // opening, slowly
+            ys = smooth(yp / 0.3);
+        else if (yp < 0.68) // held, stretching a little further
+            ys = 1 + 0.06 * Math.sin(Math.PI * (yp - 0.3) / 0.38);
+        else if (yp < 1) // closing
+            ys = 1 - smooth((yp - 0.68) / 0.32);
+        var yawn = ys * st.yawnGate * (1 - T);
+
         var breath = idle ? (1 - Math.cos(2 * Math.PI * t / (e.breath || 4))) / 2 : 0;
 
         // ── singing: the sing mouth takes over from the expression's mouth while there's a voice ──
-        var singGoal = e.sing && st.voice[0] > 0 ? 1 : 0;
+        // A tracked face talks through the sing mouth: always, or (restMouth) only while the lips move,
+        // with a little hysteresis so a mouth on the edge doesn't flicker between the two.
+        var lipsAt = st.singing > 0.5 ? 0.04 : 0.08;
+        var talking = !st.restMouth || P.open > lipsAt || P.round > 3 * lipsAt || P.wide > 4 * lipsAt;
+        var singGoal = Math.max(e.sing && st.voice[0] > 0 ? 1 : 0, st.pose && talking ? 1 : 0);
         st.singing = snap ? singGoal : ease(st.singing, singGoal, dt, 0.12);
         var lipNames = ["open", "wide", "round"];
-        for (var li = 0; li < 3; li++)
-            st.lips[lipNames[li]] = snap ? st.voice[li + 1] : ease(st.lips[lipNames[li]], st.voice[li + 1], dt, 0.05);
+        for (var li = 0; li < 3; li++) {
+            var lipGoal = lerp(st.voice[li + 1], P[lipNames[li]], T);
+            st.lips[lipNames[li]] = snap ? lipGoal : ease(st.lips[lipNames[li]], lipGoal, dt, 0.05);
+        }
 
         // ── whole-cat motion, and the springs it shakes ──
         var o = motionPose(st, t);
@@ -207,15 +657,17 @@ var CatEngine = (function () {
             // The head is heavy: when the body jumps up it lags down, and wobbles after landing.
             spring(st.head, 0, dt, 220, 11, clamp(-0.25 * ay, -3000, 3000));
             st.head.x = clamp(st.head.x, -6, 6);
-            spring(st.tilt, (tilting ? 7 * st.tiltDir : 0) + 4 * bob, dt, 140, 9, 0);
+            spring(st.tilt, (tilting ? 7 * st.tiltDir * (st.trackHead ? 1 - T : 1) : 0) + 4 * bob, dt, 140, 9, 0);
             spring(st.squash, st.pressed ? -0.2 : 0, dt, 320, 9, 0);
         }
         var sq = st.squash.x;
-        var all = { tx: tremble, ty: o.ty, sx: o.sx * (1 - 0.7 * sq), sy: o.sy * (1 + sq), rot: 0 };
+        var all = { tx: tremble, ty: o.ty, sx: o.sx * (1 - 0.7 * sq) * (1 - 0.025 * yawn), sy: o.sy * (1 + sq) * (1 + 0.05 * yawn), rot: 0 };
         var root = local(FEET, all);
+        var singShown = Math.max(st.singing, Math.min(1, 3 * yawn)); // a yawn opens the sing mouth too
 
         // ── pass 1: ease every part towards the expression, layer the above on top, find matrices ──
-        var worlds = {}, vo = {}, po = {}, so = {}, liveKeys = {};
+        var worlds = {}, locals = {}, vo = {}, po = {}, so = {}, liveKeys = {};
+        var turn = headTurn(rig, P, T);
         var order = rig.order;
         for (var n = 0; n < order.length; n++) {
             var name = order[n], part = rig.parts[name];
@@ -239,14 +691,30 @@ var CatEngine = (function () {
             }
             var shown = !part.hidden || e.show.indexOf(name) >= 0 ? 1 : 0;
             c.shown = snap ? shown : ease(c.shown, shown, dt, 0.22);
-            po[name] = name === "sing" ? st.singing : name === "mouth" ? c.shown * (1 - st.singing) : c.shown;
+            po[name] = name === "sing" ? singShown : name === "mouth" ? c.shown * (1 - singShown) : name === "cheeks" ? Math.max(c.shown, P.smile * T) : c.shown;
 
             var tr = { tx: c.tr.tx, ty: c.tr.ty, sx: c.tr.sx, sy: c.tr.sy, rot: c.tr.rot };
             var keys = {};
             for (key in c.keys)
                 keys[key] = c.keys[key] + or(st.extraKeys[name + "." + key], 0);
-            if (name === "eyes")
-                tr.sy *= blink;
+            if (name === "eye-l" || name === "eye-r") {
+                tr.sy *= blink * (1 - 0.8 * yawn);
+                if (T > 0) {
+                    var left = name === "eye-l", lid = left ? P.blinkL : P.blinkR;
+                    if (blinkable)
+                        tr.sy *= 1 - 0.9 * lid * T;
+                    tr.tx += 1.5 * P.gazeX * T;
+                    tr.ty += 1.5 * P.gazeY * T;
+                }
+            }
+            if (T > 0 && (name === "ear-l" || name === "ear-r")) { // the ears are the eyebrows
+                if ("perk" in keys)
+                    keys.perk += Math.max(0, P.brow) * T;
+                if ("flat" in keys)
+                    keys.flat += Math.max(0, -P.brow) * T;
+            }
+            if ((name === "ear-l" || name === "ear-r") && "flat" in keys)
+                keys.flat += 0.5 * yawn;
             if (name === "ear-" + st.twitchSide && "twitch" in keys)
                 keys.twitch += twitch;
             if (name === "whiskers-" + st.twitchSide)
@@ -257,63 +725,54 @@ var CatEngine = (function () {
             }
             if (name === "sing")
                 for (key in st.lips)
-                    keys[key] += st.lips[key];
+                    keys[key] += lerp(st.lips[key], YAWN[key], Math.min(1, yawn));
             if (name === "head") { // lifted a little as the mouth opens
-                tr.ty += st.head.x - 1.3 * breath - 1.2 * Math.abs(bob) - 0.8 * st.lips.open * st.singing;
-                tr.rot += st.tilt.x;
+                tr.ty += st.head.x - 1.3 * breath - 1.2 * Math.abs(bob) - 0.8 * st.lips.open * st.singing - 2 * yawn;
+                tr.rot += st.tilt.x + P.roll * T;
+                tr.tx += P.x * T;
+                tr.ty += P.y * T;
             }
             liveKeys[name] = keys;
-            var m = local(part.pivot, tr);
+            var m = locals[name] = local(part.pivot, tr);
             worlds[name] = part.parent ? mul(worlds[part.parent], m) : mul(root, m);
         }
 
-        // ── pass 2: paths moved by shape keys or skinning ──
-        var paths = {};
+        // ── pass 2: paths moved point by point: shape keys, skinning, the 3D head ──
+        var paths = {}, solid = turn ? solidFrame(rig, turn, locals, liveKeys) : null;
         for (n = 0; n < order.length; n++) {
             name = order[n];
             part = rig.parts[name];
             var keyNames = Object.keys(part.keys);
+            var map = null;
             if (part.skin) {
-                var mb = worlds[name], mh = worlds[part.skin.bone];
-                paths[name] = {};
-                for (v in part.variants) {
-                    if (vo[name + "/" + v] <= 0.01)
-                        continue;
-                    var ws = part.skin.weights[v];
-                    paths[name][v] = part.variants[v].map(function (s, i) {
-                        return pathOf(s.paths.map(function (sub, j) {
-                            return [sub.pts.map(function (p, q) {
-                                var a = apply(mb, p), b = apply(mh, p), w = ws[i][j][q];
-                                return [lerp(a[0], b[0], w), lerp(a[1], b[1], w)];
-                            }), sub.closed];
-                        }));
-                    });
-                }
+                // Turned, the neck follows the solid's rim (its outline, at depth 0) as the head turns.
+                var bone = worlds[part.skin.bone];
+                if (solid && part.skin.bone === "head")
+                    bone = mul(bone, neckMatrix(turn));
+                map = skinMap(part, worlds[name], bone);
                 worlds[name] = ID;
-            } else if (keyNames.length > 0) {
-                keys = liveKeys[name];
-                paths[name] = {
-                    default: part.variants["default"].map(function (s, i) {
-                        return pathOf(s.paths.map(function (sub, j) {
-                            return [sub.pts.map(function (p, q) {
-                                var x = p[0], y = p[1];
-                                for (var kk = 0; kk < keyNames.length; kk++) {
-                                    var w = keys[keyNames[kk]], kp = part.keys[keyNames[kk]][i][j][q];
-                                    x += w * (kp[0] - p[0]);
-                                    y += w * (kp[1] - p[1]);
-                                }
-                                return [x, y];
-                            }), sub.closed];
-                        }));
-                    })
-                };
+            } else if (solid && name === "head") {
+                paths[name] = { default: part.variants["default"].map(function (s, i) { return i === 0 ? silhouettePath(solid) : ""; }) };
+            } else if (solid && part.parent === "head" && po[name] > 0.01) {
+                paths[name] = solidPaths(rig, part, name, keyNames, liveKeys[name], locals[name], turn, solid, vo);
+                worlds[name] = worlds.head; // placed in the head's space
             }
+            if (map || (keyNames.length > 0 && !paths[name]))
+                paths[name] = movedPaths(part, keyNames, liveKeys[name], map, vo, name);
             if (name === "zzz") // the z's take turns
                 for (var z = 0; z < 3; z++)
                     so[name + "/" + z] = Math.max(0, Math.sin(Math.PI * ((t / 3.6 - z / 3 + 1) % 1) * 1.5));
         }
-        return { worlds: worlds, paths: paths, variantOpacity: vo, partOpacity: po, shapeOpacity: so };
+        // Turned, the head's whole silhouette as one closed path (head space), and where the cheeks meet the neck
+        // (world space, right then left), for renderers that fill the cat: the body's fill closes through them.
+        var outline = solid && solid.edge.loop ? pathOf([[smoothThrough(solid.edge.loop.map(function (p) { return [p.x, p.y]; }), true), true]]) : null;
+        var neck = null;
+        if (solid) {
+            var nw = mul(worlds.head, neckMatrix(turn));
+            neck = rig.model.neck.map(function (p) { return apply(nw, p); });
+        }
+        return { worlds: worlds, paths: paths, variantOpacity: vo, partOpacity: po, shapeOpacity: so, outline: outline, neck: neck };
     }
 
-    return { create: create, step: step, act: act, press: press, setExpression: setExpression, voice: voice };
+    return { create: create, step: step, act: act, press: press, setExpression: setExpression, voice: voice, track: track };
 })();

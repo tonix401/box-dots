@@ -7,7 +7,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs
 
-// Wallpaper picker (SUPER+P): a 3×3 grid of the most used wallpapers; typing switches to a searchable list.
+// Wallpaper picker (SUPER+P): a 3×3 grid of the most recently applied wallpapers; typing switches to a searchable list.
 // Applying sets it with awww, updates the current-wallpaper files and re-themes with matugen.
 PanelWindow {
     id: root
@@ -16,17 +16,25 @@ PanelWindow {
     readonly property string sourceDir: home + "/Pictures/Wallpapers"
     readonly property string outDir: home + "/.cache/box-dots/wallpapers"
     readonly property string thumbDir: home + "/.cache/box-dots/wallpaper-thumbnails"
+    readonly property string previewDir: home + "/.cache/box-dots/wallpaper-previews"
     readonly property string helpers: home + "/.config/hypr/scripts/helpers"
     readonly property var extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"]
 
     property var wallpapers: [] // {stem, path}
-    property var usage: ({}) // stem -> times applied
+    property var recent: [] // stems, most recently applied first
     property string current: "" // stem of the wallpaper in use
 
     readonly property bool searching: search.text.trim() !== ""
 
-    // Most applied first; the current one breaks ties, then list order.
-    readonly property var favourites: wallpapers.slice().sort((a, b) => (usage[b.stem] ?? 0) - (usage[a.stem] ?? 0) || (b.stem === current) - (a.stem === current)).slice(0, 9)
+    // The current one, then the most recently applied, filled up in list order.
+    readonly property var favourites: {
+        const order = [current, ...recent];
+        const rank = w => {
+            const i = order.indexOf(w.stem);
+            return i === -1 ? order.length : i;
+        };
+        return wallpapers.slice().sort((a, b) => rank(a) - rank(b)).slice(0, 9);
+    }
 
     property var results: []
     property int selected: 0 // index into the grid or the result list
@@ -39,26 +47,35 @@ PanelWindow {
     }
 
     function apply(w) {
-        // use the resized copy when prepare-wallpaper-files.py made one.
+        // use the resized copy when prepare-wallpaper-files.py made one; matugen reads the small preview ($6), which
+        // is ~10x faster and gives the same palette on most wallpapers.
         // Each step's exit is logged to wallpaper-apply.log in ms since the click/Enter ($5), to chase slow transitions.
         const cmd = `img="$1"; [ -e "$2" ] && img="$2"; log="$4"; t0="$5"
+            colors="$img"; [ -e "$6" ] && colors="$6"
             ts() { echo "+$(( $(date +%s%3N) - t0 ))ms $*" >> "$log"; }
             echo "--- $(date '+%F %T') $img" >> "$log"
             ts "sh started"
             { awww img --transition-type grow --transition-duration 1.8 "$img"; ts "awww img exited $?"; } &
             { python3 "$3/update-current-wallpaper.py" "$img"; ts "update-current-wallpaper exited $?"; } &
-            { matugen image "$img" --prefer saturation; ts "matugen exited $?"; } &
+            { matugen image "$colors" --prefer saturation; ts "matugen exited $?"; } &
             wait
             tail -n 500 "$log" > "$log.tmp" && mv "$log.tmp" "$log"`;
-        Quickshell.execDetached(["sh", "-c", cmd, "sh", w.path, `${outDir}/${w.stem}.png`, helpers, `${home}/.cache/box-dots/wallpaper-apply.log`, String(Date.now())]);
-        const counts = Object.assign({}, usage);
-        counts[w.stem] = (counts[w.stem] ?? 0) + 1;
-        usageFile.setText(JSON.stringify(counts, null, 2) + "\n");
+        Quickshell.execDetached(["sh", "-c", cmd, "sh", w.path, `${outDir}/${w.stem}.png`, helpers, `${home}/.cache/box-dots/wallpaper-apply.log`, String(Date.now()), `${previewDir}/${w.stem}.png`]);
+        recentFile.setText(JSON.stringify([w.stem, ...recent.filter(s => s !== w.stem)].slice(0, 30), null, 2) + "\n");
         Menus.close();
     }
 
+    // small monitor-shaped copy from prepare-wallpaper-files.py; the full-size one takes ~60ms each to decode
     function preview(w) {
-        return `file://${outDir}/${w.stem}.png`;
+        return `file://${previewDir}/${w.stem}.png`;
+    }
+
+    function setWallpapers(text) {
+        const names = text.split("\n").filter(n => extensions.some(ext => n.toLowerCase().endsWith(ext)));
+        wallpapers = names.sort().map(name => ({
+                    stem: name.replace(/\.[^.]*$/, ""),
+                    path: `${sourceDir}/${name}`
+                }));
     }
 
     // ── window: covers the usable area, box centered, click outside closes ──
@@ -371,18 +388,22 @@ PanelWindow {
     }
 
     // ── data ──
-    // Same as the rofi script: refresh the resized copies and thumbnails first, then list.
+    // List right away from the cached files, then refresh the resized copies, previews and thumbnails in the
+    // background; only when that made something new (it prints a line per file) is the list loaded again.
     Process {
         running: true
-        command: ["sh", "-c", `python3 "$1/prepare-wallpaper-files.py" >/dev/null 2>&1; ls -1 "$2"`, "sh", root.helpers, root.sourceDir]
+        command: ["ls", "-1", root.sourceDir]
         stdout: StdioCollector {
-            onStreamFinished: {
-                const names = text.split("\n").filter(n => root.extensions.some(ext => n.toLowerCase().endsWith(ext)));
-                root.wallpapers = names.sort().map(name => ({
-                            stem: name.replace(/\.[^.]*$/, ""),
-                            path: `${root.sourceDir}/${name}`
-                        }));
-            }
+            onStreamFinished: root.setWallpapers(text)
+        }
+    }
+
+    Process {
+        running: true
+        command: ["sh", "-c", `out=$(python3 "$1/prepare-wallpaper-files.py" 2>/dev/null) && [ -n "$out" ] && ls -1 "$2"`, "sh", root.helpers, root.sourceDir]
+        stdout: StdioCollector {
+            onStreamFinished: if (text !== "")
+                root.setWallpapers(text)
         }
     }
 
@@ -392,12 +413,12 @@ PanelWindow {
     }
 
     FileView {
-        id: usageFile
-        path: Quickshell.statePath("wallpaper-usage.json")
+        id: recentFile
+        path: Quickshell.statePath("wallpaper-recent.json")
         printErrors: false
         onLoaded: {
             try {
-                root.usage = JSON.parse(text());
+                root.recent = JSON.parse(text());
             } catch (e) {}
         }
     }

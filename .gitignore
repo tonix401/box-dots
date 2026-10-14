@@ -18,6 +18,8 @@
 !quickshell
 !nixos
 !cat
+!kitty-cam
+!xdg-terminals.list
 
 # generated files
 __pycache__/

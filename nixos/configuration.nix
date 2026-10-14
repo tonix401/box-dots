@@ -156,16 +156,18 @@ in
     "d /home/tom/.cache/box-dots 0755 tom users -"
     "d /home/tom/.cache/box-dots/current 0755 tom users -"
   ];
-  services.displayManager.defaultSession = "hyprland";
+  # Hyprland under uwsm (see hypr/exec.lua): the session is a systemd unit, so graphical-session.target
+  # and XDG autostart (fcitx5) come up with it, and apps launched with `uwsm app --` get their own scope.
+  services.displayManager.defaultSession = "hyprland-uwsm";
 
-  programs.hyprland.enable = true;
+  programs.hyprland = {
+    enable = true;
+    withUWSM = true;
+  };
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   # Loaded from ~/.config/hypr/hyprland.lua; replaces hyprpm on NixOS
   environment.etc."hypr/plugins/hyprexpo.so".source = "${hyprexpo}/lib/libhyprexpo.so";
-
-  # Makes `systemctl --user start hyprpolkitagent` (hypr/exec.lua) work
-  systemd.packages = [ pkgs.hyprpolkitagent ];
 
   programs.fish.enable = true;
 

@@ -19,20 +19,31 @@ ShellRoot {
         }
     }
 
-    // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D). The week
-    // calendar sits top left under the bar, down to the screen's bottom; the todo list and the habit tracker are stacked at the
-    // right edge, the todo list under the bar down to the habit tracker, the habit tracker (square,
-    // as wide as the column) down to the screen's bottom. Their windows reach to the screen's edges
-    // and meet halfway across the gap, so their backdrops make one dark band from top to bottom
-    // that fades out left of the column.
+    // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D), while OBS runs
+    // (Privacy, so they stay off stream) and while a tiled window is on the desktop (Desktop.covered).
+    // The week calendar sits top left under the bar, down to the screen's bottom; the todo list and
+    // the habit tracker are stacked at the right edge, the todo list under the bar down to the habit
+    // tracker, the habit tracker (square, as wide as the column) down to the screen's bottom. Their
+    // windows reach to the screen's edges and meet halfway across the gap, so their backdrops make one
+    // dark band from top to bottom that fades out left of the column.
+    //
+    // The whole layout is worked out here, from the screen's size alone: each widget gets its panel's
+    // size and draws only from that, never from its own window's size. Hyprland confirms a window's
+    // size a moment after it is shown (until then it is a default), and a layout chained through those
+    // sizes resized twice on every show and once got stuck halfway.
     readonly property int edge: Theme.compact ? 16 : 24 // from the screen's left, right and bottom edges
     readonly property int gap: Theme.compact ? 12 : 16 // between the widgets and below the bar
     readonly property int fade: 160 // the bands' fade beside the widgets
-    readonly property int column: Math.round(calendar.screenHeight * 0.4) // the right column's width
+    readonly property bool widgetsVisible: Desktop.widgetsShown && !Desktop.covered && !Privacy.active
+    readonly property int screenHeight: Quickshell.screens[0]?.height ?? 1080
+    readonly property int panelTop: Theme.barTop + Theme.barHeight + gap // the panels' top, under the bar
+    readonly property int column: Math.round(screenHeight * 0.4) // the right column's width
+    // The todo list: from under the bar down to the habit tracker's window.
+    readonly property int todoHeight: Math.max(0, screenHeight - panelTop - gap / 2 - habits.implicitHeight)
 
     WeekCalendar {
         id: calendar
-        visible: Desktop.widgetsShown
+        visible: root.widgetsVisible
         anchors.top: true
         anchors.bottom: true
         anchors.left: true
@@ -47,12 +58,12 @@ ShellRoot {
 
     TodoList {
         id: todo
-        visible: Desktop.widgetsShown
+        visible: root.widgetsVisible
         anchors.top: true
-        anchors.bottom: true
         anchors.right: true
         margins.bottom: habits.implicitHeight
-        panelWidth: habits.panelWidth
+        panelWidth: root.column
+        panelHeight: root.todoHeight
         room: ({
                 left: root.fade,
                 top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
@@ -65,10 +76,11 @@ ShellRoot {
 
     HabitTracker {
         id: habits
-        visible: Desktop.widgetsShown
+        visible: root.widgetsVisible
         anchors.bottom: true
         anchors.right: true
-        implicitHeight: room.top + root.column + room.bottom
+        panelWidth: root.column
+        panelHeight: root.column
         room: ({
                 left: root.fade,
                 top: root.gap / 2,
@@ -79,15 +91,11 @@ ShellRoot {
         fadeLeft: true
     }
 
-    // Notification popups; the center is created when opened (bell in the bar).
-    NotificationPopups {}
-
-    LazyLoader {
-        active: Notifs.centerOpen
-        NotificationCenter {}
-    }
-
     KittyCat {}
+
+    // Notification toasts, and the right-hand drawer (screen edge, or the bell / media block / clock).
+    NotificationPopups {}
+    SidePanel {}
 
     // Software dimming below the backlight minimum: a click-through black layer over everything.
     Variants {
@@ -144,24 +152,6 @@ ShellRoot {
         }
     }
 
-    // Notification center and do not disturb: `qs ipc call notifications toggle` / `dnd` / `clear`.
-    IpcHandler {
-        target: "notifications"
-
-        function toggle(): void {
-            Notifs.toggleCenter();
-        }
-        function close(): void {
-            Notifs.centerOpen = false;
-        }
-        function dnd(): void {
-            Notifs.setDnd(!Notifs.dnd);
-        }
-        function clear(): void {
-            Notifs.clearAll();
-        }
-    }
-
     // The terminal cats (KittyCat, Pet): `qs ipc call cat react error|ok|cheer|wake|pet` plays a reaction
     // on every cat, `reactPid <event> <pid>` only on the window of that process,
     // `mood <expression>` pins one (see ~/.config/cat/poses.json), `unpin` lets context decide again,
@@ -182,6 +172,10 @@ ShellRoot {
         function busyPid(pid: int, id: string): bool {
             return Pet.busyPid(pid, id);
         }
+        // An ssh/mosh session (`id`) in the window of `pid`: the cat is red with sunglasses until finishedPid.
+        function remotePid(pid: int, id: string): bool {
+            return Pet.remotePid(pid, id);
+        }
         function finishedPid(pid: int, id: string, event: string): bool {
             return Pet.finishedPid(pid, id, event);
         }
@@ -195,7 +189,7 @@ ShellRoot {
             Pet.testerOpen = !Pet.testerOpen;
         }
         function kitty(): void {
-            Pet.kittyShown = !Pet.kittyShown;
+            Settings.set("kittyCats", !Settings.kittyCats);
         }
         function sing(): bool {
             Pet.singAlong = !Pet.singAlong;
@@ -203,6 +197,53 @@ ShellRoot {
         }
         function singOffset(ms: int): void {
             Pet.singOffset = ms;
+        }
+    }
+
+    // Shell extras that can be switched off (Settings, also in the sidebar): `qs ipc call settings
+    // toggle kittyCats|barGif` flips one and returns its new value.
+    IpcHandler {
+        target: "settings"
+
+        function toggle(key: string): bool {
+            if (typeof Settings[key] !== "boolean")
+                return false;
+            Settings.set(key, !Settings[key]);
+            return Settings[key];
+        }
+    }
+
+    // The drawer: `qs ipc call sidebar toggle` / `open` / `close`.
+    IpcHandler {
+        target: "sidebar"
+
+        function toggle(): void {
+            Sidebar.toggle();
+        }
+        function open(): void {
+            Sidebar.pinned = true;
+        }
+        function close(): void {
+            Sidebar.close();
+        }
+    }
+
+    // Notifications (listed in the drawer) and do not disturb: `qs ipc call notifications toggle` /
+    // `close` (the drawer), `dnd` / `clear`.
+    IpcHandler {
+        target: "notifications"
+
+        function toggle(): void {
+            Sidebar.toggle();
+        }
+        function close(): void {
+            Sidebar.close();
+        }
+        function dnd(): void {
+            Notifs.setDnd(!Notifs.dnd);
+        }
+        function clear(): void {
+            Notifs.clearAll();
         }
     }
 

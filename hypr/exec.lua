@@ -4,21 +4,24 @@
 
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 
+-- The session runs under uwsm, so some things are not started here:
+--   env export          uwsm pushes the login env to systemd + D-Bus before Hyprland starts
+--   portals             D-Bus-activated units (xdg-desktop-portal{,-hyprland,-gtk}.service)
+--   cliphist            cliphist.service
+--   hyprpolkitagent     hyprpolkitagent.service, wanted by graphical-session.target
+--   fcitx5              XDG autostart (app-org.fcitx.Fcitx5@autostart.service)
+-- On NixOS the same holds: programs.hyprland.withUWSM, cliphist/hyprpolkitagent from home.nix.
+-- Long-running apps go through `uwsm app --` so each gets its own systemd scope
+-- (own cgroup, journal tag) instead of living inside Hyprland's unit. It keeps the PID,
+-- so the workspace option below still applies.
+
+local function app(cmd, opts) hl.exec_cmd("uwsm app -- " .. cmd, opts) end
+
 hl.on("hyprland.start", function()
-  -- On NixOS this also starts graphical-session.target (via hyprland-session.target from home.nix),
-  -- which session services like dcal wait for.
-  hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland && { [ -e /etc/NIXOS ] && systemctl --user start hyprland-session.target; }")
-  -- NixOS starts the portals itself and loads plugins in hyprland.lua instead of hyprpm
-  hl.exec_cmd("[ -e /etc/NIXOS ] || /usr/lib/xdg-desktop-portal-hyprland")
-  hl.exec_cmd("[ -e /etc/NIXOS ] || /usr/lib/xdg-desktop-portal-gtk")
-  hl.exec_cmd("[ -e /etc/NIXOS ] || /usr/lib/xdg-desktop-portal --replace")
-  hl.exec_cmd("awww-daemon")
-  hl.exec_cmd("qs") -- bar + menus, ~/.config/quickshell
-  hl.exec_cmd("xsettingsd")
-  hl.exec_cmd("wl-paste --watch cliphist store")
-  hl.exec_cmd("systemctl --user start hyprpolkitagent")
-  hl.exec_cmd("fcitx5 -d")
-  hl.exec_cmd("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
-  hl.exec_cmd("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
-  hl.exec_cmd("[ -e /etc/NIXOS ] || hyprpm reload")
+  app("awww-daemon")
+  app("qs") -- bar + menus, ~/.config/quickshell
+  app("xsettingsd")
+  app("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
+  app("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
+  hl.exec_cmd("[ -e /etc/NIXOS ] || hyprpm reload") -- NixOS loads hyprexpo in hyprland.lua instead
 end)

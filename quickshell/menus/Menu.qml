@@ -222,7 +222,8 @@ PanelWindow {
                         clip: true
                         interactive: false
                         spacing: root.listSpacing
-                        model: root.filtered
+                        // a count, not the array: handing ListView a 10k-item JS array costs ~10ms per keystroke
+                        model: root.filtered.length
                         contentY: offset * (root.rowHeight + root.listSpacing)
                         cacheBuffer: 0
                         reuseItems: true
@@ -230,7 +231,7 @@ PanelWindow {
                         delegate: Rectangle {
                             id: row
 
-                            required property var modelData
+                            readonly property var modelData: root.filtered[index]
                             required property int index
                             readonly property bool isSelected: index === root.selected
 

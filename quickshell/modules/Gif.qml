@@ -8,6 +8,7 @@ import qs.components
 // An animated gif on the bar (what waybar's cffi/dance-gif plugin did). Shows the gifs in
 // ~/Pictures/waybar-gifs, decoded at bar height and cached, so the frames are scaled only once.
 // Click for the next one, right-click for the previous; the choice is remembered.
+// Switched off with Settings.barGif (a sidebar toggle): hidden and unloaded.
 Item {
     id: root
 
@@ -26,7 +27,7 @@ Item {
 
     implicitWidth: count > 0 ? image.implicitWidth * Theme.barHeight / Math.max(1, image.implicitHeight) : 0
     implicitHeight: Theme.barHeight
-    visible: count > 0
+    visible: Settings.barGif && count > 0
 
     FolderListModel {
         id: gifs
@@ -47,7 +48,7 @@ Item {
     AnimatedImage {
         id: image
         anchors.fill: parent
-        source: root.count > 0 ? gifs.folder + "/" + root.names[root.index] : ""
+        source: Settings.barGif && root.count > 0 ? gifs.folder + "/" + root.names[root.index] : ""
         sourceSize.height: Theme.barHeight
         fillMode: Image.PreserveAspectFit
         playing: root.visible

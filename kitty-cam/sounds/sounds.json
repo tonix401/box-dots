@@ -1,0 +1,80 @@
+{
+ "pads": [
+  {
+   "file": "cat hello.mp3",
+   "settings": {
+    "eyes": "stars"
+   }
+  },
+  {
+   "file": "Angry Cat.mp3",
+   "mood": "straining",
+   "settings": {}
+  },
+  {
+   "file": "cats_fight.mp3"
+  },
+  {
+   "file": "Cat choke.mp3",
+   "motion": "jolt",
+   "settings": {
+    "eyes": "x"
+   }
+  },
+  {
+   "file": "Cat hissing.mp3",
+   "mood": "purr"
+  },
+  {
+   "file": "minecraft cat meow.mp3"
+  },
+  {
+   "file": "Cats Arguing.mp3"
+  },
+  {
+   "file": "Cute cat meowming.mp3"
+  },
+  {
+   "file": "Doorbell cat.mp3",
+   "volume": 1.5
+  },
+  {
+   "file": "Ooooh cat.mp3",
+   "settings": {
+    "eyes": "wide"
+   }
+  },
+  {
+   "file": "cat crash.mp3",
+   "motion": "squish",
+   "settings": {
+    "eyes": "x"
+   },
+   "mood": "straining"
+  },
+  {
+   "file": "cat no no no.mp3",
+   "mood": "vibing"
+  },
+  {
+   "file": "M e o w ~.mp3",
+   "volume": 1.5,
+   "mood": "cool",
+   "motion": "hop",
+   "settings": {
+    "mouth": "cat"
+   }
+  },
+  {
+   "file": "cat is calling.mp3",
+   "mood": "vibing",
+   "settings": {
+    "mouth": "talk"
+   }
+  },
+  {
+   "file": "Jetpack cat taunt.mp3",
+   "mood": "vibing"
+  }
+ ]
+}

@@ -1,4 +1,6 @@
 local function exec(cmd) return hl.dsp.exec_cmd(cmd) end
+-- Apps get their own systemd scope via uwsm (see exec.lua); one-shot commands stay on exec.
+local function app(cmd) return hl.dsp.exec_cmd("uwsm app -- " .. cmd) end
 
 -- ── Window ────────────────────────────────────────────────────────────────────
 
@@ -23,7 +25,6 @@ hl.bind("SUPER + ALT + Q", exec("hyprctl kill"),   { desc = "Kill window (pick w
 hl.bind("SUPER + ALT + T", hl.dsp.window.float({ action = "toggle" }),              { desc = "Toggle floating" })
 hl.bind("SUPER + F",       hl.dsp.window.fullscreen_state({ internal = 3, client = 3, action = "toggle" }),  { desc = "Toggle fullscreen" })
 hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen_state({ internal = 0, client = 3, action = "toggle" }),  { desc = "Toggle fullscreen (fake)" })
-hl.bind("SUPER + P",       hl.dsp.window.pin(),                                     { desc = "Pin window" })
 hl.bind("SUPER + T",       hl.dsp.window.tag({ tag = "full_opacity" }),             { desc = "Toggle transparency" })
 -- ── Workspace ─────────────────────────────────────────────────────────────────
 
@@ -58,10 +59,10 @@ hl.bind("XF86AudioPlay",  exec("playerctl play-pause"), { locked = true, desc = 
 hl.bind("XF86AudioPause", exec("playerctl play-pause"), { locked = true, desc = "Play / pause" })
 
 -- ── Apps ──────────────────────────────────────────────────────────────────────
-hl.bind("SUPER + Return",  exec("kitty"),                { desc = "Open terminal" })
-hl.bind("SUPER + E",       exec("nemo"),                 { desc = "Open file manager" })
-hl.bind("SUPER + W",       exec("chromium"),             { desc = "Open browser" })
-hl.bind("SUPER + ALT + W", exec("chromium --incognito"), { desc = "Open browser (incognito)" })
+hl.bind("SUPER + Return",  app("kitty"),                { desc = "Open terminal" })
+hl.bind("SUPER + E",       app("nemo"),                 { desc = "Open file manager" })
+hl.bind("SUPER + W",       app("chromium"),             { desc = "Open browser" })
+hl.bind("SUPER + ALT + W", app("chromium --incognito"), { desc = "Open browser (incognito)" })
 
 -- ── Menus (Quickshell, ~/.config/quickshell/menus) ────────────────────────────
 hl.bind("SUPER + K",      exec("qs ipc call menu toggle keybinds"),  { desc = "Keybind reference" })
@@ -73,6 +74,21 @@ hl.bind("SUPER + COMMA",  exec("qs ipc call menu toggle nerdfont"),  { desc = "N
 hl.bind("SUPER + P",      exec("qs ipc call menu toggle wallpaper"), { desc = "Wallpaper picker" })
 hl.bind("SUPER + D",      exec("qs ipc call widgets toggle"),        { desc = "Toggle desktop widgets" })
 hl.bind("SUPER + SHIFT + C", exec("qs ipc call cat tester"),         { desc = "Cat tester (the terminal cats' moods and reactions)" })
+
+-- Kitty Cam's soundboard (~/.config/kitty-cam): pads 1–9 into the call, 0 stops them.
+-- Only where Kitty Cam is linked (not on the NixOS laptop); bound anyway if Lua can't check.
+local function kitty_cam_linked()
+    if not io then return true end
+    local f = io.open((os.getenv("HOME") or "") .. "/.config/kitty-cam/kitty-cam")
+    if f then f:close() end
+    return f ~= nil
+end
+if kitty_cam_linked() then
+    for i = 1, 9 do
+        hl.bind("CTRL + SUPER + " .. i, exec("~/.config/kitty-cam/kitty-cam --play " .. i), { desc = "Kitty Cam: play sound " .. i })
+    end
+    hl.bind("CTRL + SUPER + 0", exec("~/.config/kitty-cam/kitty-cam --play stop"), { desc = "Kitty Cam: stop the sounds" })
+end
 hl.bind("SUPER + L",      exec("hyprlock"),                                              { desc = "Lock screen" })
 
 -- ── Input Method ──────────────────────────────────────────────────────────────

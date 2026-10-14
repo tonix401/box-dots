@@ -21,8 +21,8 @@ PanelWindow {
 
     readonly property int pad: 8
     readonly property int gap: 4 // between the day cells
-    readonly property int dot: 14
-    readonly property int dotGap: 6
+    readonly property int dot: 14 // the dots' full size (today's: 4 more); smaller where a day cell is too small
+    readonly property real dotGapRatio: 0.4 // the gap between dots, relative to their size
     readonly property var colors: ["primary", "secondary", "tertiary", "error", "tertiary_fixed"]
 
     property var habits: [] // [{name, glyph, color, aliases}]
@@ -248,10 +248,12 @@ PanelWindow {
         }
     }
 
-    // Placed by shell.qml (at the screen's right edge, below the todo list), which sets `room`: how far
-    // the window (and the dark backdrop) reaches past each edge of the panel, the `fade` px fading out. The
-    // panel fills the window's height and is as wide as it is tall, or wider when the day cells need
-    // the room to fit every habit's dot.
+    // Placed by shell.qml (at the screen's right edge, below the todo list), which sets the panel's size
+    // and `room`: how far the window (and the dark backdrop) reaches past each edge of the panel, the
+    // `fade` px fading out. Nothing here reads the window's own size (see shell.qml); the day grid fits
+    // whatever size it gets.
+    property int panelWidth: 400
+    property int panelHeight: 400
     property var room: ({
             left: 0,
             top: 0,
@@ -260,15 +262,9 @@ PanelWindow {
         })
     property int fade: 0
     property bool fadeLeft: false
-    readonly property int size: Math.max(0, height - room.top - room.bottom)
-    // Before Theme.widgetScale: how many lines of (today's larger) dots fit in a cell, so how wide a
-    // cell has to be for the rest of them.
-    readonly property int dotLines: Math.max(1, Math.floor((grid.cellHeight - 24 + dotGap) / (dot + 4 + dotGap)))
-    readonly property real cellMin: Math.ceil(habits.length / dotLines) * (dot + 4 + dotGap) - dotGap + 16
-    readonly property int panelWidth: Math.max(size, Math.ceil((7 * cellMin + 6 * gap + 2 * pad) * Theme.widgetScale))
 
     implicitWidth: room.left + panelWidth + room.right
-    implicitHeight: 600
+    implicitHeight: room.top + panelHeight + room.bottom
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Bottom
@@ -279,7 +275,7 @@ PanelWindow {
         x: panel.x
         y: panel.y
         width: root.panelWidth
-        height: root.size
+        height: root.panelHeight
     }
 
     Backdrop {
@@ -294,7 +290,7 @@ PanelWindow {
         x: root.room.left
         y: root.room.top
         width: root.panelWidth / scale
-        height: root.size / scale
+        height: root.panelHeight / scale
         scale: Theme.widgetScale
         transformOrigin: Item.TopLeft
 
@@ -336,14 +332,14 @@ PanelWindow {
                         onClicked: root.weekOffset = 0
                     }
                 }
+                // Takes the room left in the row (pushing the buttons right), and shortens when narrow.
                 Text {
+                    Layout.fillWidth: true
                     text: Qt.formatDate(root.days[0], "d MMM") + " – " + Qt.formatDate(root.days[27], "d MMM")
+                    elide: Text.ElideRight
                     color: Theme.on_surface
                     font.family: Theme.uiFont
                     font.pixelSize: 12
-                }
-                Item {
-                    Layout.fillWidth: true
                 }
                 Text {
                     visible: !Dcal.connected
@@ -392,8 +388,8 @@ PanelWindow {
                 Item {
                     id: grid
 
-                    readonly property real cellWidth: (width - 6 * root.gap) / 7
-                    readonly property real cellHeight: (height - 18 - 3 * root.gap) / 4
+                    readonly property real cellWidth: Math.max(0, (width - 6 * root.gap) / 7)
+                    readonly property real cellHeight: Math.max(0, (height - 18 - 3 * root.gap) / 4)
 
                     anchors.fill: parent
                     visible: root.editing === -1
@@ -442,20 +438,22 @@ PanelWindow {
             }
 
             // Which dot is which habit, with how many of the last 30 days have a check-in and whether the
-            // last 7 are ahead of that.
-            Grid {
-                id: legend
-
+            // last 7 are ahead of that. Two equal columns, sized by the layout: an entry never sizes
+            // itself from the legend's width (a plain Grid doing that looped and froze the layout).
+            GridLayout {
                 Layout.fillWidth: true
                 visible: root.habits.length > 0
                 columns: 2
                 columnSpacing: 12
+                rowSpacing: 0
+                uniformCellWidths: true
 
                 Repeater {
                     model: root.habits
 
                     HabitEntry {
-                        width: (legend.width - legend.columnSpacing) / 2
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 22
                     }
                 }
             }
@@ -470,10 +468,34 @@ PanelWindow {
         readonly property string day: root.dayKey(modelData)
         readonly property bool future: day > root.today
         readonly property bool isToday: day === root.today
-        readonly property int dotSize: isToday ? root.dot + 4 : root.dot
-        // Dots per line, and the width of the widest line, to center the dots.
-        readonly property int perLine: Math.max(1, Math.floor((width - 8 + root.dotGap) / (dotSize + root.dotGap)))
-        readonly property int lineWidth: Math.min(root.habits.length, perLine) * (dotSize + root.dotGap) - root.dotGap
+        // The dots' arrangement: as many per line as makes them biggest within the cell (below the day
+        // number), at most their full size; among arrangements that all reach it, the squarest.
+        // {perLine, size}.
+        readonly property var fit: {
+            const n = Math.max(1, root.habits.length), full = isToday ? root.dot + 4 : root.dot;
+            const w = width - 8, h = height - 24, r = root.dotGapRatio;
+            const squareness = k => Math.abs(k - Math.sqrt(n));
+            let best = {
+                perLine: n,
+                size: 0
+            };
+            for (let k = 1; k <= n; k++) {
+                const lines = Math.ceil(n / k);
+                const size = Math.floor(Math.min(full, w / (k + r * (k - 1)), h / (lines + r * (lines - 1))));
+                if (size > best.size || (size === best.size && squareness(k) < squareness(best.perLine)))
+                    best = {
+                        perLine: k,
+                        size: size
+                    };
+            }
+            return {
+                perLine: best.perLine,
+                size: Math.max(4, best.size)
+            };
+        }
+        readonly property int dotSize: fit.size
+        readonly property int dotGap: Math.round(dotSize * root.dotGapRatio)
+        readonly property int lineWidth: Math.min(root.habits.length, fit.perLine) * (dotSize + dotGap) - dotGap
 
         Rectangle {
             anchors.fill: parent
@@ -497,7 +519,7 @@ PanelWindow {
             x: (cell.width - cell.lineWidth) / 2
             y: 20 + (cell.height - 20 - height) / 2
             width: cell.lineWidth
-            spacing: root.dotGap
+            spacing: cell.dotGap
             visible: !cell.future
 
             Repeater {
@@ -531,7 +553,7 @@ PanelWindow {
                         text: root.glyphOf(dot.modelData)
                         color: dot.accent
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: cell.dotSize
                     }
                     MouseArea {
                         id: dotMouse
@@ -554,8 +576,6 @@ PanelWindow {
         required property var modelData
         required property int index
         readonly property color accent: root.colorOf(modelData.color)
-
-        height: 22
 
         MouseArea {
             id: label

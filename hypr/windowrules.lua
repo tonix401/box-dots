@@ -32,3 +32,10 @@ hl.layer_rule({
   match   = { namespace = "^quickshell-menu$" },
   no_anim = true,
 })
+
+-- The sidebar slides itself in (SidePanel.qml); its edge strip is invisible
+hl.layer_rule({
+  name    = "quickshell-sidebar-no-anim",
+  match   = { namespace = "^quickshell-sidebar(-edge)?$" },
+  no_anim = true,
+})

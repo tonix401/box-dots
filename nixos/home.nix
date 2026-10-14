@@ -23,6 +23,7 @@ in
     "matugen"
     "quickshell"
     "starship.toml"
+    "xdg-terminals.list" # kitty for Terminal=true apps, which uwsm opens through xdg-terminal-exec
   ] link;
 
   programs.git = {
@@ -33,14 +34,9 @@ in
     };
   };
 
-  # Started by hypr/exec.lua once the Wayland environment is exported, so services that need
-  # the session (graphical-session.target) can wait for it; plain Hyprland never starts it.
-  systemd.user.targets.hyprland-session.Unit = {
-    Description = "Hyprland session";
-    BindsTo = [ "graphical-session.target" ];
-    Wants = [ "graphical-session-pre.target" ];
-    After = [ "graphical-session-pre.target" ];
-  };
+  # Session services, started with graphical-session.target (which uwsm brings up with Hyprland)
+  services.cliphist.enable = true; # clipboard history for the quickshell clipboard menu
+  services.hyprpolkitagent.enable = true;
 
   # Dank Calendar, hidden in the background: the backend the quickshell widgets (WeekCalendar,
   # TodoList, HabitTracker) talk to over $XDG_RUNTIME_DIR/dankcal-<pid>.sock, and the window
@@ -75,6 +71,7 @@ in
     quickshell
     hyprpicker
     xsettingsd
+    xdg-terminal-exec
     matugen
     adw-gtk3
     adwaita-icon-theme # the icon theme quickshell and gtk use

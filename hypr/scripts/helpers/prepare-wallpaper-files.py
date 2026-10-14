@@ -13,9 +13,11 @@ except ImportError:
     HAS_PYVIPS = False
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import WALLPAPERS_DIR, WALLPAPERS_OUT_DIR, WALLPAPERS_THUMB_DIR
+from config import WALLPAPERS_DIR, WALLPAPERS_OUT_DIR, WALLPAPERS_PREVIEW_DIR, WALLPAPERS_THUMB_DIR
 
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
+# Width of the wallpaper menu's grid tiles (QML sourceSize.width); height follows the monitor aspect.
+PREVIEW_WIDTH = 480
 
 
 def get_resolution() -> tuple[int, int] | None:
@@ -36,9 +38,10 @@ def get_resolution() -> tuple[int, int] | None:
 def main() -> None:
     out_dir = WALLPAPERS_OUT_DIR
     thumb_dir = WALLPAPERS_THUMB_DIR
+    preview_dir = WALLPAPERS_PREVIEW_DIR
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    thumb_dir.mkdir(parents=True, exist_ok=True)
+    for d in (out_dir, thumb_dir, preview_dir):
+        d.mkdir(parents=True, exist_ok=True)
 
     resolution = get_resolution()
     if not resolution:
@@ -53,9 +56,9 @@ def main() -> None:
             print(f"Removing stale: {dest.name}")
             dest.unlink()
 
-    for thumb in thumb_dir.glob("*.png"):
-        if thumb.stem not in valid_stems:
-            thumb.unlink()
+    for small in (*thumb_dir.glob("*.png"), *preview_dir.glob("*.png")):
+        if small.stem not in valid_stems:
+            small.unlink()
 
     def vips_resize(src: Path, dest: Path, w: int, h: int) -> None:
         img = pyvips.Image.thumbnail(str(src), w, height=h, crop=pyvips.enums.Interesting.CENTRE)
@@ -80,6 +83,12 @@ def main() -> None:
             if not dest.exists() or dest.stat().st_mtime < src.stat().st_mtime:
                 messages.append(f"Converting: {src.name}")
                 resize(src, dest, w, h)
+
+            # monitor-shaped and small, so the menu grid decodes it in ~2ms instead of the full-size copy's ~60ms
+            preview = preview_dir / f"{src.stem}.png"
+            if not preview.exists() or preview.stat().st_mtime < src.stat().st_mtime:
+                messages.append(f"Preview: {src.name}")
+                resize(src, preview, PREVIEW_WIDTH, round(PREVIEW_WIDTH * h / w))
 
         if not thumb.exists() or thumb.stat().st_mtime < src.stat().st_mtime:
             messages.append(f"Thumbnail: {src.name}")

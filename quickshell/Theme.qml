@@ -55,6 +55,7 @@ Singleton {
     readonly property color outline: c("outline")
     readonly property color outline_variant: c("outline_variant")
     readonly property color surface_container_lowest: c("surface_container_lowest")
+    readonly property color surface_container_low: c("surface_container_low")
     readonly property color surface_container: c("surface_container")
     readonly property color surface_container_high: c("surface_container_high")
     readonly property color surface_container_highest: c("surface_container_highest")

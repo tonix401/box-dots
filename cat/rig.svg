@@ -16,6 +16,12 @@
   - data-chain/data-chain-index stitch paths back into one for the exports (the head outline).
   - data-skin="bone" data-skin-y="y0 y1" on a part: its points follow the bone part (fully at y <= y0,
     not at all at y >= y1, smoothly between), so the body stays joined to the head when it moves.
+  - data-depth="d" on the head makes it a real 3D solid (model3d.py): its outline, ears included, closed across
+    the neck, inflated to d at its deepest (round in every cross-section, so thin parts stay thin). A tracked face
+    turns that solid; the engine draws its silhouette as the outline and hides whatever it covers. The head's parts
+    sit on it: data-lift="z" raises a part above the skin; data-billboard="z" keeps it facing the viewer, flat, at
+    its pivot's depth plus z (it only moves); data-sweep="k" (whiskers) sweeps a part back by k per unit of length
+    beyond the outline.
   - class: "line" = miter joins, "line-join"/"ear" = round joins, "filled" = filled with the stroke color,
     "solid" = filled without a stroke, "blush" = a faint fill, "hole" = cut out of the shape before it.
 -->
@@ -33,7 +39,7 @@
       <g data-variant="slim">
         <path class="line" d="m 27.138344,99.54953 c -8.643584,32.9389 7.177546,34.48347 22.319384,37.02989" />
         <path class="line" d="m 64.42186,137.59394 c 7.079001,0.47898 13.549214,0.19698 19.275833,-1.01452" />
-        <path class="line" d="M 99.295899,135.18446 C 115.56041,134.39982 129.11722,126.89187 125.54654,112.231 121.97586,97.570132 123.06018,101.16663 122.6298,94.984201" />
+        <path class="line" d="M 99.7557,136.5794 C 114.8975,133.883 130.7186,132.2484 122.0751,97.3974" />
         <path class="line" d="m 47.555507,123.77113 c -0.576058,24.92895 20.190748,23.72027 17.627242,3.55081" />
         <path class="line" d="m 83.697693,125.80017 c -2.324936,20.21984 17.289067,21.11657 16.23228,-1.52178" />
       </g>
@@ -47,11 +53,11 @@
         <path class="line-join" d="m 100.18297,113.70381 c 0.83189,1.06515 1.61465,2.204 2.15879,3.70078" />
       </g>
     </g>
-    <g id="head" data-pivot="75 99">
+    <g id="head" data-pivot="75 99" data-depth="40">
       <path class="line" data-chain="outline" data-chain-index="0" d="M 32.281749,99.894079 C 21.558942,101.39816 -5.3694586,75.583106 18.83102,51.561128" />
       <path class="line" data-chain="outline" data-chain-index="2" d="M 53.623572,27.798172 c 4.668109,-1.871659 10.012292,-3.037016 15.360218,-3.03392 13.886785,-11.538338 10.905775,-1.21569 9.909154,0.496727 3.666731,0.510943 7.106677,1.37477 10.06121,2.537193" />
       <path class="line" data-chain="outline" data-chain-index="4" d="M 123.92605,48.422623 c 24.73173,13.73911 12.65245,42.185004 -6.99438,49.319338" />
-      <g id="bow" data-pivot="75.327927 101.0079">
+      <g id="bow" data-pivot="75.327927 101.0079" data-billboard="6">
         <ellipse class="line-join" cx="75.327927" cy="101.0079" rx="3.2971818" ry="2.2192569" />
         <path class="line-join" d="m 72.411187,99.676343 c -1.543539,-1.174898 -2.687525,-2.509618 -5.833475,-3.043552 -1.19821,2.242258 -0.780984,4.946069 0.380442,7.862509 1.404117,-0.51641 2.578773,-0.80336 4.945774,-2.28266" />
         <path class="line-join" d="m 78.371477,99.549528 c 2.446939,-2.399856 3.717969,-2.447896 5.199401,-2.916737 1.454689,2.556903 1.285067,4.881759 0.380444,7.101619 -1.90222,-0.45056 -3.423996,-0.60723 -5.326216,-2.02904" />
@@ -70,51 +76,78 @@
         <g data-key="flat" data-tip="50 0.74" />
         <g data-key="perk" data-tip="-10 1.08" />
       </g>
-      <g id="whiskers-l" data-pivot="20.35 71.27">
+      <g id="whiskers-l" data-pivot="20.35 71.27" data-sweep="2">
         <path class="line" d="M 9.2574721,73.045261 C 13.288289,70.436659 17.062412,68.087814 20.417165,66.831339" />
         <path class="line" d="m 11.413322,82.683176 c 2.772585,-3.062889 5.766726,-5.263008 8.877028,-6.974807" />
       </g>
-      <g id="whiskers-r" data-pivot="130.62 67.97">
+      <g id="whiskers-r" data-pivot="130.62 67.97" data-sweep="2">
         <path class="line" d="m 129.85824,63.914601 c 2.84962,0.146666 5.56168,2.222394 7.73569,4.05807" />
         <path class="line" d="m 131.38002,72.030743 c 1.97062,0.906914 3.64743,2.738572 4.94577,5.326215" />
       </g>
-      <g id="eyes" data-pivot="74.56 58.7">
+      <g id="eye-l" data-pivot="57.32 59.1">
         <g data-variant="open">
           <ellipse class="filled" cx="57.320236" cy="59.095646" rx="5.0725875" ry="5.7066612" />
-          <ellipse class="filled" cx="91.795074" cy="58.29578" rx="5.0725875" ry="5.7066612" />
         </g>
         <g data-variant="sparkle" display="none">
           <ellipse class="solid" cx="57.320236" cy="59.095646" rx="6.2" ry="6.9" />
           <ellipse class="hole" cx="55.4" cy="56.8" rx="1.75" ry="1.85" />
           <ellipse class="hole" cx="59.4" cy="61.5" rx="0.85" ry="0.9" />
+        </g>
+        <g data-variant="squint" display="none">
+          <path class="line-join" d="m 51.456007,54.953888 10.485548,7.555764 -10.022952,8.943556" />
+        </g>
+        <g data-variant="closed" display="none">
+          <path class="line" d="M 51.4,59.4 C 53.6,64.6 61,64.6 63.2,59.4" />
+        </g>
+        <g data-variant="stars" display="none">
+          <path class="filled" d="M 57.32,50.5 C 58.34,56.89 59.53,58.08 64.72,59.1 C 59.53,60.12 58.34,61.31 57.32,67.7 C 56.3,61.31 55.11,60.12 49.92,59.1 C 55.11,58.08 56.3,56.89 57.32,50.5 Z" />
+        </g>
+        <g data-variant="x" display="none">
+          <path class="line" d="M 53,54.8 L 61.6,63.4" />
+          <path class="line" d="M 61.6,54.8 L 53,63.4" />
+        </g>
+        <g data-variant="wide" display="none">
+          <ellipse class="line" cx="57.320236" cy="59.095646" rx="6.6" ry="7.4" />
+          <ellipse class="filled" cx="57.9" cy="59.6" rx="1.6" ry="1.9" />
+        </g>
+      </g>
+      <g id="eye-r" data-pivot="91.8 58.3">
+        <g data-variant="open">
+          <ellipse class="filled" cx="91.795074" cy="58.29578" rx="5.0725875" ry="5.7066612" />
+        </g>
+        <g data-variant="sparkle" display="none">
           <ellipse class="solid" cx="91.795074" cy="58.29578" rx="6.2" ry="6.9" />
           <ellipse class="hole" cx="89.9" cy="56" rx="1.75" ry="1.85" />
           <ellipse class="hole" cx="93.9" cy="60.7" rx="0.85" ry="0.9" />
         </g>
         <g data-variant="squint" display="none">
-          <path class="line-join" d="m 51.456007,54.953888 10.485548,7.555764 -10.022952,8.943556" />
           <path class="line-join" d="m 94.015003,55.416483 -10.948148,7.555764 9.560355,8.94356" />
         </g>
         <g data-variant="closed" display="none">
-          <path class="line" d="M 51.4,59.4 C 53.6,64.6 61,64.6 63.2,59.4" />
           <path class="line" d="M 85.9,58.6 C 88.1,63.8 95.5,63.8 97.7,58.6" />
         </g>
         <g data-variant="stars" display="none">
-          <path class="filled" d="M 57.32,50.5 C 58.34,56.89 59.53,58.08 64.72,59.1 C 59.53,60.12 58.34,61.31 57.32,67.7 C 56.3,61.31 55.11,60.12 49.92,59.1 C 55.11,58.08 56.3,56.89 57.32,50.5 Z" />
           <path class="filled" d="M 91.8,49.7 C 92.82,56.09 94.01,57.28 99.2,58.3 C 94.01,59.32 92.82,60.51 91.8,66.9 C 90.78,60.51 89.59,59.32 84.4,58.3 C 89.59,57.28 90.78,56.09 91.8,49.7 Z" />
         </g>
         <g data-variant="x" display="none">
-          <path class="line" d="M 53,54.8 L 61.6,63.4" />
-          <path class="line" d="M 61.6,54.8 L 53,63.4" />
           <path class="line" d="M 87.5,54 L 96.1,62.6" />
           <path class="line" d="M 96.1,54 L 87.5,62.6" />
         </g>
         <g data-variant="wide" display="none">
-          <ellipse class="line" cx="57.320236" cy="59.095646" rx="6.6" ry="7.4" />
           <ellipse class="line" cx="91.795074" cy="58.29578" rx="6.6" ry="7.4" />
-          <ellipse class="filled" cx="57.9" cy="59.6" rx="1.6" ry="1.9" />
           <ellipse class="filled" cx="91.2" cy="58.8" rx="1.6" ry="1.9" />
         </g>
+      </g>
+      <g id="shades" data-pivot="74.5 58.5" data-lift="3" display="none">
+        <path class="filled" d="M 46.5,54.6 C 46.6,52.9 47.6,52.6 49.5,52.6 L 65.2,52.6 C 67.2,52.6 67.8,53.3 67.6,55.2 C 67,61.6 64.3,65.8 57.6,65.8 C 50.9,65.8 47,61.6 46.5,54.6 Z" />
+        <path class="hole" d="M 51.6,54.6 L 54.8,54.6 L 51.8,60 L 50.2,58 Z" />
+        <path class="hole" d="M 56,54.6 L 57.4,54.6 L 55,58.8 L 54.2,57.6 Z" />
+        <path class="filled" d="M 80.98,53.8 C 81.08,52.1 82.08,51.8 83.98,51.8 L 99.68,51.8 C 101.68,51.8 102.28,52.5 102.08,54.4 C 101.48,60.8 98.78,65 92.08,65 C 85.38,65 81.48,60.8 80.98,53.8 Z" />
+        <path class="hole" d="M 86.08,53.8 L 89.28,53.8 L 86.28,59.2 L 84.68,57.2 Z" />
+        <path class="hole" d="M 90.48,53.8 L 91.88,53.8 L 89.48,58 L 88.68,56.8 Z" />
+        <path class="line" d="M 67.6,54.6 C 72,52.2 77,52 81,53.6" />
+        <path class="line" d="M 46.5,54.4 L 38.5,52.6" />
+        <path class="line" d="M 102.1,53.6 L 110.5,51.4" />
       </g>
       <g id="sweat" data-pivot="112 56" display="none">
         <path class="line-join" d="M 108.83,49.20 C 108.30,53.75 108.31,56.62 109.16,58.43 C 110.09,60.42 112.22,61.20 114.03,60.35 C 115.84,59.51 116.62,57.38 115.69,55.38 C 114.84,53.57 112.65,51.72 108.83,49.20 Z" />
@@ -123,7 +156,7 @@
         <ellipse class="blush" cx="46.5" cy="70.5" rx="5.2" ry="2.9" />
         <ellipse class="blush" cx="102.5" cy="69.5" rx="5.2" ry="2.9" />
       </g>
-      <g id="mouth" data-pivot="76.28 76.3">
+      <g id="mouth" data-pivot="76.28 76.3" data-lift="1.5">
         <g data-variant="smile">
           <path class="line" d="m 72.791631,74.693851 c -0.431896,5.04021 7.021119,4.336653 6.974809,0" />
         </g>
@@ -135,7 +168,7 @@
           <ellipse class="line" cx="76.28" cy="77.2" rx="2.3" ry="2.9" />
         </g>
       </g>
-      <g id="sing" data-pivot="76.28 76.3" display="none">
+      <g id="sing" data-pivot="76.28 76.3" data-lift="1.5" display="none">
         <path class="line-join" d="M 72.90,75.60 C 72.90,76.59 74.41,77.40 76.28,77.40 C 78.15,77.40 79.66,76.59 79.66,75.60 C 79.66,76.37 78.15,77.00 76.28,77.00 C 74.41,77.00 72.90,76.37 72.90,75.60 Z" />
         <g data-key="open" display="none">
           <path class="line-join" d="M 72.70,77.20 C 72.70,81.07 74.30,84.20 76.28,84.20 C 78.26,84.20 79.86,81.07 79.86,77.20 C 79.86,75.93 78.26,74.90 76.28,74.90 C 74.30,74.90 72.70,75.93 72.70,77.20 Z" />

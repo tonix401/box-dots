@@ -18,4 +18,4 @@ alias ... 'cd ../..'
 alias .... 'cd ../../..'
 alias 'back' 'cd -'
 alias ff fastfetch
-alias mre 'kitten ssh mre.fritz.box'
+alias mre 'ssh tom@mre'

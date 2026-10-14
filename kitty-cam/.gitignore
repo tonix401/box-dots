@@ -1,0 +1,3 @@
+# The soundboard's audio stays out of the dotfiles; its pads (names, keys, effects) are kept.
+sounds/*
+!sounds/sounds.json
