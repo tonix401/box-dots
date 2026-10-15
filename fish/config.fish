@@ -29,5 +29,10 @@ end
 
 fish_add_path ~/.local/bin
 
+# Nix (pacman package): puts ~/.nix-profile/bin on PATH; fish doesn't read /etc/profile.d itself
+if test -e /etc/profile.d/nix-daemon.fish
+    source /etc/profile.d/nix-daemon.fish
+end
+
 # The standard GOPATH is $HOME/go, but I prefer to keep it in .go because it trashes my home directory less
 export GOPATH="$HOME/.go"
