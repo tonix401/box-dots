@@ -10,12 +10,21 @@ Module {
     property int capacity: -1
     property string status: ""
     property real hoursLeft: -1
+    property real smoothedPower: 0
+    property string smoothedStatus: ""
+    // Per-sample EMA weight: ~1 min time constant at the 5s poll interval.
+    readonly property real smoothing: 1 - Math.exp(-5 / 60)
 
     readonly property bool charging: status === "Charging" || status === "Full" || status === "Not charging"
 
     visible: capacity >= 0
     text: icon() + " " + capacity + "%"
-    tooltip: status + (hoursLeft > 0 ? " · " + Math.floor(hoursLeft) + "h " + String(Math.round(hoursLeft % 1 * 60)).padStart(2, "0") + "m " + (status === "Charging" ? "to full" : "left") : "")
+    tooltip: {
+        if (!(hoursLeft > 0))
+            return status;
+        const mins = Math.round(hoursLeft * 60);
+        return status + " · " + Math.floor(mins / 60) + "h " + String(mins % 60).padStart(2, "0") + "m " + (status === "Charging" ? "to full" : "left");
+    }
     onClicked: Util.run("kitty -e btop")
     onRightClicked: Util.run("kitty -e btop")
 
@@ -49,7 +58,15 @@ Module {
             const cap = get("CAPACITY");
             root.capacity = cap === null ? -1 : Number(cap);
             root.status = get("STATUS") ?? "";
-            const power = Number(get("POWER_NOW")), now = Number(get("ENERGY_NOW")), full = Number(get("ENERGY_FULL"));
+            const raw = Number(get("POWER_NOW")), now = Number(get("ENERGY_NOW")), full = Number(get("ENERGY_FULL"));
+            // EMA of the power draw so the estimate doesn't jump with every load spike.
+            // Reset when charging/discharging flips, since the old average no longer applies.
+            if (!(raw > 0) || root.status !== root.smoothedStatus)
+                root.smoothedPower = raw;
+            else
+                root.smoothedPower += root.smoothing * (raw - root.smoothedPower);
+            root.smoothedStatus = root.status;
+            const power = root.smoothedPower;
             if (power > 0 && root.status === "Discharging")
                 root.hoursLeft = now / power;
             else if (power > 0 && root.status === "Charging")
