@@ -46,7 +46,7 @@ hl.bind("SUPER + ALT + S",  hl.dsp.window.move({ workspace = "special:scratchpad
 
 -- ── Media ─────────────────────────────────────────────────────────────────────
 local nextTrack = [[playerctl next || playerctl position `bc <<< "100 * $(playerctl metadata mpris:length) / 1000000 / 100"`]]
--- monitor backlight over DDC/CI, dimming further below 0 (~/.config/quickshell/Brightness.qml)
+-- backlight (laptop panel, or monitor over DDC/CI), dimming further below 0 (~/.config/quickshell/Monitor.qml)
 hl.bind("XF86MonBrightnessUp",   exec("qs ipc call brightness change 8"),  { locked = true, repeating = true, desc = "Increase brightness" })
 hl.bind("XF86MonBrightnessDown", exec("qs ipc call brightness change -8"), { locked = true, repeating = true, desc = "Decrease brightness" })
 hl.bind("XF86AudioNext",  exec(nextTrack),              { locked = true, desc = "Next track" })

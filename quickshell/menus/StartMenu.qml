@@ -480,12 +480,12 @@ PanelWindow {
                         objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
                     }
 
-                    // backlight over DDC/CI, with software dimming at the bottom of the range (Monitor.qml)
+                    // backlight (DDC/CI or the laptop panel), with software dimming at the bottom of the range (Monitor.qml)
                     SliderRow {
                         glyph: Monitor.dim > 0 ? 0xf00de : Monitor.backlight < 0.5 ? 0xf00df : 0xf00e0
                         value: Monitor.level
                         label: Monitor.label
-                        visible: Monitor.bus !== ""
+                        visible: Monitor.hasBacklight
                         onMoved: v => Monitor.setLevel(v)
                         Component.onCompleted: Monitor.refresh()
                     }

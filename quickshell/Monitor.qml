@@ -4,10 +4,13 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The monitor over DDC/CI (ddcutil), for the start menu sliders and the brightness keys.
+// The monitor over DDC/CI (ddcutil), for the start menu sliders and the brightness keys. On a laptop
+// the built-in panel's backlight (/sys/class/backlight) is driven instead, through brightnessctl, which
+// writes via logind and so needs no root.
 //
-// Brightness is one 0..1 level: the top part drives the backlight (VCP 0x10), the bottom `dimShare`
-// darkens further with a click-through black overlay (shell.qml), since the backlight's 0 is still bright.
+// Brightness is one 0..1 level: the top part drives the backlight (VCP 0x10, or the panel), the bottom
+// `dimShare` darkens further with a click-through black overlay (shell.qml), since the backlight's 0 is
+// still bright.
 //
 // Color temperature: this AOC ignores VCP 0x0C, so warmer temperatures scale the red/green/blue gains
 // (0x16/0x18/0x1A) along the blackbody curve; 6500 K is the neutral gains. Writing gains switches the
@@ -35,7 +38,10 @@ Singleton {
             dim = 0;
             backlight = (l - dimShare) / (1 - dimShare);
         }
-        queue("10", Math.round(backlight * maxBrightness));
+        if (panel !== "")
+            queuePanel(panelRaw(backlight));
+        else
+            queue("10", Math.round(backlight * maxBrightness));
     }
 
     // `percent` of the backlight range, e.g. 8 / -8 from the brightness keys
@@ -65,10 +71,44 @@ Singleton {
         ["16", "18", "1a"].forEach((code, i) => queue(code, Math.round(baseGains[i] * warm[i] / neutral[i])));
     }
 
+    // ── laptop panel ──
+    property string panel: "" // /sys/class/backlight device, found by refresh()
+    property int panelMax: 1
+    readonly property real panelFloor: 0.01 // raw 0 can switch the panel's backlight off
+    readonly property real panelCurve: 2 // finer steps at the dark end, where the eye notices them
+    property int panelPending: -1
+
+    function panelRaw(b) {
+        return Math.round(panelMax * (panelFloor + (1 - panelFloor) * Math.pow(b, panelCurve)));
+    }
+    function panelLevel(raw) {
+        return Math.pow(Math.max(0, (raw / panelMax - panelFloor) / (1 - panelFloor)), 1 / panelCurve);
+    }
+
+    // like queue(): only the newest value waits while brightnessctl is busy
+    function queuePanel(raw) {
+        panelPending = raw;
+        if (!panelWriter.running)
+            flushPanel();
+    }
+    function flushPanel() {
+        if (panelPending < 0)
+            return;
+        panelWriter.command = ["brightnessctl", "-q", "-d", panel, "set", String(panelPending)];
+        panelPending = -1;
+        panelWriter.running = true;
+    }
+
+    Process {
+        id: panelWriter
+        onExited: root.flushPanel()
+    }
+
     // ── ddcutil ──
     property string bus: "" // i2c bus of the monitor, found by refresh()
     property int maxBrightness: 100
-    readonly property bool available: bus !== ""
+    readonly property bool available: bus !== "" // DDC/CI: color temperature
+    readonly property bool hasBacklight: available || panel !== ""
 
     // Values waiting to be written, by VCP code. While ddcutil is busy only the newest value per code
     // is kept; everything pending goes out in one call when the previous one returns.
@@ -128,8 +168,12 @@ Singleton {
 
     Process {
         id: reader
-        // prints "<bus> <brightness> <max> <preset> <red> <green> <blue>"
-        command: ["sh", "-c", `bus=$(ddcutil detect --terse 2>/dev/null | sed -n 's|.*/dev/i2c-\\([0-9]*\\).*|\\1|p' | head -1)
+        // prints "panel <device> <brightness> <max>" on a laptop,
+        // else "<bus> <brightness> <max> <preset> <red> <green> <blue>"
+        command: ["sh", "-c", `for d in /sys/class/backlight/*; do
+                [ -r "$d/max_brightness" ] && { echo "panel \${d##*/} $(cat "$d/brightness") $(cat "$d/max_brightness")"; exit 0; }
+            done
+            bus=$(ddcutil detect --terse 2>/dev/null | sed -n 's|.*/dev/i2c-\\([0-9]*\\).*|\\1|p' | head -1)
             [ -n "$bus" ] || exit 1
             v() { ddcutil --bus "$bus" getvcp "$1" --terse; }
             set -- $(v 10); b="$4 $5"
@@ -139,6 +183,14 @@ Singleton {
             set -- $(v 1a); echo "$bus $b $p $r $g $4"`]
         stdout: StdioCollector {
             onStreamFinished: {
+                const p = text.trim().split(/\s+/);
+                if (p[0] === "panel" && p.length === 4) {
+                    root.panelMax = Math.max(1, Number(p[3]));
+                    if (root.dim === 0)
+                        root.backlight = root.panelLevel(Number(p[2]));
+                    root.panel = p[1];
+                    return;
+                }
                 const f = text.trim().split(/\s+/).map(Number);
                 if (f.length < 7 || f.some(isNaN))
                     return;
