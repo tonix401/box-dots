@@ -168,6 +168,8 @@ in
     withUWSM = true;
   };
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  # dconf backs the gsettings the gtk portal reads the dark-mode preference from (home.nix dconf.settings)
+  programs.dconf.enable = true;
 
   # Loaded from ~/.config/hypr/hyprland.lua; replaces hyprpm on NixOS
   environment.etc."hypr/plugins/hyprexpo.so".source = "${hyprexpo}/lib/libhyprexpo.so";

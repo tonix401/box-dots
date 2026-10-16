@@ -56,6 +56,13 @@ in
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
+  # Dark mode for everything that asks the portal (libadwaita, Qt 6.5+, Electron, browsers): the gtk
+  # portal answers org.freedesktop.appearance color-scheme from this key.
+  dconf.settings."org/gnome/desktop/interface" = {
+    color-scheme = "prefer-dark";
+    gtk-theme = "adw-gtk3-dark";
+  };
+
   home.pointerCursor = {
     enable = true;
     name = "Bibata-Modern-Classic";
