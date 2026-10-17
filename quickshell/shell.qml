@@ -335,4 +335,8 @@ ShellRoot {
         active: Menus.active === "share"
         ShareMenu {}
     }
+    LazyLoader {
+        active: Menus.active === "display"
+        DisplayMenu {}
+    }
 }
