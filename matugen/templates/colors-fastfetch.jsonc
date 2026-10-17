@@ -48,8 +48,9 @@
       "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
-      "type": "packages",
+      "type": "command",
       "key": "     󰏖 Packages",
+      "text": "~/.config/fastfetch/cached.sh packages", // fastfetch's own count, cached by profile path
       "keyColor": "36",
       "outputColor": "{{colors.primary.dark.hex}}"
     },
@@ -60,8 +61,9 @@
       "outputColor": "{{colors.primary.dark.hex}}"
     },
     {
-      "type": "wm",
+      "type": "command",
       "key": "     󱂬 WM      ",
+      "text": "~/.config/fastfetch/cached.sh wm", // fastfetch's own wm line, cached by Hyprland's store path
       "keyColor": "35",
       "outputColor": "{{colors.primary.dark.hex}}"
     },
