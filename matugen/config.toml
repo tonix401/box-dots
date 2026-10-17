@@ -27,7 +27,9 @@ output_path = "~/.config/quickshell/colors.json"
 [templates.colors-kitty-conf]
 input_path = "~/.config/matugen/templates/colors-kitty.conf"
 output_path = "~/.config/kitty/colors.conf"
-post_hook = "for s in /tmp/kitty-*; do kitty @ --to \"unix:$s\" set-colors --all ~/.config/kitty/colors.conf 2>/dev/null; done &"
+# SIGUSR1 makes every kitty reload kitty.conf (which includes colors.conf), so new windows and tabs
+# get the colors too; on NixOS the process is named .kitty-wrapped
+post_hook = "pkill -USR1 -x '\\.?kitty(-wrapped)?' &>/dev/null &"
 
 [templates.colors-hyprlock-conf]
 input_path = "~/.config/matugen/templates/colors-hyprlock.conf"
