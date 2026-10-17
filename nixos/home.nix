@@ -26,6 +26,23 @@ in
     "xdg-terminals.list" # kitty for Terminal=true apps, which uwsm opens through xdg-terminal-exec
   ] link;
 
+  # Launcher entries for the quickshell menus (quickshell/menus); the launcher itself and the share
+  # menu (opened by the portal) are left out.
+  xdg.desktopEntries = lib.mapAttrs' (menu: e: lib.nameValuePair "quickshell-${menu}" {
+    inherit (e) name icon comment;
+    exec = "qs ipc call menu open ${menu}";
+    terminal = false;
+    categories = [ "Utility" ];
+  }) {
+    display = { name = "Display Arrangement"; icon = "video-display"; comment = "Arrange, mirror or turn off monitors"; };
+    wallpaper = { name = "Wallpaper Picker"; icon = "preferences-desktop-wallpaper"; comment = "Pick a wallpaper and regenerate the colors"; };
+    emoji = { name = "Emoji Picker"; icon = "face-smile"; comment = "Search and copy an emoji"; };
+    nerdfont = { name = "Nerd Font Picker"; icon = "preferences-desktop-font"; comment = "Search and copy a Nerd Font glyph"; };
+    keybinds = { name = "Keybind Reference"; icon = "preferences-desktop-keyboard-shortcuts"; comment = "List the Hyprland keybinds"; };
+    clipboard = { name = "Clipboard History"; icon = "edit-paste"; comment = "Paste from the clipboard history"; };
+    power = { name = "Power Menu"; icon = "system-shutdown"; comment = "Shut down, reboot, lock or log out"; };
+  };
+
   programs.git = {
     enable = true;
     settings.user = {
