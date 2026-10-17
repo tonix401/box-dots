@@ -2,6 +2,7 @@
 pcall(hl.plugin.load, "/etc/hypr/plugins/hyprexpo.so")
 
 require("exec")
+require("workspaces")
 require("keybinds")
 require("env")
 require("look")

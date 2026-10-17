@@ -2,6 +2,7 @@
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import qs
@@ -19,8 +20,9 @@ ShellRoot {
         }
     }
 
-    // Desktop widgets, hidden together with `qs ipc call widgets toggle` (SUPER+D), while OBS runs
-    // (Privacy, so they stay off stream) and while a tiled window is on the desktop (Desktop.covered).
+    // Desktop widgets, on every screen: hidden together with `qs ipc call widgets toggle` (SUPER+D) and
+    // while OBS runs (Privacy, so they stay off stream), and on one screen while a tiled or fullscreen
+    // window is on its desktop (Desktop.covered).
     // The week calendar sits top left under the bar, down to the screen's bottom; the todo list and
     // the habit tracker are stacked at the right edge, the todo list under the bar down to the habit
     // tracker, the habit tracker (square, as wide as the column) down to the screen's bottom. Their
@@ -34,61 +36,76 @@ ShellRoot {
     readonly property int edge: Theme.compact ? 16 : 24 // from the screen's left, right and bottom edges
     readonly property int gap: Theme.compact ? 12 : 16 // between the widgets and below the bar
     readonly property int fade: 160 // the bands' fade beside the widgets
-    readonly property bool widgetsVisible: Desktop.widgetsShown && !Desktop.covered && !Privacy.active
-    readonly property int screenHeight: Quickshell.screens[0]?.height ?? 1080
     readonly property int panelTop: Theme.barTop + Theme.barHeight + gap // the panels' top, under the bar
-    readonly property int column: Math.round(screenHeight * 0.4) // the right column's width
-    // The todo list: from under the bar down to the habit tracker's window.
-    readonly property int todoHeight: Math.max(0, screenHeight - panelTop - gap / 2 - habits.implicitHeight)
 
-    WeekCalendar {
-        id: calendar
-        visible: root.widgetsVisible
-        anchors.top: true
-        anchors.bottom: true
-        anchors.left: true
-        room: ({
-                left: root.edge,
-                top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
-                right: root.fade,
-                bottom: root.edge
-            })
-        fade: root.fade
-    }
+    Variants {
+        id: desktops
+        model: Quickshell.screens
 
-    TodoList {
-        id: todo
-        visible: root.widgetsVisible
-        anchors.top: true
-        anchors.right: true
-        margins.bottom: habits.implicitHeight
-        panelWidth: root.column
-        panelHeight: root.todoHeight
-        room: ({
-                left: root.fade,
-                top: Theme.barTop + Theme.barHeight + root.gap, // up to the screen's top, behind the bar
-                right: root.edge,
-                bottom: root.gap / 2
-            })
-        fade: root.fade
-        fadeLeft: true
-    }
+        Scope {
+            id: desktop
 
-    HabitTracker {
-        id: habits
-        visible: root.widgetsVisible
-        anchors.bottom: true
-        anchors.right: true
-        panelWidth: root.column
-        panelHeight: root.column
-        room: ({
-                left: root.fade,
-                top: root.gap / 2,
-                right: root.edge,
-                bottom: root.edge
-            })
-        fade: root.fade
-        fadeLeft: true
+            required property var modelData
+            readonly property alias calendar: calendar // for the power menu
+            readonly property bool widgetsVisible: Desktop.widgetsShown && !Desktop.covered(modelData) && !Privacy.active
+            readonly property int screenHeight: modelData.height
+            readonly property int column: Math.round(screenHeight * 0.4) // the right column's width
+            // The todo list: from under the bar down to the habit tracker's window.
+            readonly property int todoHeight: Math.max(0, screenHeight - root.panelTop - root.gap / 2 - habits.implicitHeight)
+
+            WeekCalendar {
+                id: calendar
+                screen: desktop.modelData
+                visible: desktop.widgetsVisible
+                anchors.top: true
+                anchors.bottom: true
+                anchors.left: true
+                room: ({
+                        left: root.edge,
+                        top: root.panelTop, // up to the screen's top, behind the bar
+                        right: root.fade,
+                        bottom: root.edge
+                    })
+                fade: root.fade
+            }
+
+            TodoList {
+                id: todo
+                screen: desktop.modelData
+                visible: desktop.widgetsVisible
+                anchors.top: true
+                anchors.right: true
+                margins.bottom: habits.implicitHeight
+                panelWidth: desktop.column
+                panelHeight: desktop.todoHeight
+                room: ({
+                        left: root.fade,
+                        top: root.panelTop, // up to the screen's top, behind the bar
+                        right: root.edge,
+                        bottom: root.gap / 2
+                    })
+                fade: root.fade
+                fadeLeft: true
+            }
+
+            HabitTracker {
+                id: habits
+                screen: desktop.modelData
+                visible: desktop.widgetsVisible
+                anchors.bottom: true
+                anchors.right: true
+                panelWidth: desktop.column
+                panelHeight: desktop.column
+                room: ({
+                        left: root.fade,
+                        top: root.gap / 2,
+                        right: root.edge,
+                        bottom: root.edge
+                    })
+                fade: root.fade
+                fadeLeft: true
+            }
+        }
     }
 
     KittyCat {}
@@ -282,8 +299,10 @@ ShellRoot {
     LazyLoader {
         active: Menus.active === "power"
         PowerMenu {
-            // Its options go where the calendar is on the desktop.
-            calendarArea: Qt.rect(root.edge, calendar.room.top, calendar.panelWidth, calendar.panelHeight)
+            // Its options go where the calendar is on the desktop of its screen.
+            readonly property var calendar: (desktops.instances.find(d => d.modelData.name === Hyprland.focusedMonitor?.name) ?? desktops.instances[0])?.calendar ?? null
+
+            calendarArea: calendar ? Qt.rect(root.edge, calendar.room.top, calendar.panelWidth, calendar.panelHeight) : Qt.rect(root.edge, root.panelTop, 1320, 912)
             fade: root.fade
         }
     }

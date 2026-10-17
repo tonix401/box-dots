@@ -6,21 +6,31 @@ import Quickshell.Hyprland
 import Quickshell.Io
 
 // Whether the desktop widgets (calendar, todo list, habit tracker) are shown. Driven by the
-// `widgets` IPC target in shell.qml; remembered across restarts. Independently of that they step
-// aside while the desktop is `covered`: a tiled (not floating) window is on the workspace shown, or
-// on the special workspace open over it. Floating windows leave them up.
+// `widgets` IPC target in shell.qml; remembered across restarts. Independently of that, each screen's
+// widgets step aside while that screen is `covered`: a tiled or fullscreen window is on the workspace
+// it shows, or on the special workspace open over it. Floating windows leave them up.
 Singleton {
     id: root
 
     property bool widgetsShown: true
 
-    // Floating comes from Hyprland's client list (lastIpcObject), refreshed after its events.
-    readonly property bool covered: Hyprland.toplevels.values.some(t => {
+    // Names of the monitors whose desktop is covered. Floating and fullscreen come from Hyprland's
+    // client list (lastIpcObject), refreshed after its events.
+    readonly property var coveredMonitors: Hyprland.toplevels.values.reduce((names, t) => {
         const ws = t.workspace, ipc = t.lastIpcObject;
-        if (!ws || !ipc || ipc.floating !== false || ipc.hidden)
-            return false;
-        return ws.name.startsWith("special:") ? t.monitor?.lastIpcObject?.specialWorkspace?.name === ws.name : ws.active;
-    })
+        if (!ws || !ipc || ipc.hidden || (ipc.floating !== false && !ipc.fullscreen))
+            return names;
+        const special = ws.name.startsWith("special:");
+        const monitor = special ? t.monitor : ws.monitor;
+        const shown = special ? monitor?.lastIpcObject?.specialWorkspace?.name === ws.name : ws.active;
+        if (shown && monitor && !names.includes(monitor.name))
+            names.push(monitor.name);
+        return names;
+    }, [])
+
+    function covered(screen) {
+        return coveredMonitors.includes(screen?.name);
+    }
 
     function setShown(shown) {
         widgetsShown = shown;

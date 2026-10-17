@@ -117,6 +117,7 @@ PanelWindow {
         // modules-center
         Workspaces {
             anchors.horizontalCenter: parent.horizontalCenter
+            screen: bar.screen
         }
 
         // modules-right

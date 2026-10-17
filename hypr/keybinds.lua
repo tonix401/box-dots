@@ -28,15 +28,18 @@ hl.bind("SUPER + ALT + F", hl.dsp.window.fullscreen_state({ internal = 0, client
 hl.bind("SUPER + T",       hl.dsp.window.tag({ tag = "full_opacity" }),             { desc = "Toggle transparency" })
 -- ── Workspace ─────────────────────────────────────────────────────────────────
 
+-- Workspace n is n on the focused monitor's numbers (11-19 on a second screen, see workspaces.lua);
+-- the other monitors follow on their own.
+
 -- Navigate left / right
-hl.bind("SUPER + mouse_up",   hl.dsp.focus({ workspace = "+1" }), { mouse = true, desc = "Next workspace" })
-hl.bind("SUPER + mouse_down", hl.dsp.focus({ workspace = "-1" }), { mouse = true, desc = "Previous workspace" })
+hl.bind("SUPER + mouse_up",   function() linked.step(1) end,  { mouse = true, desc = "Next workspace" })
+hl.bind("SUPER + mouse_down", function() linked.step(-1) end, { mouse = true, desc = "Previous workspace" })
 
 -- Navigate to specific workspace
 for i = 1, 9 do
-    hl.bind("SUPER + " .. i,              hl.dsp.focus({ workspace = i }),                        { desc = "Go to workspace " .. i })
-    hl.bind("SUPER + ALT + " .. i,        hl.dsp.window.move({ workspace = i, follow = true }),   { desc = "Move window to workspace " .. i })
-    hl.bind("CTRL + SUPER + ALT + " .. i, hl.dsp.window.move({ workspace = i, follow = false }),  { desc = "Send window to workspace " .. i })
+    hl.bind("SUPER + " .. i,              function() hl.dispatch(hl.dsp.focus({ workspace = linked.here(i) })) end,                       { desc = "Go to workspace " .. i })
+    hl.bind("SUPER + ALT + " .. i,        function() hl.dispatch(hl.dsp.window.move({ workspace = linked.here(i), follow = true })) end,  { desc = "Move window to workspace " .. i })
+    hl.bind("CTRL + SUPER + ALT + " .. i, function() hl.dispatch(hl.dsp.window.move({ workspace = linked.here(i), follow = false })) end, { desc = "Send window to workspace " .. i })
 end
 
 -- Scratchpad / special

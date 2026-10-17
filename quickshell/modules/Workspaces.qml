@@ -1,20 +1,30 @@
 import QtQuick
+import Quickshell
 import Quickshell.Hyprland
 import qs
 import qs.components
 
 // Mirrors hyprland/workspaces: 5 persistent workspaces, specials shown, "{icon} {windows}".
+// Workspaces are linked across monitors (hypr/workspaces.lua): each monitor has its own numbers
+// (1-9, 11-19, ...) and all of them show the same n, so each bar lists its own monitor's set and
+// highlights what that monitor shows. The set is read off the monitor's active workspace.
 Row {
     id: root
 
-    readonly property var persistent: [1, 2, 3, 4, 5]
+    property ShellScreen screen
+    readonly property HyprlandMonitor monitor: screen ? Hyprland.monitorFor(screen) : null
+    readonly property int base: {
+        const id = monitor?.activeWorkspace?.id ?? 1;
+        return id > 0 ? Math.floor((id - 1) / 10) * 10 : 0;
+    }
+    readonly property var persistent: [1, 2, 3, 4, 5].map(n => base + n)
 
     readonly property var windowIcons: [
         [/^(kitty|Alacritty|konsole)$/, 0xf018d],
         [/^(code|codium)$/, 0xf0a1e],
         [/^(mousepad|obsidian|Obsidian)$/, 0xf14e7],
         [/^(firefox|Firefox)$/, 0xf0239],
-        [/^(chromium|chrome|Chromium)$/, 0xf268],
+        [/^(chromium|chromium-browser|chrome|google-chrome|Chromium)$/, 0xf268],
         [/^(nemo|Nemo)$/, 0xf07b],
         [/^(org\.inkscape\.Inkscape)$/, 0xee72],
         [/^(org\.kde\.Kdenlive)$/, 0xf0381],
@@ -35,7 +45,8 @@ Row {
                     ws: live.find(w => w.id === id) ?? null
                 }));
         for (const w of live) {
-            if (!persistent.includes(w.id))
+            // specials on every bar, the rest only on their own monitor's
+            if (!persistent.includes(w.id) && (w.id < 0 || !root.monitor || w.monitor === root.monitor))
                 out.push({
                     id: w.id,
                     name: w.name,
@@ -86,7 +97,7 @@ Row {
             readonly property HyprlandWorkspace ws: modelData.ws
             readonly property var toplevels: ws ? ws.toplevels.values : []
             readonly property bool special: modelData.id < 0
-            readonly property bool active: ws !== null && (special ? ws.active || Hyprland.focusedWorkspace === ws : Hyprland.focusedWorkspace === ws)
+            readonly property bool active: ws !== null && (special ? ws.active || Hyprland.focusedWorkspace === ws : root.monitor ? root.monitor.activeWorkspace === ws : Hyprland.focusedWorkspace === ws)
             readonly property bool urgent: ws?.urgent ?? false
             readonly property bool empty: toplevels.length === 0
             readonly property int hPad: Theme.compact ? (active ? 8 : 2) : (active ? 12 : 4)
