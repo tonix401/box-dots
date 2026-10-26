@@ -146,6 +146,13 @@ Scope {
                         }
                     }
 
+                    Island {
+                        SystemControls {
+                            Layout.fillWidth: true
+                            active: Sidebar.open
+                        }
+                    }
+
                     // shell extras that cost CPU while shown (Settings.qml)
                     Island {
                         RowLayout {

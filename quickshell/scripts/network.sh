@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # Prints one line of JSON describing the current network state (iwd + sysfs).
-# The USB Wi-Fi dongle comes up as wlan0 or wlan1 depending on enumeration order.
-WIFI=$(basename /sys/class/net/wl* | head -n1)
 ETH=eno1
 
 strip() { sed 's/\x1b\[[0-9;]*m//g'; }
+
+# The USB Wi-Fi dongle comes up as wlan0 or wlan1, and when it re-enumerates at boot (USB 2 -> 3) a stale
+# second netdev can stay on the same radio, so ask iwd which one it manages (the device list rows with a MAC).
+WIFI=$(iwctl device list 2>/dev/null | strip | awk '$2 ~ /^([0-9a-f]{2}:){5}/ {print $1; exit}')
+[ -n "$WIFI" ] || WIFI=$(basename /sys/class/net/wl* | head -n1)
 
 # station property value from `iwctl station show` output in $info
 field() { sed -n "s/^ *$1  *\(.*[^ ]\) *\$/\1/p" <<< "$info" | head -n1; }

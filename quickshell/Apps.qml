@@ -4,30 +4,50 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Installed apps, ordered like rofi drun (launch counts from ~/.cache/rofi3.druncache, shared with rofi),
-// plus the start menu's pinned apps.
+// Installed apps, ordered like rofi drun (launch counts from ~/.cache/rofi3.druncache, shared with rofi).
 Singleton {
     id: root
 
     property var history: ({}) // desktop id -> launch count
     property var historyOrder: [] // desktop ids in file order; kept for equal counts
-    property var pinned: [] // desktop ids
+
+    // Most launched first, then everything else by name. Worked out in the background, not as a binding:
+    // DesktopEntries fills in over many steps after it's first read, and a binding re-sorted (and the
+    // launcher rebuilt its tiles) on every one. shell.qml reads this once after startup so it's ready.
+    property var sorted: []
+    readonly property var mostUsed: sorted.filter(e => (history[key(e)] ?? 0) > 0)
 
     function key(entry) {
         return entry.id.endsWith(".desktop") ? entry.id : entry.id + ".desktop";
     }
 
-    // Most launched first, then everything else by name.
-    readonly property var sorted: DesktopEntries.applications.values.map(e => ({
+    function resort() {
+        const rankOf = {};
+        historyOrder.forEach((k, i) => rankOf[k] = i);
+        sorted = DesktopEntries.applications.values.map(e => {
+            const k = key(e);
+            return {
                 entry: e,
-                count: history[key(e)] ?? 0,
-                rank: historyOrder.indexOf(key(e))
-            })).sort((a, b) => b.count - a.count || (a.rank < 0) - (b.rank < 0) || a.rank - b.rank || a.entry.name.localeCompare(b.entry.name, undefined, {
-                sensitivity: "base"
-            })).map(it => it.entry)
+                count: history[k] ?? 0,
+                rank: rankOf[k] ?? -1,
+                name: e.name.toLowerCase()
+            };
+        }).sort((a, b) => b.count - a.count || (a.rank < 0) - (b.rank < 0) || a.rank - b.rank || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)).map(it => it.entry);
+    }
 
-    readonly property var pinnedEntries: pinned.map(id => DesktopEntries.applications.values.find(e => key(e) === id)).filter(e => e)
-    readonly property var mostUsed: sorted.filter(e => (history[key(e)] ?? 0) > 0 && !pinned.includes(key(e)))
+    Timer {
+        id: resortLater
+        interval: 50
+        onTriggered: root.resort()
+    }
+    Connections {
+        target: DesktopEntries
+        function onApplicationsChanged() {
+            resortLater.restart();
+        }
+    }
+    onHistoryChanged: resortLater.restart()
+    Component.onCompleted: resort()
 
     // Through uwsm so each app gets its own systemd scope instead of living in qs's
     // (see ~/.config/hypr/exec.lua). uwsm reads the desktop file itself: Exec, field codes, Path.
@@ -50,16 +70,6 @@ Singleton {
         druncache.setText(keys.slice().sort((a, b) => counts[b] - counts[a]).map(id => `${counts[id]} ${id}`).join("\n") + "\n");
     }
 
-    function isPinned(entry) {
-        return pinned.includes(key(entry));
-    }
-
-    function togglePin(entry) {
-        const k = key(entry);
-        pinned = isPinned(entry) ? pinned.filter(id => id !== k) : pinned.concat([k]);
-        pins.setText(JSON.stringify(pinned, null, 2) + "\n");
-    }
-
     FileView {
         id: druncache
         path: Quickshell.env("HOME") + "/.cache/rofi3.druncache"
@@ -76,19 +86,6 @@ Singleton {
             }
             root.historyOrder = order;
             root.history = counts;
-        }
-    }
-
-    FileView {
-        id: pins
-        path: Quickshell.statePath("pinned-apps.json")
-        printErrors: false
-        onLoaded: {
-            try {
-                root.pinned = JSON.parse(text());
-            } catch (e) {
-                root.pinned = [];
-            }
         }
     }
 }

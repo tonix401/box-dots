@@ -295,6 +295,12 @@ ShellRoot {
         active: Menus.active === "launcher"
         StartMenu {}
     }
+    // Reads the app list once after startup, so the launcher doesn't wait for DesktopEntries and the sort.
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: Apps.sorted.length
+    }
     LazyLoader {
         active: Menus.active === "keybinds"
         KeybindsMenu {}

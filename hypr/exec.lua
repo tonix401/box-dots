@@ -20,7 +20,7 @@ hl.on("hyprland.start", function()
   app("awww-daemon")
   app("qs") -- bar + menus, ~/.config/quickshell
   app("xsettingsd")
-  app("obsidian", { workspace = "5 silent" }) -- vault ~/obsidian-mind; its CLI needs the app running
+  app("obsidian", { workspace = "5 silent" }) -- vault ~/knowledge; its CLI needs the app running
   app("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
   hl.exec_cmd("hyprpm reload")
 end)
