@@ -8,7 +8,7 @@ import qs.components
 // The cat avatar sitting in the top right corner of every visible kitty window, all with the same
 // moods (Pet). Reactions to a command only reach the cat of the window it ran in.
 // Click-through layer surfaces that follow their window: Hyprland's toplevel geometry is refreshed on
-// its events and polled while a kitty is shown (dragging or resizing with the mouse sends no event):
+// its events (by Desktop) and polled while a kitty is shown (dragging or resizing with the mouse sends no event):
 // every 150 ms at rest, every 10 ms (one 100 Hz frame) while a window's geometry keeps changing.
 // Hyprland reports where an animated window will end up, so a single jump (a tiled move) is followed
 // with a spring like its own; a stream of updates (a drag) is followed directly.
@@ -57,20 +57,8 @@ Scope {
         return visibleWs && (!ws.hasFullscreen || (ipc.fullscreen ?? 0) > 0);
     }
 
-    Connections {
-        target: Hyprland
-        function onRawEvent(event) {
-            settle.restart();
-        }
-    }
-
-    // Events come in bursts (open = several); refresh once they stop.
-    Timer {
-        id: settle
-        interval: 60
-        onTriggered: root.refresh()
-    }
-
+    // Hyprland's events already refresh toplevels and monitors (Desktop, once a burst settles), so only
+    // the polling is done here.
     Timer {
         interval: root.moving ? 10 : 150
         repeat: true

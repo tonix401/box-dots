@@ -129,7 +129,9 @@ Scope {
                     MediaCard {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 150
-                        visible: player !== null
+                        // Hidden along with the drawer: items in a hidden window still count as
+                        // visible, so its wave and position timer kept running while music played.
+                        visible: player !== null && drawer.visible
                         player: root.player
                     }
 

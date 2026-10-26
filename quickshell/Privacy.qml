@@ -8,7 +8,7 @@ import qs.components
 // user@host and device names that would otherwise end up on stream, and shell.qml hides the
 // desktop widgets.
 Singleton {
-    readonly property bool active: obs.output === "1"
+    readonly property bool active: obs.output !== "" // pgrep prints the pid, or nothing
 
     // `value` normally, asterisks while OBS runs (empty values stay empty).
     function mask(value) {
@@ -17,7 +17,7 @@ Singleton {
 
     Poll {
         id: obs
-        command: ["sh", "-c", "pgrep -x obs >/dev/null && echo 1 || echo 0"]
+        command: ["pgrep", "-x", "obs"]
         interval: 2000
     }
 }

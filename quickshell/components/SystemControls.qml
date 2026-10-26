@@ -96,12 +96,20 @@ ColumnLayout {
         blockLoading: true
     }
 
-    // coretemp's hwmon index changes between boots, so look it up
+    // The CPU temperature: coretemp's hwmon index changes between boots, so its file is looked up once
+    // (else the x86_pkg_temp thermal zone) and then read like /proc/stat, without a process per tick.
+    FileView {
+        id: tempFile
+        blockLoading: true
+        printErrors: false
+    }
     Process {
-        id: tempProc
-        command: ["sh", "-c", "for h in /sys/class/hwmon/*; do [ \"$(cat $h/name)\" = coretemp ] && cat $h/temp1_input && break; done"]
+        id: tempLookup
+        running: true
+        command: ["sh", "-c", `for h in /sys/class/hwmon/*; do [ "$(cat $h/name)" = coretemp ] && { echo $h/temp1_input; exit; }; done
+            for t in /sys/class/thermal/thermal_zone*; do [ "$(cat $t/type)" = x86_pkg_temp ] && { echo $t/temp; exit; }; done`]
         stdout: StdioCollector {
-            onStreamFinished: stats.temp = Math.round(Number(text.trim()) / 1000)
+            onStreamFinished: tempFile.path = text.trim()
         }
     }
 
@@ -136,9 +144,20 @@ ColumnLayout {
             const kb = k => Number(procMem.text().match(new RegExp("^" + k + ":\\s+(\\d+)", "m"))[1]);
             stats.mem = (kb("MemTotal") - kb("MemAvailable")) / (1024 * 1024);
 
-            tempProc.running = true;
-            diskProc.running = true;
+            if (tempFile.path !== "") {
+                tempFile.reload();
+                stats.temp = Math.round(Number(tempFile.text().trim()) / 1000);
+            }
         }
+    }
+
+    // Disk usage barely moves: read when the stats show and every 30 s after.
+    Timer {
+        interval: 30000
+        running: root.active
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: diskProc.running = true
     }
 
     component Stat: Rectangle {
