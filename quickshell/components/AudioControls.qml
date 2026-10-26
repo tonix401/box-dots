@@ -88,10 +88,18 @@ ColumnLayout {
         // would otherwise keep the meter, and the drawer's redraws, going forever.
         readonly property real floor: 0.02
 
+        // Measuring keeps the device running (a stream woken ~47 times a second), so only while it can
+        // show anything: an output while some stream plays into it, an input while it isn't muted.
+        PwNodeLinkTracker {
+            id: links
+            node: channel.output && root.active ? channel.node : null
+        }
+        readonly property bool fed: !channel.output || links.linkGroups.some(g => g.target === channel.node && g.source?.isStream)
+
         PwNodePeakMonitor {
             id: meter
             node: channel.node
-            enabled: root.active
+            enabled: root.active && channel.fed && !(channel.node?.audio?.muted ?? false)
             onPeakChanged: {
                 // silence is only queued behind sound, so it can't start the meter loop on its own
                 if (meter.peak < channel.floor && channel.samples.length === 0)

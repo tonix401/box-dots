@@ -2,10 +2,12 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.components
 
 // Network state for the bar's network block and the sidebar: link info from scripts/network.sh,
-// live rates and their recent history. Polls every second while the sidebar shows the details.
+// live rates and their recent history. Polls every second while the sidebar shows the details, every
+// 15 s otherwise (for the signal strength); link and address changes refresh it right away.
 Singleton {
     id: root
 
@@ -35,7 +37,7 @@ Singleton {
     Poll {
         id: net
         command: [Quickshell.shellDir + "/scripts/network.sh"]
-        interval: Sidebar.open ? 1000 : 5000
+        interval: Sidebar.open ? 1000 : 15000
         onOutputChanged: {
             let next;
             try {
@@ -56,5 +58,20 @@ Singleton {
             }, next);
             root.info = next;
         }
+    }
+
+    // Connects, disconnects and Wi-Fi power show up as link/address events; they come in bursts.
+    Process {
+        command: ["ip", "monitor", "link", "address"]
+        running: true
+        stdout: SplitParser {
+            onRead: settle.restart()
+        }
+    }
+
+    Timer {
+        id: settle
+        interval: 300
+        onTriggered: net.refresh()
     }
 }
