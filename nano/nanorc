@@ -1,0 +1,48 @@
+# Syntax highlighting: nano's own definitions, plus the extra ones it ships (toml, ini, …)
+include "/usr/share/nano/*.nanorc"
+include "/usr/share/nano/extra/*.nanorc"
+
+# ── Behave like a normal editor ──
+set mouse          # click places the cursor, drag selects (Shift+drag for kitty's own selection)
+set linenumbers
+set numbercolor "normal,normal"
+set indicator      # scrollbar on the right
+set autoindent
+set tabsize 4
+set softwrap
+set atblanks       # soft-wrap at spaces, not mid-word
+set zap            # Backspace/Delete erase the selection
+set trimblanks
+set afterends      # Ctrl+→ stops at word ends
+set wordchars "_"  # identifiers_like_this are one word
+set historylog     # remember searches
+set positionlog    # reopen files where you left off
+set stateflags     # show the selection/modified state in the title bar
+set minibar        # a slim status line instead of the two help lines
+# set constantshow
+
+# ── Keys like everywhere else (what nano's -/ --modernbindings gives, written out so plain `nano`,
+#    git and sudoedit get them too). Shift+arrows select, Ctrl+Shift+arrows select words (nano's default).
+#    Copy/cut/paste go through the system clipboard (wl-copy/wl-paste) via nano's execute: cut the selection
+#    (or line), paste it back marked, then pipe that region out; copy keeps it by echoing it back with tee. ──
+bind ^C "{cut}{mark}{paste}{execute}|tee >(wl-copy >/dev/null 2>&1){enter}" main
+bind ^X "{cut}{mark}{paste}{execute}|wl-copy >/dev/null 2>&1{enter}" main
+bind ^V "{execute}wl-paste --no-newline{enter}" main
+bind ^Z undo main
+bind ^Y redo main
+bind ^S savefile main
+bind ^Q exit all
+bind ^F whereis all
+bind ^G findnext all
+bind ^B wherewas all
+bind ^D findprevious main
+bind ^R replace main
+bind ^O insert main
+bind ^W writeout main
+bind M-W writeout main  # Ctrl+Shift+S: a terminal can't tell it from Ctrl+S, so kitty sends Alt+W for it
+bind ^T gotoline main
+bind ^E execute main
+bind ^H chopwordleft main  # Ctrl+Backspace (kitty sends ^H) deletes a word; help stays on F1
+bind ^A "{firstline}{mark}{lastline}{end}" main   # select all
+bind ^L refresh main
+bind Sh-M-K cutrestoffile main

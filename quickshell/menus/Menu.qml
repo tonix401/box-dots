@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs
+import qs.components
 
 // A rofi -dmenu lookalike: bordered box centered in the usable area, input bar and a list.
 // Geometry defaults match the rofi menus this replaced.
@@ -14,6 +15,7 @@ PanelWindow {
     property var matchText: item => item.text // a string, or an array of fields (primary first; see Search.qml)
     property string matching: "normal" // "normal" (substrings anywhere) or "fuzzy" (also subsequences of the primary field)
     property Component rowContent // gets `parent.entry` and `parent.selected`
+    property var groupOf: null // item => group name: results grouped under headers, best group first
     signal accepted(var item)
 
     // ── theme (window / mainbox / inputbar / listview / element) ──
@@ -48,27 +50,82 @@ PanelWindow {
     property int selected: 0
 
     function refilter() {
-        filtered = Search.rank(items, input.text, matchText, {
+        const ranked = Search.rank(items, input.text, matchText, {
             fuzzy: matching === "fuzzy",
             anywhere: matching !== "fuzzy"
         });
+        filtered = groupOf ? grouped(ranked) : ranked;
         selected = 0;
+        if (isHeader(0))
+            selected = 1;
+    }
+
+    // Each group under a { header } row, in rank order; the groups ordered by their best item.
+    function grouped(ranked) {
+        const groups = new Map();
+        for (const it of ranked) {
+            const g = groupOf(it);
+            if (!groups.has(g))
+                groups.set(g, []);
+            groups.get(g).push(it);
+        }
+        const out = [];
+        for (const [g, members] of groups) {
+            out.push({
+                header: g,
+                count: members.length
+            });
+            for (const it of members)
+                out.push(it);
+        }
+        return out;
+    }
+
+    function isHeader(i) {
+        return filtered[i]?.header !== undefined;
     }
 
     function move(delta) {
         const n = filtered.length;
         if (n === 0)
             return;
-        let next = selected + delta;
-        if (cycle)
-            next = ((next % n) + n) % n;
-        selected = Math.max(0, Math.min(n - 1, next));
+        let next = selected;
+        do {
+            next += delta;
+            if (cycle)
+                next = ((next % n) + n) % n;
+            else if (next < 0 || next >= n)
+                return;
+        } while (isHeader(next) && next !== selected);
+        selected = next;
+    }
+
+    // Selection to the first item of the next (+1) or previous (-1) group
+    function moveGroup(delta) {
+        const heads = [];
+        for (let i = 0; i < filtered.length; i++)
+            if (isHeader(i))
+                heads.push(i);
+        if (heads.length === 0)
+            return;
+        let at = heads.length - 1;
+        while (at > 0 && heads[at] > selected)
+            at--;
+        const to = heads[((at + delta) % heads.length + heads.length) % heads.length];
+        selected = Math.min(filtered.length - 1, to + 1);
+    }
+
+    // Page keys: land on an item, not a header
+    function jump(to) {
+        selected = Math.max(0, Math.min(filtered.length - 1, to));
+        if (isHeader(selected))
+            move(selected === filtered.length - 1 ? -1 : 1);
     }
 
     // Handlers run before closing: closing destroys the menu and everything they reference.
     function accept() {
         const item = filtered[selected];
-        if (item !== undefined)
+        if (item !== undefined && item.header === undefined)
             accepted(item);
         Menus.close();
     }
@@ -163,18 +220,22 @@ PanelWindow {
                         Menus.close();
                     else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_M)))
                         root.accept();
+                    else if (ctrl && event.key === Qt.Key_Down && root.groupOf)
+                        root.moveGroup(1);
+                    else if (ctrl && event.key === Qt.Key_Up && root.groupOf)
+                        root.moveGroup(-1);
                     else if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab || (ctrl && event.key === Qt.Key_N))
                         root.move(1);
                     else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab || (ctrl && event.key === Qt.Key_P))
                         root.move(-1);
                     else if (event.key === Qt.Key_PageDown)
-                        root.selected = Math.min(root.filtered.length - 1, root.selected + root.visibleRows);
+                        root.jump(root.selected + root.visibleRows);
                     else if (event.key === Qt.Key_PageUp)
-                        root.selected = Math.max(0, root.selected - root.visibleRows);
+                        root.jump(root.selected - root.visibleRows);
                     else if (event.key === Qt.Key_Home && !root.showInput)
-                        root.selected = 0;
+                        root.jump(0);
                     else if (event.key === Qt.Key_End && !root.showInput)
-                        root.selected = Math.max(0, root.filtered.length - 1);
+                        root.jump(root.filtered.length - 1);
                     else
                         return;
                     event.accepted = true;
@@ -233,13 +294,26 @@ PanelWindow {
                             readonly property var modelData: root.filtered[index]
                             required property int index
                             readonly property bool isSelected: index === root.selected
+                            readonly property bool isHeader: modelData?.header !== undefined
 
                             width: list.width
                             height: root.rowHeight
                             radius: root.rowRadius
                             color: isSelected && root.highlightSelected ? Theme.primary : "transparent"
 
+                            // a group's header (groupOf), on the row's bottom edge like the launcher's
+                            SectionLabel {
+                                visible: row.isHeader
+                                x: root.rowPadH
+                                width: parent.width - 2 * root.rowPadH
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 4
+                                text: row.modelData?.header ?? ""
+                                hint: row.isHeader ? row.modelData.count : ""
+                            }
+
                             Loader {
+                                active: !row.isHeader
                                 readonly property var entry: row.modelData
                                 readonly property bool selected: row.isSelected && root.highlightSelected
                                 readonly property real fontPt: root.fontPt
@@ -253,6 +327,7 @@ PanelWindow {
 
                             MouseArea {
                                 anchors.fill: parent
+                                enabled: !row.isHeader
                                 onClicked: root.selected = row.index
                                 onDoubleClicked: {
                                     root.selected = row.index;

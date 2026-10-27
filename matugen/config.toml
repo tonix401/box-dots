@@ -38,6 +38,10 @@ input_path = "~/.config/matugen/templates/colors.fish"
 output_path = "~/.config/fish/colors.fish"
 post_hook = "fish -c 'set -U theme_changed (random)' &>/dev/null &"
 
+[templates.colors-zsh]
+input_path = "~/.config/matugen/templates/colors.zsh"
+output_path = "~/.config/zsh/colors.zsh"
+
 [templates.arch-svg]
 input_path = "~/.config/matugen/templates/arch.svg"
 output_path = "~/.cache/box-dots/svgs/arch.svg"

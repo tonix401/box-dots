@@ -310,12 +310,8 @@ ShellRoot {
         ClipboardMenu {}
     }
     LazyLoader {
-        active: Menus.active === "emoji"
-        EmojiMenu {}
-    }
-    LazyLoader {
-        active: Menus.active === "nerdfont"
-        NerdFontMenu {}
+        active: Menus.active === "symbols"
+        SymbolMenu {}
     }
     LazyLoader {
         active: Menus.active === "wallpaper"
