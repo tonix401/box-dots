@@ -12,11 +12,6 @@ function cl
     ls
 end
 
-# Claude Code always starts in the vault, wherever it's run from (the shell's own dir stays put)
-function claude
-    env -C ~/knowledge claude $argv
-end
-
 function lt
     # first arg is tree level (default 2), remaining args are paths/options
     set level 2
