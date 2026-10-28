@@ -1,0 +1,55 @@
+## Syntax highlighting for QML (Qt Modeling Language).
+## Color rules are applied in order; later rules repaint regions matched by
+## earlier ones, so broad/generic rules are listed first and more specific
+## overrides (id:, onFoo:, strings, comments) come later.
+
+syntax qml "\.qml$"
+comment "//"
+
+# Module system / document-level statements.
+color green "\<(import|pragma|as)\>"
+# Version number after "import Foo.Bar 2.15".
+color green "\<[0-9]+\.[0-9]+\>"
+
+# QML declarations: property/signal/function and their modifiers.
+color brightyellow "\<(property|signal|function|readonly|default|required|alias|component)\>"
+# Property type keywords (built-in QML/JS property types).
+color cyan "\<(bool|int|real|double|string|url|var|list|date|point|size|rect|color|font|vector2d|vector3d|vector4d|quaternion|matrix4x4|enumeration)\>"
+
+# JavaScript keywords usable inside QML bindings/functions.
+color green "\<(async|class|const|extends|let|this|typeof|void|static|get|set)\>"
+color brightyellow "\<(do|while|if|else|switch|case|default|for|each|in|of|with)\>"
+color brightyellow "\<(await|export|throw|try|catch|finally|new|delete)\>"
+color magenta "\<(break|continue|return|yield)\>"
+
+# Element / type names: capitalized identifiers (QML components, Qt types).
+color brightwhite "\<[A-Z][[:alnum:]_.]*\>"
+
+# Common Qt global objects and enums.
+color cyan "\<(Qt|Component|console|Math|JSON)\>"
+color cyan "\<Qt\.[[:alnum:]_]+\>"
+
+# Bindings: "name:" at the start of a line, separating property from value.
+color yellow "^[[:space:]]*[[:alnum:]_.]+[[:space:]]*:"
+# id: property — the "name tag" of an element instance (overrides the above).
+color brightred "\<id[[:space:]]*:"
+# Signal-handler properties: onFoo:, onClicked:, etc. (overrides the above).
+color brightblue "\<on[A-Z][[:alnum:]]*[[:space:]]*:"
+
+# Octal/decimal/hexadecimal numbers.
+color brightcyan "\<([0-9]+|0x[[:xdigit:]]+)(\.[0-9]+)?\>"
+# Special values.
+color brightcyan "\<(true|false|null|undefined)\>"
+
+# Strings (override keyword/identifier matches inside quotes).
+color brightmagenta "\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*'|`([^`\\]|\\.)*`"
+
+# Comments (override everything else inside them).
+color brightblue "(^|[[:blank:]])//.*"
+color brightblue start="/\*" end="\*/"
+
+# Reminders inside comments.
+color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"
+
+# Trailing whitespace.
+color ,green "[[:space:]]+$"

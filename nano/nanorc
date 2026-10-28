@@ -1,6 +1,15 @@
 # Syntax highlighting: nano's own definitions, plus the extra ones it ships (toml, ini, …)
 include "/usr/share/nano/*.nanorc"
 include "/usr/share/nano/extra/*.nanorc"
+include "~/.config/nano/qml.nanorc"  # QML has no upstream definition; hand-written
+
+# TypeScript/JSX/Conf: not in stock nano, from the nano-syntax-highlighting package.
+# (Only these specific files — not the whole dir — to avoid clashing "syntax" names
+# with the js/json/python/c/yaml already loaded from stock nano above.)
+include "/usr/share/nano-syntax-highlighting/ts.nanorc"
+include "/usr/share/nano-syntax-highlighting/jsx.nanorc"
+include "/usr/share/nano-syntax-highlighting/conf.nanorc"
+include "~/.config/nano/tsx.nanorc"  # no upstream tsx.nanorc; hand-written from ts+jsx
 
 # ── Behave like a normal editor ──
 set mouse          # click places the cursor, drag selects (Shift+drag for kitty's own selection)
@@ -19,7 +28,6 @@ set historylog     # remember searches
 set positionlog    # reopen files where you left off
 set stateflags     # show the selection/modified state in the title bar
 set minibar        # a slim status line instead of the two help lines
-# set constantshow
 
 # ── Keys like everywhere else (what nano's -/ --modernbindings gives, written out so plain `nano`,
 #    git and sudoedit get them too). Shift+arrows select, Ctrl+Shift+arrows select words (nano's default).

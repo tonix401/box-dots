@@ -1,0 +1,55 @@
+### TypeScript + JSX files (derived from ts.nanorc + jsx.nanorc, since no
+### upstream tsx.nanorc exists in nano-syntax-highlighting)
+
+syntax "TSX" "\.tsx$"
+comment "//"
+
+## Default
+color white "^.+$"
+
+## JSX tags
+color orange start="<" end=">"
+## Common JSX/HTML attributes
+color magenta "[[:space:]](class(Name)?|id|style|key|ref|on[A-Z][[:alnum:]]*|href|src|type|value|placeholder|disabled|checked|name)="
+
+## Decimal, octal and hexadecimal numbers
+color yellow "\<[-+]?([1-9][0-9]*|0[0-7]*|0x[0-9a-fA-F]+)([uU][lL]?|[lL][uU]?)?\>"
+## Floating point numbers
+color yellow "\<[-+]?([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([EePp][+-]?[0-9]+)?[fFlL]?"
+color yellow "\<[-+]?([0-9]+[EePp][+-]?[0-9]+)[fFlL]?"
+
+## Keywords (TypeScript + JS)
+color green "\<(as|abstract|asserts|boolean|break|byte|case|catch)\>"
+color green "\<(class|const|continue|debugger|default|delete|readonly)\>"
+color green "\<(do|else|enum|export|extends|finally|final|for)\>"
+color green "\<(from|function|goto|if|implements|import|instanceof)\>"
+color green "\<(var|interface|int|in|is|infer|let|new|package|private)\>"
+color green "\<(protected|public|return|static|super|switch)\>"
+color green "\<(this|throw|try|typeof|type)\>"
+color green "\<(void|while|with|yield)\>"
+color green "\<(async|await|set|get|module|namespace|declare)\>"
+
+## Type specifiers / globals
+color red "\<(Array|Boolean|Date|Enumerator|Error|Function|Math)\>"
+color red "\<(WeakMap|Map|WeakSet|Set|Symbol|Promise)\>"
+color red "\<(Number|Object|RegExp|String)\>"
+color red "\<(true|false|null|undefined|NaN)\>"
+
+## Strings
+color brightyellow "L?\"(\\\"|[^\"])*\""
+color brightyellow "L?'(\\'|[^'])*'"
+color brightcyan "L?`(\\`|[^`])*`"
+color brightwhite,blue start="\$\{" end="\}"
+
+## Escapes
+color yellow "\\[0-7][0-7]?[0-7]?|\\x[0-9a-fA-F]+|\\[bfnrt'\"`\?\\]"
+
+## Comments
+color brightblue start="/\*" end="\*/"
+color brightblue "(^|[[:blank:]])//.*$"
+
+## Reminders
+color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"
+
+## Trailing whitespace
+color ,green "[[:space:]]+$"
