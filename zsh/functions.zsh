@@ -10,6 +10,11 @@ cl() {
     ls
 }
 
+# Claude Code always starts in the vault, wherever it's run from (the shell's own dir stays put)
+claude() {
+    env -C ~/knowledge claude "$@"
+}
+
 # first arg is tree level (default 2), remaining args are paths/options
 lt() {
     local level=${1:-2}
