@@ -1,7 +1,7 @@
-# Interactive zsh, set up to feel like the fish config next to it (fish/). fish stays the login
-# shell: run `zsh` from fish to try this one, `exit` to get back.
+# Interactive zsh (the login shell), set up with fish-like behavior: suggestions, highlighting,
+# abbreviations, history search.
 #
-# Plugins (fish has these built in): zsh-autosuggestions, zsh-syntax-highlighting,
+# Plugins: zsh-autosuggestions, zsh-syntax-highlighting,
 # zsh-history-substring-search, zsh-abbr and fzf-tab, found in ~/.local/share/zsh/plugins (linked
 # by home.nix) or /usr/share/zsh/plugins (the Arch packages).
 
@@ -16,29 +16,6 @@ SAVEHIST=256000
 setopt EXTENDED_HISTORY INC_APPEND_HISTORY_TIME HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE \
     HIST_REDUCE_BLANKS HIST_VERIFY
 unsetopt SHARE_HISTORY # NixOS's /etc/zshrc sets it
-
-# The first start takes over fish's history, so autosuggestions and up arrow have something to go
-# on. Multi-line commands are skipped. Run again with `import_fish_history` (it appends).
-import_fish_history() {
-    local fish_history=${XDG_DATA_HOME:-$HOME/.local/share}/fish/fish_history
-    [[ -r $fish_history ]] || return 1
-    mkdir -p ${HISTFILE:h}
-    # fish escapes \ as \\ and a newline as \n
-    awk '
-        function flush() { if (cmd != "") printf ": %d:0;%s\n", when, cmd; cmd = "" }
-        /^- cmd: / {
-            flush()
-            cmd = substr($0, 8); when = 0
-            gsub(/\\\\/, "\001", cmd)
-            if (cmd ~ /\\n/) { cmd = ""; next }
-            gsub(/\001/, "\\", cmd)
-        }
-        /^  when: / { when = $2 }
-        END { flush() }
-    ' $fish_history >>$HISTFILE
-    fc -R $HISTFILE
-}
-[[ -e $HISTFILE ]] || import_fish_history
 
 setopt AUTO_CD              # a directory alone cds into it, like fish
 setopt INTERACTIVE_COMMENTS # `# ...` at the prompt
@@ -86,7 +63,7 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#555555'
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=200
 __plugin zsh-autosuggestions
 
-# Highlighting in fish's colors (fish/conf.d/fish_frozen_theme.fish)
+# Highlighting in fish's old colors (the fish_color_* names in the comments below)
 __plugin zsh-syntax-highlighting
 ZSH_HIGHLIGHT_STYLES[default]='fg=cyan'                 # fish_color_param
 ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=9'              # fish_color_error brred

@@ -1,6 +1,6 @@
-# The kitty cat's hooks, ported from the end of fish/custom/functions.fish (see there for what the
-# cat does). fish_preexec is preexec here, fish_postexec the first precmd hook (.zshrc puts it in
-# front, so $? is still the command's), and CMD_DURATION is timed with $EPOCHREALTIME.
+# The kitty cat's hooks (what the cat does: cat/SPEC.md). preexec marks the window busy, the first
+# precmd hook (.zshrc puts it in front, so $? is still the command's) reports the result, and the
+# command's duration is timed with $EPOCHREALTIME.
 
 zmodload zsh/datetime
 

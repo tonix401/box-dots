@@ -1,4 +1,4 @@
-# Same as fish/custom/functions.fish (the kitty cat's hooks are in cat.zsh). Sourced after
+# Shell functions (the kitty cat's hooks are in cat.zsh). Sourced after
 # aliases.zsh: zsh expands aliases in a function when it's defined, so `cd` and `ls` here are z and eza.
 
 cow() {
@@ -70,7 +70,7 @@ vscode_greeting() {
 # Nothing to print in kitty: the animated cat in the window's top right corner
 # (~/.config/quickshell/KittyCat.qml) greets instead of the static cat pictures. For a picture
 # again, the penguin is still rendered:
-#   kitten icat --place 19x3@4x0 --align left ~/.config/fish/images/penguin.png; printf "\n\n\n"
+#   kitten icat --place 19x3@4x0 --align left ~/.config/zsh/images/penguin.png; printf "\n\n\n"
 kitty_greeting() {
 }
 

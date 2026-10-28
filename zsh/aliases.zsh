@@ -1,4 +1,4 @@
-# Same as fish/custom/aliases.fish
+# Aliases
 alias cd='z'
 alias c='clear && greeting'
 alias ls='eza --long --no-quotes --icons --header --git --group-directories-first'

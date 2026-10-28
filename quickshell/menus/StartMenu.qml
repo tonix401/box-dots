@@ -8,7 +8,7 @@ import Quickshell.Widgets
 import qs
 import qs.components
 
-// Start menu (SUPER+SPACE): one search over apps, recent files, folders (zoxide) and fish's command
+// Start menu (SUPER+SPACE): one search over apps, recent files, folders (zoxide) and the shell's command
 // history, plus a calculator. A prefix narrows it: ">" commands (Enter runs the typed text), "/" files
 // and folders, "=" calculator. Empty, it shows the most used apps, recent files and recent commands;
 // user + power at the bottom.
@@ -180,8 +180,8 @@ PanelWindow {
             break;
         case "cmd":
         case "run":
-            // fish -C: run it, then stay at the prompt
-            Quickshell.execDetached(["uwsm", "app", "--", "kitty", "fish", "-C", item.title]);
+            // run it in an interactive zsh (aliases work), then stay at the prompt
+            Quickshell.execDetached(["uwsm", "app", "--", "kitty", "zsh", "-ic", item.title + "\nexec zsh"]);
             break;
         case "calc":
             Quickshell.execDetached(["wl-copy", item.title]);
@@ -814,17 +814,18 @@ PanelWindow {
         }
     }
 
-    // fish's history ("- cmd: …" entries, oldest first), newest first without repeats
+    // zsh's history (extended format ": time:0;cmd" lines, oldest first), newest first without repeats
     FileView {
-        path: root.home + "/.local/share/fish/fish_history"
+        path: root.home + "/.local/state/zsh/history"
         onLoaded: {
             const seen = new Set(), out = [];
             const lines = text().split("\n");
             for (let i = lines.length - 1; i >= 0 && out.length < 2000; i--) {
                 const line = lines[i];
-                if (!line.startsWith("- cmd: "))
+                const m = line.match(/^: \d+:\d+;(.+)$/);
+                if (!m)
                     continue;
-                const cmd = line.slice(7).replace(/\\(.)/g, (_, c) => c === "n" ? "\n" : c);
+                const cmd = m[1];
                 if (seen.has(cmd))
                     continue;
                 seen.add(cmd);
