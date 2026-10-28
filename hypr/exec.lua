@@ -20,7 +20,9 @@ hl.on("hyprland.start", function()
   app("awww-daemon")
   app("qs") -- bar + menus, ~/.config/quickshell
   app("xsettingsd")
-  app("obsidian", { workspace = "5 silent" }) -- vault ~/knowledge; its CLI needs the app running
-  app("anki", { workspace = "5 silent" }) -- for flashcards, its CLI needs the app running
+  -- obsidian & anki no longer autostart as GUI windows: obsidian-cli was redundant with
+  -- git-syncing ~/knowledge directly (vault-sync.timer), and Anki is replaced by the
+  -- anki-connect-server systemd user service (headless AnkiConnect API + AnkiWeb sync,
+  -- no Qt/GUI). See ~/knowledge/reference/Environment & Tooling.md.
   hl.exec_cmd("hyprpm reload")
 end)
