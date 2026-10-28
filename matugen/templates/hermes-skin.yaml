@@ -1,0 +1,60 @@
+name: matugen
+description: "Material-You palette from matugen (wallpaper-driven), dark mode. Auto-generated — edit the template in ~/.config/matugen/templates/hermes-skin.yaml, not this file."
+
+colors:
+  banner_border: "{{ colors.secondary.default.hex }}"
+  banner_title: "{{ colors.primary.default.hex }}"
+  banner_accent: "{{ colors.tertiary.default.hex }}"
+  banner_dim: "{{ colors.outline.default.hex }}"
+  banner_text: "{{ colors.on_background.default.hex }}"
+  ui_accent: "{{ colors.primary.default.hex }}"
+  ui_label: "{{ colors.secondary.default.hex }}"
+  ui_ok: "{{ colors.secondary.default.hex }}"
+  ui_error: "{{ colors.error.default.hex }}"
+  ui_warn: "{{ colors.tertiary.default.hex }}"
+  prompt: "{{ colors.on_background.default.hex }}"
+  input_rule: "{{ colors.outline_variant.default.hex }}"
+  response_border: "{{ colors.primary.default.hex }}"
+  status_bar_bg: "{{ colors.surface_container_low.default.hex }}"
+  status_bar_text: "{{ colors.on_surface.default.hex }}"
+  status_bar_strong: "{{ colors.primary.default.hex }}"
+  status_bar_dim: "{{ colors.outline.default.hex }}"
+  status_bar_good: "{{ colors.secondary.default.hex }}"
+  status_bar_warn: "{{ colors.tertiary.default.hex }}"
+  status_bar_bad: "{{ colors.error.default.hex }}"
+  status_bar_critical: "{{ colors.on_error_container.default.hex }}"
+  session_label: "{{ colors.secondary.default.hex }}"
+  session_border: "{{ colors.outline_variant.default.hex }}"
+  completion_menu_bg: "{{ colors.surface_container_low.default.hex }}"
+  completion_menu_current_bg: "{{ colors.surface_container_high.default.hex }}"
+  completion_menu_meta_bg: "{{ colors.surface_container.default.hex }}"
+  completion_menu_meta_current_bg: "{{ colors.surface_container_highest.default.hex }}"
+  selection_bg: "{{ colors.primary_container.default.hex }}"
+  shell_dollar: "{{ colors.primary.default.hex }}"
+  voice_status_bg: "{{ colors.surface_container_low.default.hex }}"
+
+tool_prefix: "┊"
+
+banner_logo: |
+  [bold {{ colors.primary.default.hex }}]██╗  ██╗███████╗██████╗ ███╗   ███╗███████╗███████╗       █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
+  [bold {{ colors.primary.default.hex }}]██║  ██║██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
+  [{{ colors.secondary.default.hex }}]███████║█████╗  ██████╔╝██╔████╔██║█████╗  ███████╗█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
+  [{{ colors.secondary.default.hex }}]██╔══██║██╔══╝  ██╔══██╗██║╚██╔╝██║██╔══╝  ╚════██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
+  [{{ colors.tertiary.default.hex }}]██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
+  [{{ colors.tertiary.default.hex }}]╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]
+
+banner_hero: |
+  [{{ colors.secondary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.secondary.default.hex }}]⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.tertiary.default.hex }}]⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀[/]
+  [{{ colors.tertiary.default.hex }}]⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀[/]
+  [{{ colors.primary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.primary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.tertiary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.tertiary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.secondary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.secondary.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.outline.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.outline.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.outline.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+  [{{ colors.outline.default.hex }}]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
