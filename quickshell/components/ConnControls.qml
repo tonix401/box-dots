@@ -296,6 +296,34 @@ ColumnLayout {
                     color: row.device.battery < 0.2 ? Theme.error : Theme.primary
                 }
             }
+            // Hi-Fi (A2DP) vs call mode (HSP/HFP); call mode is what makes a headset sound hollow
+            Rectangle {
+                readonly property var card: BtAudio.card(row.device.address)
+                readonly property bool call: BtAudio.isCall(row.device.address)
+
+                visible: row.device.connected && card !== null && card.hifi !== "" && card.call !== ""
+                Layout.preferredWidth: modeText.implicitWidth + 14
+                Layout.preferredHeight: 20
+                radius: 10
+                color: call ? Theme.error_container : modeMouse.containsMouse ? Theme.surface_container_highest : Theme.surface_container_high
+
+                Text {
+                    id: modeText
+                    anchors.centerIn: parent
+                    text: parent.call ? "Call" : "Hi-Fi"
+                    color: parent.call ? Theme.on_error_container : Theme.on_surface_variant
+                    font.family: Theme.uiFont
+                    font.pixelSize: 11
+                    font.weight: Font.Medium
+                }
+                MouseArea {
+                    id: modeMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: BtAudio.setCall(row.device.address, !parent.call)
+                }
+            }
             Text {
                 text: row.busy ? "…" : row.device.connected ? "Disconnect" : "Connect"
                 color: Theme.primary

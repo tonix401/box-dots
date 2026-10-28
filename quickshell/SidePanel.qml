@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
 import qs
@@ -155,10 +156,41 @@ Scope {
                         }
                     }
 
-                    // shell extras that cost CPU while shown (Settings.qml)
+                    // shell extras that cost CPU while shown (Settings.qml) and the desktop goose,
+                    // under a header that folds them away
                     Island {
+                        MouseArea {
+                            Layout.fillWidth: true
+                            implicitHeight: extrasHeader.implicitHeight
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Settings.set("extrasOpen", !Settings.extrasOpen)
+
+                            RowLayout {
+                                id: extrasHeader
+
+                                anchors.fill: parent
+                                spacing: 6
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Extras"
+                                    color: Theme.primary
+                                    font.family: Theme.uiFont
+                                    font.pixelSize: 15
+                                    font.weight: Font.Medium
+                                }
+                                Text {
+                                    text: Theme.g(Settings.extrasOpen ? 0xf0143 : 0xf0140) // chevron up / down
+                                    color: Theme.on_surface_variant
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 16
+                                }
+                            }
+                        }
+
                         RowLayout {
                             Layout.fillWidth: true
+                            visible: Settings.extrasOpen
                             spacing: 8
 
                             Toggle {
@@ -172,6 +204,12 @@ Scope {
                                 label: Settings.barGif ? "Bar GIF on" : "Bar GIF off"
                                 active: Settings.barGif
                                 onClicked: Settings.set("barGif", !Settings.barGif)
+                            }
+                            Toggle {
+                                glyph: 0xf01e5 // duck
+                                label: goose.running ? "Goose on" : "Goose off"
+                                active: goose.running
+                                onClicked: goose.toggle()
                             }
                         }
                     }
@@ -261,6 +299,41 @@ Scope {
                     }
                 }
             }
+        }
+    }
+
+    // The desktop goose (goosectl in ~/.local/bin, built from ~/git/desktop-goose-linux-port): its
+    // daemon is polled only while the toggle is in view.
+    QtObject {
+        id: goose
+
+        property bool running: false
+
+        function toggle() {
+            Quickshell.execDetached(["goosectl", running ? "quit" : "spawn"]);
+            running = !running; // optimistic; the next poll corrects it
+            settle.restart();
+        }
+
+        property Process status: Process {
+            command: ["goosectl", "status"]
+            stdout: StdioCollector {
+                onStreamFinished: goose.running = text.includes("running=1")
+            }
+        }
+
+        property Timer poll: Timer {
+            interval: 3000
+            running: Sidebar.open && Settings.extrasOpen
+            repeat: true
+            triggeredOnStart: true
+            onTriggered: goose.status.running = true
+        }
+
+        // the daemon takes a moment to come up or go down
+        property Timer settle: Timer {
+            interval: 1500
+            onTriggered: goose.status.running = true
         }
     }
 
