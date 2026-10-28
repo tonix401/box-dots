@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import colorsys
 import json
 import subprocess
 import sys
@@ -13,11 +14,70 @@ except ImportError:
     HAS_PYVIPS = False
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import WALLPAPERS_DIR, WALLPAPERS_OUT_DIR, WALLPAPERS_PREVIEW_DIR, WALLPAPERS_THUMB_DIR
+from config import (
+    WALLPAPERS_DIR,
+    WALLPAPERS_OUT_DIR,
+    WALLPAPERS_PALETTE_FILE,
+    WALLPAPERS_PREVIEW_DIR,
+    WALLPAPERS_THUMB_DIR,
+)
 
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
 # Width of the wallpaper menu's grid tiles (QML sourceSize.width); height follows the monitor aspect.
 PREVIEW_WIDTH = 480
+
+# Hue bands (degrees) used to tag each wallpaper with a color "direction" for the menu's filter chips.
+# Order matters: the first band whose range contains the hue wins.
+HUE_BANDS = [
+    ("red", 345, 360),
+    ("red", 0, 15),
+    ("orange", 15, 45),
+    ("yellow", 45, 70),
+    ("green", 70, 170),
+    ("cyan", 170, 200),
+    ("blue", 200, 255),
+    ("purple", 255, 290),
+    ("pink", 290, 345),
+]
+
+
+def hex_to_rgb(hex_color: str) -> tuple[float, float, float]:
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    return r, g, b
+
+
+def direction_of(hex_color: str) -> str:
+    r, g, b = hex_to_rgb(hex_color)
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    if s < 0.12:
+        return "neutral"
+    degrees = h * 360
+    for name, lo, hi in HUE_BANDS:
+        if lo <= degrees < hi:
+            return name
+    return "neutral"
+
+
+def extract_palette(image: Path) -> dict | None:
+    """Run matugen as a dry run to get the colors it would theme with, without touching anything."""
+    try:
+        result = subprocess.run(
+            ["matugen", "image", str(image), "--dry-run", "-j", "hex", "--prefer", "saturation", "-q"],
+            capture_output=True, text=True, check=True,
+        )
+        data = json.loads(result.stdout)
+        colors = data["colors"]
+        primary = colors["primary"]["dark"]["color"]
+        secondary = colors["secondary"]["dark"]["color"]
+        tertiary = colors["tertiary"]["dark"]["color"]
+        return {
+            "colors": [primary, secondary, tertiary],
+            "direction": direction_of(primary),
+        }
+    except Exception as e:
+        print(f"Error extracting palette for {image.name}: {e}", file=sys.stderr)
+        return None
 
 
 def get_resolution() -> tuple[int, int] | None:
@@ -104,6 +164,37 @@ def main() -> None:
                     print(msg)
             except Exception as e:
                 print(f"Error processing {futures[future].name}: {e}", file=sys.stderr)
+
+    # ── palette + color "direction" per wallpaper, for the menu's swatches and filter chips ──
+    try:
+        palettes = json.loads(WALLPAPERS_PALETTE_FILE.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        palettes = {}
+
+    palettes = {stem: entry for stem, entry in palettes.items() if stem in valid_stems}
+
+    def needs_palette(src: Path) -> bool:
+        entry = palettes.get(src.stem)
+        return entry is None or entry.get("mtime", 0) < src.stat().st_mtime
+
+    stale = [src for src in sources if needs_palette(src)]
+    if stale:
+        def extract(src: Path) -> tuple[str, dict | None]:
+            # same source matugen would actually theme from: the small preview when there is one
+            colors_src = preview_dir / f"{src.stem}.png"
+            palette = extract_palette(colors_src if colors_src.exists() else src)
+            return src.stem, palette
+
+        with ThreadPoolExecutor() as pool:
+            for future in as_completed(pool.submit(extract, src) for src in stale):
+                stem, palette = future.result()
+                if palette is not None:
+                    src = next(s for s in stale if s.stem == stem)
+                    palette["mtime"] = src.stat().st_mtime
+                    palettes[stem] = palette
+                    print(f"Palette: {stem}")
+
+        WALLPAPERS_PALETTE_FILE.write_text(json.dumps(palettes, indent=2) + "\n")
 
 
 if __name__ == "__main__":

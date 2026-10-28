@@ -7,7 +7,8 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs
 
-// Wallpaper picker (SUPER+P): a 3×3 grid of the most recently applied wallpapers; typing switches to a searchable list.
+// Wallpaper picker (SUPER+P): a scrollable grid of every wallpaper (most recently applied first,
+// optionally narrowed by a color-direction filter); typing switches to a searchable list.
 // Applying sets it with awww, updates the current-wallpaper files and re-themes with matugen.
 PanelWindow {
     id: root
@@ -26,21 +27,52 @@ PanelWindow {
 
     readonly property bool searching: search.text.trim() !== ""
 
-    // The current one, then the most recently applied, filled up in list order.
-    readonly property var favourites: {
+    // Per-wallpaper {colors: [primary, secondary, tertiary], direction} from prepare-wallpaper-files.py,
+    // which asks matugen what it *would* theme with. Used for the swatches and the direction filter chips.
+    property var palettes: ({})
+
+    function paletteFor(stem) {
+        return root.palettes[stem] ?? null;
+    }
+
+    readonly property var directions: ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink", "neutral"]
+    readonly property var directionSwatch: ({
+            red: "#e0574c",
+            orange: "#e08a3c",
+            yellow: "#d6c440",
+            green: "#5cb86b",
+            cyan: "#45b8c4",
+            blue: "#4c86d8",
+            purple: "#9166d8",
+            pink: "#d86ab0",
+            neutral: "#9aa0a6"
+        })
+    property string activeDirection: "" // "" = no filter
+
+    function setDirection(d) {
+        activeDirection = activeDirection === d ? "" : d;
+        refilter();
+    }
+
+    // Wallpapers left after the color-direction filter; search then ranks within this set.
+    readonly property var filtered: activeDirection === "" ? wallpapers : wallpapers.filter(w => paletteFor(w.stem)?.direction === activeDirection)
+
+    // All filtered wallpapers, current then most-recently-applied first, the rest in list order — the
+    // browse grid scrolls through this whole set, so there's no cap here unlike a typical "top 9".
+    readonly property var ordered: {
         const order = [current, ...recent];
         const rank = w => {
             const i = order.indexOf(w.stem);
             return i === -1 ? order.length : i;
         };
-        return wallpapers.slice().sort((a, b) => rank(a) - rank(b)).slice(0, 9);
+        return filtered.slice().sort((a, b) => rank(a) - rank(b));
     }
 
     property var results: []
     property int selected: 0 // index into the grid or the result list
 
     function refilter() {
-        results = Search.rank(wallpapers, search.text, w => w.stem, {
+        results = Search.rank(filtered, search.text, w => w.stem, {
             fuzzy: true
         });
         selected = 0;
@@ -99,13 +131,19 @@ PanelWindow {
     }
 
     Rectangle {
-        // fixed size: search (48) + gap (14) + three rows of monitor-shaped tiles, plus 18 padding
-        readonly property real tileWidth: (width - 36 - 2 * 12) / 3
+        id: panel
+
+        // fixed size: search (48) + gap (14) + filter chips (30) + gap (14) + three rows of monitor-shaped
+        // tiles (each row's own height already includes its gap, GridView-style), plus 18 padding
+        readonly property real cellGap: 12
+        readonly property real tileWidth: (width - 36) / 3 - cellGap
         readonly property real tileHeight: Math.round(tileWidth * 1440 / 3440)
+        readonly property real cellWidth: tileWidth + cellGap
+        readonly property real cellHeight: tileHeight + cellGap
 
         anchors.centerIn: parent
         width: 760
-        height: 18 + 48 + 14 + 3 * tileHeight + 2 * 12 + 18
+        height: 18 + 48 + 14 + 30 + 14 + 3 * cellHeight + 18
         radius: 12
         color: Theme.surface
         border.width: 2
@@ -164,11 +202,11 @@ PanelWindow {
 
                         Keys.onPressed: event => {
                             const k = event.key;
-                            const count = root.searching ? root.results.length : root.favourites.length;
+                            const count = root.searching ? root.results.length : root.ordered.length;
                             if (k === Qt.Key_Escape) {
                                 Menus.close();
                             } else if (k === Qt.Key_Return || k === Qt.Key_Enter) {
-                                const list = root.searching ? root.results : root.favourites;
+                                const list = root.searching ? root.results : root.ordered;
                                 if (list[root.selected])
                                     root.apply(list[root.selected]);
                             } else if (count === 0) {
@@ -194,118 +232,227 @@ PanelWindow {
                 }
             }
 
-            // ── 3×3 of the most used ──
-            GridLayout {
-                id: grid
-
-                readonly property real tileWidth: parent.parent.tileWidth
-                readonly property real tileHeight: parent.parent.tileHeight
+            // ── color-direction filter chips ──
+            RowLayout {
+                id: filterRow
 
                 Layout.fillWidth: true
-                visible: !root.searching
-                columns: 3
-                rowSpacing: 12
-                columnSpacing: 12
+                Layout.preferredHeight: 30
+                spacing: 8
 
                 Repeater {
-                    model: root.favourites
+                    model: root.directions
 
-                    Item {
-                        id: tile
+                    Rectangle {
+                        id: chip
 
-                        required property var modelData
-                        required property int index
-                        readonly property bool isSelected: index === root.selected
+                        required property string modelData
+                        readonly property bool active: root.activeDirection === modelData
 
-                        Layout.preferredWidth: grid.tileWidth
-                        Layout.preferredHeight: grid.tileHeight // monitor aspect
+                        readonly property color swatch: root.directionSwatch[modelData]
+                        readonly property bool hovered: chipMouse.containsMouse
 
-                        ClippingRectangle {
-                            anchors.fill: parent
-                            radius: 10
-                            color: Theme.surface_container_high
+                        // equal-width chips spanning the row; each is tinted with its own direction color
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 1
+                        implicitHeight: 30
+                        radius: 15
+                        color: active ? Qt.alpha(swatch, 0.28) : hovered ? Qt.alpha(swatch, 0.14) : Theme.surface_container_high
+                        border.width: active ? 1.5 : 0
+                        border.color: swatch
 
-                            Image {
-                                anchors.fill: parent
-                                source: root.preview(tile.modelData)
-                                fillMode: Image.PreserveAspectCrop
-                                sourceSize.width: 480
-                                asynchronous: true
-                            }
-
-                            // name on hover / selection
-                            Rectangle {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.bottom: parent.bottom
-                                height: 28
-                                visible: tile.isSelected || tileMouse.containsMouse
-                                gradient: Gradient {
-                                    GradientStop {
-                                        position: 0
-                                        color: "transparent"
-                                    }
-                                    GradientStop {
-                                        position: 1
-                                        color: Qt.alpha(Theme.surface, 0.9)
-                                    }
-                                }
-
-                                Text {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 8
-                                    anchors.rightMargin: 8
-                                    verticalAlignment: Text.AlignBottom
-                                    bottomPadding: 5
-                                    text: tile.modelData.stem.replace(/\s*\(.*\)$/, "") // drop the "(tags)"
-                                    elide: Text.ElideRight
-                                    color: Theme.on_surface
-                                    font.family: Theme.uiFont
-                                    font.pixelSize: 12
-                                }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 120
                             }
                         }
 
-                        // current-wallpaper badge
-                        Rectangle {
-                            visible: tile.modelData.stem === root.current
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.margins: 6
-                            width: 22
-                            height: 22
-                            radius: 11
-                            color: Theme.primary
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: 6
+
+                            Rectangle {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: chip.active ? 10 : 8
+                                height: width
+                                radius: width / 2
+                                color: chip.swatch
+
+                                Behavior on width {
+                                    NumberAnimation {
+                                        duration: 120
+                                    }
+                                }
+                            }
 
                             Text {
-                                anchors.centerIn: parent
-                                text: Theme.g(0xf012c) // check
-                                color: Theme.on_primary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: chip.modelData
+                                color: chip.active || chip.hovered ? Theme.on_surface : Theme.on_surface_variant
+                                font.family: Theme.uiFont
+                                font.pixelSize: 12
+                                font.weight: chip.active ? Font.DemiBold : Font.Normal
+                                font.capitalization: Font.Capitalize
                             }
-                        }
-
-                        // selection ring
-                        Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: -3
-                            radius: 13
-                            color: "transparent"
-                            border.width: 2
-                            border.color: Theme.primary
-                            visible: tile.isSelected
                         }
 
                         MouseArea {
-                            id: tileMouse
+                            id: chipMouse
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onEntered: root.selected = tile.index
-                            onClicked: root.apply(tile.modelData)
+                            onClicked: root.setDirection(chip.modelData)
                         }
                     }
+                }
+            }
+
+            // ── scrollable grid of every filtered wallpaper, favourites first ──
+            GridView {
+                id: grid
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: 3 * panel.cellHeight // exactly 3 rows visible; the rest scrolls
+                visible: !root.searching
+                clip: true
+                cellWidth: panel.cellWidth
+                cellHeight: panel.cellHeight
+                boundsBehavior: Flickable.StopAtBounds
+                model: root.ordered
+                currentIndex: root.selected
+                highlightFollowsCurrentItem: false
+                onCurrentIndexChanged: positionViewAtIndex(currentIndex, GridView.Contain)
+
+                delegate: Item {
+                    id: tile
+
+                    required property var modelData
+                    required property int index
+                    readonly property bool isSelected: index === root.selected
+
+                    width: grid.cellWidth
+                    height: grid.cellHeight
+
+                    ClippingRectangle {
+                        anchors.fill: parent
+                        anchors.margins: panel.cellGap / 2
+                        radius: 10
+                        color: Theme.surface_container_high
+
+                        Image {
+                            anchors.fill: parent
+                            source: root.preview(tile.modelData)
+                            fillMode: Image.PreserveAspectCrop
+                            sourceSize.width: 480
+                            asynchronous: true
+                        }
+
+                        // name on hover / selection
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: 28
+                            visible: tile.isSelected || tileMouse.containsMouse
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 0
+                                    color: "transparent"
+                                }
+                                GradientStop {
+                                    position: 1
+                                    color: Qt.alpha(Theme.surface, 0.9)
+                                }
+                            }
+
+                            Text {
+                                anchors.fill: parent
+                                anchors.leftMargin: 8
+                                anchors.rightMargin: 8
+                                verticalAlignment: Text.AlignBottom
+                                bottomPadding: 5
+                                text: tile.modelData.stem.replace(/\s*\(.*\)$/, "") // drop the "(tags)"
+                                elide: Text.ElideRight
+                                color: Theme.on_surface
+                                font.family: Theme.uiFont
+                                font.pixelSize: 12
+                            }
+                        }
+                    }
+
+                    // palette swatches from the theme matugen would generate for this wallpaper
+                    Row {
+                        readonly property var colors: root.paletteFor(tile.modelData.stem)?.colors ?? []
+
+                        visible: colors.length > 0
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.margins: panel.cellGap / 2 + 6
+                        spacing: 4
+
+                        Repeater {
+                            model: parent.colors
+
+                            Rectangle {
+                                width: 11
+                                height: 11
+                                radius: 5.5
+                                color: modelData
+                                border.width: 1
+                                border.color: Qt.alpha("#000000", 0.4)
+                            }
+                        }
+                    }
+
+                    // current-wallpaper badge
+                    Rectangle {
+                        visible: tile.modelData.stem === root.current
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: panel.cellGap / 2 + 6
+                        width: 22
+                        height: 22
+                        radius: 11
+                        color: Theme.primary
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: Theme.g(0xf012c) // check
+                            color: Theme.on_primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 14
+                        }
+                    }
+
+                    // selection ring
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: panel.cellGap / 2 - 3
+                        radius: 13
+                        color: "transparent"
+                        border.width: 2
+                        border.color: Theme.primary
+                        visible: tile.isSelected
+                    }
+
+                    MouseArea {
+                        id: tileMouse
+                        anchors.fill: parent
+                        anchors.margins: panel.cellGap / 2
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered: root.selected = tile.index
+                        onClicked: root.apply(tile.modelData)
+                    }
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    visible: root.ordered.length === 0
+                    text: "No wallpapers found"
+                    color: Theme.on_surface_variant
+                    font.family: Theme.uiFont
+                    font.pixelSize: 15
                 }
             }
 
@@ -363,6 +510,26 @@ PanelWindow {
                             font.family: Theme.uiFont
                             font.pixelSize: 15
                         }
+
+                        Row {
+                            readonly property var colors: root.paletteFor(row.modelData.stem)?.colors ?? []
+
+                            visible: colors.length > 0
+                            spacing: 3
+
+                            Repeater {
+                                model: parent.colors
+
+                                Rectangle {
+                                    width: 9
+                                    height: 9
+                                    radius: 4.5
+                                    color: modelData
+                                    border.width: 1
+                                    border.color: Qt.alpha("#000000", 0.4)
+                                }
+                            }
+                        }
                     }
 
                     MouseArea {
@@ -418,6 +585,18 @@ PanelWindow {
         onLoaded: {
             try {
                 root.recent = JSON.parse(text());
+            } catch (e) {}
+        }
+    }
+
+    FileView {
+        path: root.home + "/.cache/box-dots/wallpaper-palettes.json"
+        printErrors: false
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: {
+            try {
+                root.palettes = JSON.parse(text());
             } catch (e) {}
         }
     }
